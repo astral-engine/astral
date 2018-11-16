@@ -1,0 +1,36 @@
+[package]
+name = "astral"
+version = "0.0.1"
+# TODO(#12): Use edition = 2018
+# edition = "2018"
+authors = [ "Tim Diekmann <tim.diekmann@3dvision.de>" ]
+repository = "https://gitlab.com/StellarBullet/astral"
+documentation = "https://stellarbullet.gitlab.io/astral"
+readme = "README.md"
+license = "GNU GPLv3"
+
+[workspace]
+members = [
+    "src/core",
+    "src/resource",
+    "src/video",
+]
+
+[dependencies]
+astral-core = { path = "src/core", version = "0.0.1", default-features = false }
+astral-resource = { path = "src/resource", version = "0.0.1", default-features = false }
+astral-video = { path = "src/video", version = "0.0.1", default-features = false }
+
+[features]
+max_level_off = ["astral-core/max_level_off"]
+max_level_error = ["astral-core/max_level_error"]
+max_level_warn = ["astral-core/max_level_warn"]
+max_level_info = ["astral-core/max_level_info"]
+max_level_debug = ["astral-core/max_level_debug"]
+max_level_trace = ["astral-core/max_level_trace"]
+release_max_level_off = ["astral-core/release_max_level_off"]
+release_max_level_error = ["astral-core/release_max_level_error"]
+release_max_level_warn = ["astral-core/release_max_level_warn"]
+release_max_level_info = ["astral-core/release_max_level_info"]
+release_max_level_debug = ["astral-core/release_max_level_debug"]
+release_max_level_trace = ["astral-core/release_max_level_trace"]

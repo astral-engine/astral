@@ -1,0 +1,188 @@
+git:
+  depth: 1
+  lfs_skip_smudge: true
+notifications:
+  email:
+    false
+
+cache:
+  cargo: true
+  directories:
+    - registry
+    - target
+
+stages:
+  - name: rustfmt
+    if: tag IS NOT present
+  - test
+  - documentation
+  - name: release
+    if: tag IS present
+
+
+install: |
+  if [[ $TRAVIS_OS_NAME = linux ]]; then
+    mkdir -p registry
+    mkdir -p target
+    run() {
+      docker run \
+        --rm \
+        --init \
+        --user "$(id -u)":"$(id -g)" \
+        --volume `pwd`/registry:/usr/local/cargo/registry \
+        --volume `pwd`:/usr/src/$TRAVIS_REPO_SLUG \
+        --workdir /usr/src/$TRAVIS_REPO_SLUG \
+        astralengine/$TARGET:$TOOLCHAIN "$@"
+    }
+  else
+    run() {
+      "$@"
+    }
+  fi
+
+script: |
+  run cargo test --features "$FEATURES" $OPTIONS --all
+  run cargo build --features "$FEATURES" $OPTIONS --examples
+
+matrix:
+  fast_finish: true
+  allow_failures:
+    # Windows builds are in early access stage on Travis CI and may timeout.
+    - os: windows
+    - env: TOOLCHAIN=nightly
+jobs:
+  include:
+    ############################################################################
+    ###                                 Tests                                ###
+    ############################################################################
+    # Linux
+    - env: TARGET=x86_64-unknown-linux-gnu TOOLCHAIN=stable
+    - env: TARGET=x86_64-unknown-linux-gnu TOOLCHAIN=beta
+    - env: TARGET=x86_64-unknown-linux-gnu TOOLCHAIN=nightly
+    - env: TARGET=i686-unknown-linux-gnu TOOLCHAIN=stable
+
+    # MacOS
+    - os: osx
+      language: rust
+      rust: stable-x86_64-apple-darwin
+    - os: osx
+      language: rust
+      rust: stable-i686-apple-darwin
+
+    # Windows
+    - os: windows
+      language: rust
+      rust: stable-x86_64-pc-windows-msvc
+    - os: windows
+      language: rust
+      rust: stable-i686-pc-windows-msvc
+    - os: windows
+      language: rust
+      rust: stable-x86_64-pc-windows-gnu
+
+    ############################################################################
+    ###                                Rustfmt                               ###
+    ############################################################################
+    - stage: rustfmt
+      os: linux
+      language: rust
+      rust: stable
+      install:
+        - rustup component add rustfmt-preview
+      script:
+        - cargo fmt --all -- --check
+
+    ############################################################################
+    ###                             Documentation                            ###
+    ############################################################################
+    - &documentation
+      stage: documentation
+      os: linux
+      language: rust
+      rust: stable
+      before_script: |
+        if [[ $TRAVIS_RUST_VERSION == stable ]]; then
+          BRANCH=master
+        else
+          BRANCH=$TRAVIS_RUST_VERSION
+        fi
+      script: |
+        cargo doc --features "$FEATURES" --no-deps
+        echo '<meta http-equiv="refresh" content="0; url=astral">' > target/doc/index.html
+        rm target/doc/aliases.js
+        echo '.srclink{display:none;}' >> target/doc/rustdoc.css
+      after_success: |
+        git clone --branch $BRANCH https://$GH_TOKEN@github.com/astral-engine/documentation.git documentation
+        rm -rf documentation/$TRAVIS_BRANCH
+        mkdir -p documentation/$TRAVIS_BRANCH
+        mv target/doc/* documentation/$TRAVIS_BRANCH/
+      deploy:
+        - &pages
+          provider: pages
+          skip-cleanup: true
+          local_dir: documentation/
+          repo: astral-engine/documentation
+          target-branch: $BRANCH
+          github-token: $GH_TOKEN
+          keep-history: true
+          verbose: true
+          on:
+            branch: master
+        - <<: *pages
+          on:
+            tags: true
+    - <<: *documentation
+      rust: beta
+    - <<: *documentation
+      rust: nightly
+
+    ############################################################################
+    ###                                Release                               ###
+    ############################################################################
+    - <<: *documentation
+      stage: release
+      name: "Documentation"
+      after_success: false
+      before_deploy: |
+        mkdir documentation
+        mv target/doc/* documentation/
+        zip -r "documentation.zip" documentation/*
+        tar cvzf "documentation.tar.gz" documentation/*
+      deploy:
+        - provider: releases
+          file:
+            - "documentation.zip"
+            - "documentation.tar.gz"
+          api_key: $GH_TOKEN
+          body: "[Online Documentation](https://astral-engine.github.io/Astral/$TRAVIS_BRANCH/astral/)"
+          skip_cleanup: true
+          on:
+            tags: true
+    - &release
+      stage: release
+      os: linux
+      language: rust
+      rust: stable
+      env: ARCHIVE=linux_gnu_x86_64.tar.gz
+      script: |
+        cargo build --features "$FEATURES" --examples --release
+        mkdir -p Astral/examples/
+      before_deploy: |
+        mv target/release/examples/simple Astral/examples/
+        tar cvzf $ARCHIVE Astral
+      deploy:
+        provider: releases
+        file: $ARCHIVE
+        api_key: $GH_TOKEN
+        skip_cleanup: true
+        on:
+          tags: true
+    - <<: *release
+      os: osx
+      env: ARCHIVE=darwin_x86_64.tar.gz
+    - <<: *release
+      os: windows
+      env: ARCHIVE=windows_x86_64.zip
+      before_deploy: |
+        mv target/release/examples/simple.exe Astral/examples/
+        7z a $ARCHIVE Astral

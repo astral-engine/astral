@@ -1,0 +1,22 @@
+# General
+# edition = "2018"
+use_small_heuristics = "Default"
+
+# Line breaking
+newline_style = "Unix"
+
+# Line length
+max_width = 80
+hard_tabs = true
+tab_spaces = 4
+
+# Reordering
+reorder_imports = true
+reorder_modules = true
+
+# Modifies
+force_explicit_abi = true
+merge_derives = true
+use_try_shorthand = true
+use_field_init_shorthand = true
+remove_nested_parens = true

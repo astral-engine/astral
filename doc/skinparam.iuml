@@ -1,0 +1,25 @@
+@startuml skinparameter
+
+hide stereotype 
+hide empty members
+
+skinparam BackgroundColor #1E1E1E
+skinparam ArrowColor #2D70BF
+skinparam DefaultFontColor #70accd
+skinparam PageBorderColor #70accd
+
+
+skinparam class {
+    backgroundColor #2C2C2C
+    borderColor #86371e
+}
+
+skinparam object {
+    backgroundColor #2C2C2C
+    borderColor #86371e
+}
+
+skinparam Dpi 300
+skinparam RoundCorner true
+
+@enduml
