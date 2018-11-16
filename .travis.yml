@@ -112,7 +112,7 @@ jobs:
         rm target/doc/aliases.js
         echo '.srclink{display:none;}' >> target/doc/rustdoc.css
       after_success: |
-        git clone --branch $BRANCH https://$GH_TOKEN@github.com/astral-engine/documentation.git documentation
+        git clone --branch $BRANCH https://$GH_TOKEN@github.com/astral-engine/docs.git documentation
         rm -rf documentation/$TRAVIS_BRANCH
         mkdir -p documentation/$TRAVIS_BRANCH
         mv target/doc/* documentation/$TRAVIS_BRANCH/
@@ -121,7 +121,7 @@ jobs:
           provider: pages
           skip-cleanup: true
           local_dir: documentation/
-          repo: astral-engine/documentation
+          repo: astral-engine/docs
           target-branch: $BRANCH
           github-token: $GH_TOKEN
           keep-history: true
@@ -154,7 +154,7 @@ jobs:
             - "documentation.zip"
             - "documentation.tar.gz"
           api_key: $GH_TOKEN
-          body: "[Online Documentation](https://astral-engine.github.io/Astral/$TRAVIS_BRANCH/astral/)"
+          body: "[Online Documentation](https://astral-engine.github.io/docs/$TRAVIS_BRANCH/astral/)"
           skip_cleanup: true
           on:
             tags: true
