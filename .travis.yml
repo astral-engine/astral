@@ -19,8 +19,11 @@ stages:
   - name: release
     if: tag IS present
 
-
 install: |
+  if [[ ! -z "$CUSTOM_TARGET" ]]; then
+    OPTIONS="$OPTIONS --target $CUSTOM_TARGET"
+    TARGET=$CUSTOM_TARGET
+  fi
   if [[ $TRAVIS_OS_NAME = linux ]]; then
     mkdir -p registry
     mkdir -p target
@@ -60,6 +63,8 @@ jobs:
     - env: TARGET=x86_64-unknown-linux-gnu TOOLCHAIN=beta
     - env: TARGET=x86_64-unknown-linux-gnu TOOLCHAIN=nightly
     - env: TARGET=i686-unknown-linux-gnu TOOLCHAIN=stable
+    - env: TARGET=i686-unknown-linux-gnu TOOLCHAIN=beta
+    - env: TARGET=i686-unknown-linux-gnu TOOLCHAIN=nightly
 
     # MacOS
     - os: osx
@@ -79,6 +84,11 @@ jobs:
     - os: windows
       language: rust
       rust: stable-x86_64-pc-windows-gnu
+
+      # Android
+    - env: CUSTOM_TARGET=aarch64-linux-android TOOLCHAIN=stable
+    - env: CUSTOM_TARGET=aarch64-linux-android TOOLCHAIN=beta
+    - env: CUSTOM_TARGET=aarch64-linux-android TOOLCHAIN=nightly
 
     ############################################################################
     ###                                Rustfmt                               ###
