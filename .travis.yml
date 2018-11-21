@@ -87,8 +87,8 @@ jobs:
 
       # Android
     - env: CUSTOM_TARGET=aarch64-linux-android TOOLCHAIN=stable
-    - env: CUSTOM_TARGET=aarch64-linux-android TOOLCHAIN=beta
-    - env: CUSTOM_TARGET=aarch64-linux-android TOOLCHAIN=nightly
+    - env: CUSTOM_TARGET=arm-linux-androideabi TOOLCHAIN=stable
+    - env: CUSTOM_TARGET=x86_64-linux-android TOOLCHAIN=stable
 
     ############################################################################
     ###                                Rustfmt                               ###
