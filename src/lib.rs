@@ -7,7 +7,6 @@
 	html_no_source,
 	html_logo_url = "https://astral-engine.github.io/docs/logo_astral.svg",
 	html_favicon_url = "https://astral-engine.github.io/docs/logo.svg",
-	html_root_url = "https://astral-engine.github.io/docs"
 )]
 #![warn(
 	bad_style,

@@ -8,8 +8,6 @@ use std::error;
 use super::Error;
 
 /// Extension methods for [`Result`].
-///
-/// [`Result`]: https://doc.rust-lang.org/std/result/enum.Result.html
 pub trait ResultExt<T, E> {
 	/// Associates the error with an error kind.
 	///
@@ -48,7 +46,7 @@ pub trait ResultExt<T, E> {
 	/// Creates a new [`Error`], associates it with an error kind and sets the
 	/// old error as source.
 	///
-	/// [`Error`]: struct.Error.html
+	/// [`Error`]: error::Error
 	///
 	/// # Example
 	///
@@ -98,7 +96,7 @@ pub trait ResultExt<T, E> {
 	/// old error as source by applying the provided closure
 	/// `FnOnce() -> impl Into<Box<dyn error::Error + Send + Sync>>`.
 	///
-	/// [`Error`]: struct.Error.html
+	/// [`Error`]: error::Error
 	///
 	/// # Example
 	///

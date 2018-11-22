@@ -66,9 +66,8 @@ use super::{
 ///
 /// The index can be used to trivially check for equality and create a hash.
 ///
-/// [`Text::from`]: #method.from
-/// [`Deref`]: https://doc.rust-lang.org/std/ops/trait.Deref.html
-/// [`str`]: https://doc.rust-lang.org/std/primitive.str.html
+/// [`Text::from`]: core::convert::From
+/// [`Deref`]: core::ops::Deref
 #[derive(Copy, Clone, Eq, PartialEq, Ord, Hash)]
 pub struct Text {
 	index: NonZeroU32,
@@ -94,14 +93,12 @@ impl Text {
 	/// this function, [`from_utf8_unchecked`], which has the same
 	/// behavior but skips the check.
 	///
-	/// [`from_utf8_unchecked`]: struct.Text.html#method.from_utf8_unchecked
+	/// [`from_utf8_unchecked`]: string::Name::from_utf8_unchecked
 	///
 	/// # Errors
 	///
 	/// Returns [`Err`] if the slice is not UTF-8 with a description as to why the
 	/// provided slice is not UTF-8.
-	///
-	/// [`Err`]: https://doc.rust-lang.org/std/result/enum.Result.html#variant.Err
 	///
 	/// # Examples
 	///
@@ -132,29 +129,29 @@ impl Text {
 	/// assert!(Text::from_utf8(sparkle_heart).is_err());
 	/// ```
 	///
-	/// See the docs for [`Utf8Error`][error] for more details on the kinds of
+	/// See the docs for [`Utf8Error`] for more details on the kinds of
 	/// errors that can be returned.
 	///
-	/// [error]: struct.Utf8Error.html
+	/// [`Utf8Error`]: string::Utf8Error
 	pub fn from_utf8(v: &[u8]) -> Result<Self, Utf8Error> {
 		Ok(Self::from(str::from_utf8(v).map_err(Utf8Error::from_std)?))
 	}
 
 	/// Converts a slice of bytes to a `Text`, including invalid characters.
 	///
-	/// `Text` requires that it is valid UTF-8. `from_utf8()` checks to ensure
+	/// `Text` requires that it is valid UTF-8. [`from_utf8`] checks to ensure
 	/// that the bytes are valid UTF-8. During this conversion,
-	/// `from_utf8_lossy()` will replace any invalid UTF-8 sequences with
+	/// `from_utf8_lossy` will replace any invalid UTF-8 sequences with
 	/// [`U+FFFD REPLACEMENT CHARACTER`][U+FFFD], which looks like this: �
-	///
-	/// [U+FFFD]: https://doc.rust-lang.org/std/char/constant.REPLACEMENT_CHARACTER.html
 	///
 	/// If you are sure that the byte slice is valid UTF-8, and you don't want
 	/// to incur the overhead of the conversion, there is an unsafe version
 	/// of this function, [`from_utf8_unchecked`], which has the same behavior
 	/// but skips the checks.
 	///
-	/// [`from_utf8_unchecked`]: #method.from_utf8_unchecked
+	/// [U+FFFD]: core::char::REPLACEMENT_CHARACTER
+	/// [`from_utf8_unchecked`]: string::Name::from_utf8_unchecked
+	/// [`from_utf8`]: string::Name::from_utf8
 	///
 	/// # Examples
 	///
@@ -193,7 +190,7 @@ impl Text {
 	///
 	/// See the safe version, [`from_utf8`], for more details.
 	///
-	/// [`from_utf8`]: #method.from_utf8
+	/// [`from_utf8`]: string::Name::from_utf8
 	///
 	/// # Safety
 	///
@@ -226,8 +223,6 @@ impl Text {
 	/// Decode a UTF-16 encoded slice into a `Text`, returning [`Err`]
 	/// if the slice contains any invalid data.
 	///
-	/// [`Err`]: https://doc.rust-lang.org/std/result/enum.Result.html#variant.Err
-	///
 	/// # Examples
 	///
 	/// Basic usage:
@@ -256,7 +251,7 @@ impl Text {
 	/// Decode a UTF-16 encoded slice into a `Text`, replacing
 	/// invalid data with [the replacement character (`U+FFFD`)][U+FFFD].
 	///
-	/// [U+FFFD]: https://doc.rust-lang.org/std/char/constant.REPLACEMENT_CHARACTER.html
+	/// [U+FFFD]: core::char::REPLACEMENT_CHARACTER
 	///
 	/// # Examples
 	///
@@ -614,7 +609,10 @@ impl_cmp!{ Cow<'a, str> }
 
 #[cfg(test)]
 mod test {
-	#![cfg_attr(feature = "cargo-clippy", allow(non_ascii_literal))]
+	#![cfg_attr(
+		feature = "cargo-clippy",
+		allow(non_ascii_literal, shadow_unrelated)
+	)]
 
 	use super::*;
 

@@ -57,12 +57,12 @@
 //! }
 //! ```
 //!
-//! [`error!`]: ./macro.error.html
-//! [`warn!`]: ./macro.warn.html
-//! [`info!`]: ./macro.info.html
-//! [`debug!`]: ./macro.debug.html
-//! [`trace!`]: ./macro.trace.html
-//! [`println!`]: https://doc.rust-lang.org/stable/std/macro.println.html
+//! [`error!`]: macro.error.html
+//! [`warn!`]: macro.warn.html
+//! [`info!`]: macro.info.html
+//! [`debug!`]: macro.debug.html
+//! [`trace!`]: macro.trace.html
+//! [`println!`]: https://doc.rust-lang.org/std/macro.println.html
 
 extern crate log;
 

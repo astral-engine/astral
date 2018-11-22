@@ -58,6 +58,7 @@
 //! [`Name`]: struct.Name.html
 //! [`Deref`]: https://doc.rust-lang.org/std/ops/trait.Deref.html
 //! [`str`]: https://doc.rust-lang.org/std/primitive.str.html
+// TODO: Use intra doc links
 
 mod allocator;
 mod entry;
@@ -73,6 +74,9 @@ use std::{
 };
 
 use lazy_static::lazy_static;
+
+#[doc]
+pub use std::string::String;
 
 pub use self::{
 	entry::MAX_STRING_LENGTH,
@@ -90,8 +94,8 @@ use self::{
 
 /// The maximum number of unique strings like [`Text`] or [`Name`].
 ///
-/// [`Text`]: struct.Text.html
-/// [`Name`]: struct.Name.html
+/// [`Text`]: string::Text
+/// [`Name`]: string::Name
 pub const MAX_STRINGS: usize = 1024 * 1024;
 
 const PAGE_SIZE: usize = 64 * 1024;

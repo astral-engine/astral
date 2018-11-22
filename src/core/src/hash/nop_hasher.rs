@@ -8,7 +8,7 @@ use std::{hash::Hasher, ptr};
 /// An implementation of [`Hasher`] hasher which only accepts values with a size
 /// of 8 bytes or an integral value fitting into 8 bytes.
 ///
-/// [`Hasher`]: https://doc.rust-lang.org/std/hash/trait.Hasher.html
+/// [`Hasher`]: std::hash::Hasher
 ///
 /// # Panics
 ///

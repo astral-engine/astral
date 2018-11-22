@@ -8,19 +8,16 @@ use std::error;
 use super::Error;
 
 /// Extension methods for [`Option`].
-///
-/// [`Option`]: https://doc.rust-lang.org/std/option/enum.Option.html
 pub trait OptionExt<T> {
-	/// Transforms the `Option<T>` into a [`Result<T, Error<Kind>>`],
+	/// Transforms the [`Option<T>`] into a [`Result<T, Error<Kind>>`],
 	/// mapping [`Some(v)`] to [`Ok(v)`] and [`None`] to
 	/// [`Err(Error::new(kind, context))`].
 	///
-	/// [`Option<T>`]: https://doc.rust-lang.org/std/option/enum.Option.html
-	/// [`Result<T, Error<Kind>>`]: https://doc.rust-lang.org/std/result/enum.Result.html
-	/// [`Ok(v)`]: https://doc.rust-lang.org/std/result/enum.Result.html#variant.Ok
-	/// [`Err(Error::new(kind, context))`]: https://doc.rust-lang.org/std/result/enum.Result.html#variant.Err
-	/// [`None`]: https://doc.rust-lang.org/std/option#variant.None
-	/// [`Some(v)`]: https://doc.rust-lang.org/std/option#variant.Some
+	/// [`Option<T>`]: core::option::Option
+	/// [`Result<T, Error<Kind>>`]: core::result::Result
+	/// [`Ok(v)`]: Ok
+	/// [`Err(Error::new(kind, context))`]: Err
+	/// [`Some(v)`]: Some
 	///
 	/// # Example
 	///
@@ -48,17 +45,17 @@ pub trait OptionExt<T> {
 	where
 		Context: Into<Box<dyn error::Error + Send + Sync>>;
 
-	/// Transforms the `Option<T>` into a [`Result<T, Error<Kind>>`],
+	/// Transforms the [`Option<T>`] into a [`Result<T, Error<Kind>>`],
 	/// mapping [`Some(v)`] to [`Ok(v)`] and [`None`] to
 	/// [`Err(Error::new(kind, context))`] by applying the provided closure
 	/// `FnOnce() -> impl Into<Box<dyn error::Error + Send + Sync>>`.
 	///
-	/// [`Option<T>`]: https://doc.rust-lang.org/std/option/enum.Option.html
-	/// [`Result<T, Error<Kind>>`]: https://doc.rust-lang.org/std/result/enum.Result.html
-	/// [`Ok(v)`]: https://doc.rust-lang.org/std/result/enum.Result.html#variant.Ok
-	/// [`Err(Error::new(kind, context))`]: https://doc.rust-lang.org/std/result/enum.Result.html#variant.Err
-	/// [`None`]: https://doc.rust-lang.org/std/option#variant.None
-	/// [`Some(v)`]: https://doc.rust-lang.org/std/option#variant.Some
+	/// [`Option<T>`]: Option
+	/// [`Result<T, Error<Kind>>`]: Result
+	/// [`Ok(v)`]: Ok
+	/// [`Err(Error::new(kind, context))`]: Err
+	/// [`Some(v)`]: Some
+	/// [`None`]: None
 	///
 	/// # Example
 	///

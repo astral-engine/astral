@@ -31,7 +31,7 @@ use self::slot::Slot;
 
 /// A storage with stable unique keys.
 ///
-/// See [crate documentation](index.html) for more details.
+/// See [module documentation](index.html) for more details.
 pub struct SlotMap<T, Idx = u32>
 where
 	Idx: PrimUnsignedInt + AsPrimitive<usize>,

@@ -108,13 +108,7 @@ jobs:
       stage: documentation
       os: linux
       language: rust
-      rust: stable
-      before_script: |
-        if [[ $TRAVIS_RUST_VERSION == stable ]]; then
-          BRANCH=master
-        else
-          BRANCH=$TRAVIS_RUST_VERSION
-        fi
+      rust: nightly
       script: |
         cargo doc --features "$FEATURES" --no-deps
         echo '<meta http-equiv="refresh" content="0; url=astral">' > target/doc/index.html
@@ -131,7 +125,7 @@ jobs:
           skip-cleanup: true
           local_dir: documentation/
           repo: astral-engine/docs
-          target-branch: $BRANCH
+          target-branch: master
           github-token: $GH_TOKEN
           keep-history: true
           verbose: true
@@ -140,10 +134,6 @@ jobs:
         - <<: *pages
           on:
             tags: true
-    - <<: *documentation
-      rust: beta
-    - <<: *documentation
-      rust: nightly
 
     ############################################################################
     ###                                Release                               ###

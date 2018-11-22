@@ -123,8 +123,7 @@ where
 	///
 	/// # Safety
 	///
-	/// This is unsafe because pushing to the collection is not thread safe while the collection
-	/// implements [`Send`] and [`Sync`].
+	/// This is unsafe because pushing to the collection is not thread safe.
 	// ToDo(#7): Use tool-lints
 	#[cfg_attr(feature = "cargo-clippy", allow(cast_possible_truncation))]
 	pub unsafe fn push(&self, value: &'a T) -> NonZeroU32 {

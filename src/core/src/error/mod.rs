@@ -28,10 +28,9 @@ pub use self::{option_ext::OptionExt, result::Result, result_ext::ResultExt};
 /// It is useful but not necessary, that `Kind` implements [`Debug`] and
 /// [`Display`] so [`std::error::Error`] is implemented.
 ///
-/// [`std::error::Error`]: https://doc.rust-lang.org/std/error/trait.Error.html
-/// [`Debug`]: https://doc.rust-lang.org/std/fmt/trait.Debug.html
-/// [`Display`]: https://doc.rust-lang.org/std/fmt/trait.Display.html
-/// [`Error`]: https://doc.rust-lang.org/std/error/trait.Error.html
+/// [`Debug`]: std::fmt::Debug
+/// [`Display`]: std::fmt::Display
+/// [`Error`]: std::error::Error
 ///
 /// # Example
 ///
@@ -70,7 +69,7 @@ impl<Kind> Error<Kind> {
 	/// be contained in this `Error`. The resulting error don't have a source
 	/// error returned by [`Error::source`].
 	///
-	/// [`Error::source`]: https://doc.rust-lang.org/std/error/trait.Error.html#method.source
+	/// [`Error::source`]: std::error::Error::source
 	///
 	/// # Example
 	///
@@ -111,7 +110,7 @@ impl<Kind> Error<Kind> {
 	/// this `Error`. The `source` argument is an error, which will be returned
 	/// by [`Error::source`]
 	///
-	/// [`Error::source`]: https://doc.rust-lang.org/std/error/trait.Error.html#method.source
+	/// [`Error::source`]: std::error::Error::source
 	///
 	/// # Example
 	///
@@ -156,10 +155,8 @@ impl<Kind> Error<Kind> {
 	/// If this `Error` was constructed via [`new`] or [`chained`] then this
 	/// function will return [`Some`], otherwise it will return [`None`].
 	///
-	/// [`new`]: #method.new
-	/// [`chained`]: #method.chained
-	/// [`Some`]: https://doc.rust-lang.org/std/option/enum.Option.html#variant.Some
-	/// [`None`]: https://doc.rust-lang.org/std/option/enum.Option.html#variant.None
+	/// [`new`]: error::Error::new
+	/// [`chained`]: error::Error::chained
 	///
 	/// # Examples
 	///
@@ -197,10 +194,8 @@ impl<Kind> Error<Kind> {
 	/// If this `Error` was constructed via [`new`] or [`chained`] then this
 	/// function will return [`Some`], otherwise it will return [`None`].
 	///
-	/// [`new`]: #method.new
-	/// [`chained`]: #method.chained
-	/// [`Some`]: https://doc.rust-lang.org/std/option/enum.Option.html#variant.Some
-	/// [`None`]: https://doc.rust-lang.org/std/option/enum.Option.html#variant.None
+	/// [`new`]: error::Error::new
+	/// [`chained`]: error::Error::chained
 	///
 	/// # Examples
 	///
@@ -272,10 +267,8 @@ impl<Kind> Error<Kind> {
 	/// If this `Error` was constructed via [`new`] or [`chained`] then this
 	/// function will return [`Some`], otherwise it will return [`None`].
 	///
-	/// [`new`]: #method.new
-	/// [`chained`]: #method.chained
-	/// [`Some`]: https://doc.rust-lang.org/std/option/enum.Option.html#variant.Some
-	/// [`None`]: https://doc.rust-lang.org/std/option/enum.Option.html#variant.None
+	/// [`new`]: error::Error::new
+	/// [`chained`]: error::Error::chained
 	///
 	/// # Example
 	///

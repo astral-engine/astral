@@ -15,8 +15,8 @@ use super::{ALLOCATOR, PAGE_SIZE};
 pub const DATA_OFFSET: usize = 6 + mem::size_of::<AtomicPtr<Entry>>();
 /// The maximum length of one string like  [`Text`] or [`Name`].
 ///
-/// [`Text`]: struct.Text.html
-/// [`Name`]: struct.Name.html
+/// [`Text`]: string::Text
+/// [`Name`]: string::Name.
 pub const MAX_STRING_LENGTH: usize = PAGE_SIZE - DATA_OFFSET;
 
 /// An entry for a `Name`.
@@ -42,7 +42,7 @@ impl Entry {
 	///
 	/// # Safety
 	///
-	/// This is unsafe because allocating not thread safe.
+	/// This is unsafe because allocating is not thread safe.
 	pub unsafe fn allocate(string: &str) -> *mut Self {
 		if string.len() > MAX_STRING_LENGTH {
 			log::warn!(
