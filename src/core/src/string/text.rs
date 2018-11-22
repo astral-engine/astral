@@ -614,7 +614,15 @@ impl_cmp!{ Cow<'a, str> }
 
 #[cfg(test)]
 mod test {
+	#![cfg_attr(feature = "cargo-clippy", allow(non_ascii_literal))]
+
 	use super::*;
+
+	#[test]
+	fn test_size() {
+		assert_eq!(std::mem::size_of::<Text>(), 4);
+		assert_eq!(std::mem::size_of::<Option<Text>>(), 4);
+	}
 
 	#[test]
 	fn test_from_str() {

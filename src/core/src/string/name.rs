@@ -603,7 +603,15 @@ impl_cmp!{ Text }
 
 #[cfg(test)]
 mod test {
+	#![cfg_attr(feature = "cargo-clippy", allow(non_ascii_literal))]
+
 	use super::*;
+
+	#[test]
+	fn test_size() {
+		assert_eq!(std::mem::size_of::<Name>(), 8);
+		assert_eq!(std::mem::size_of::<Option<Name>>(), 8);
+	}
 
 	#[test]
 	fn test_from_str() {

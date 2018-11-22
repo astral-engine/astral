@@ -67,7 +67,10 @@ mod name;
 mod static_ref_vector;
 mod text;
 
-use std::ptr;
+use std::{
+	ptr,
+	sync::atomic::{self, AtomicUsize},
+};
 
 use lazy_static::lazy_static;
 
@@ -93,11 +96,30 @@ pub const MAX_STRINGS: usize = 1024 * 1024;
 
 const PAGE_SIZE: usize = 64 * 1024;
 
+static ALLOCATED_STRINGS: AtomicUsize = AtomicUsize::new(0);
+static USED_MEMORY: AtomicUsize = AtomicUsize::new(0);
+static USED_MEMORY_CHUNKS: AtomicUsize = AtomicUsize::new(0);
+
 // TODO(#8): Use `Allocator::new()`
 static mut ALLOCATOR: Allocator = Allocator {
 	current_pool_start: ptr::null_mut(),
 	current_pool_end: ptr::null_mut(),
 };
+
+/// Returns the number of unique allocated strings.
+pub fn allocated_strings() -> usize {
+	ALLOCATED_STRINGS.load(atomic::Ordering::Acquire)
+}
+
+/// Returns the memory, which is used for the string API.
+pub fn used_memory() -> usize {
+	USED_MEMORY.load(atomic::Ordering::Acquire)
+}
+
+/// Returns the number of chunks used for the string API.
+pub fn used_memory_chunks() -> usize {
+	USED_MEMORY_CHUNKS.load(atomic::Ordering::Acquire)
+}
 
 lazy_static! {
 	static ref ENTRY_REFERENCE_MAP: StaticRefVector<'static, Entry> =

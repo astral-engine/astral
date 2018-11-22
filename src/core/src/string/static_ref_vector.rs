@@ -10,6 +10,8 @@ use std::{
 	sync::atomic::{self, AtomicUsize},
 };
 
+use super::{USED_MEMORY, USED_MEMORY_CHUNKS};
+
 const ELEMENTS_PER_PAGE: usize = 64 * 1024 / mem::size_of::<usize>();
 
 type Page<'a, T> = Box<[Option<&'a T>; ELEMENTS_PER_PAGE]>;
@@ -37,6 +39,11 @@ where
 	pub fn new(capacity: usize) -> Self {
 		let needed_pages =
 			(capacity + ELEMENTS_PER_PAGE - 1) / ELEMENTS_PER_PAGE;
+		USED_MEMORY.fetch_add(
+			mem::size_of::<UnsafeCell<Option<Page<'a, T>>>>() * needed_pages,
+			atomic::Ordering::Acquire,
+		);
+		USED_MEMORY_CHUNKS.fetch_add(1, atomic::Ordering::Acquire);
 		let mut pages = Vec::with_capacity(needed_pages);
 		for _ in 0..needed_pages {
 			pages.push(UnsafeCell::new(None));

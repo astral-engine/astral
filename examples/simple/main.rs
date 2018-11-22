@@ -71,18 +71,34 @@ impl From<String> for TextFile {
 }
 
 fn app() -> Result<(), Box<dyn Error>> {
+	info!(
+		"strings allocated: {}, memory used: {}",
+		astral::core::string::allocated_strings(),
+		astral::core::string::used_memory(),
+	);
 	info!("size of usize: {}", std::mem::size_of::<usize>());
 	dbg!(Name::default());
+	info!(
+		"strings allocated: {}, memory used: {}",
+		astral::core::string::allocated_strings(),
+		astral::core::string::used_memory(),
+	);
 	dbg!(Name::from("string1"));
 	dbg!(Name::from("1234"));
 	dbg!(Name::from("0"));
 	dbg!(Name::from("1"));
 	dbg!(Name::from("01"));
-	dbg!(Name::from("string23000400000000000000000"));
+	dbg!(Name::from("string2300040000000000000000"));
 	dbg!(Name::from("string40"));
 	dbg!(Name::from("string60"));
 	dbg!(Name::from("string80"));
 	dbg!(Name::from("string0234"));
+	info!(
+		"strings allocated: {}, memory used: {} KB in {} chunks",
+		astral::core::string::allocated_strings(),
+		astral::core::string::used_memory() as f64 / 1024.0,
+		astral::core::string::used_memory_chunks()
+	);
 
 	// return Ok(());
 	// unsafe {

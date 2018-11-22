@@ -12,7 +12,7 @@ use std::{
 	},
 };
 
-use super::{Entry, ENTRY_REFERENCE_MAP};
+use super::{Entry, ENTRY_REFERENCE_MAP, USED_MEMORY, USED_MEMORY_CHUNKS};
 
 const NUM_BUCKETS: usize = 64 * 1024;
 
@@ -25,6 +25,11 @@ pub struct EntryHashTable {
 impl EntryHashTable {
 	/// Constructs a new hash table.
 	pub fn new() -> Self {
+		USED_MEMORY.fetch_add(
+			mem::size_of::<AtomicPtr<Entry>>() * NUM_BUCKETS,
+			atomic::Ordering::Acquire,
+		);
+		USED_MEMORY_CHUNKS.fetch_add(1, atomic::Ordering::Acquire);
 		Self {
 			head: Box::new(unsafe { mem::zeroed() }),
 			mutex: Mutex::default(),

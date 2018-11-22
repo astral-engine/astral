@@ -6,9 +6,13 @@
 use std::{
 	alloc::{GlobalAlloc, Layout, System},
 	mem, ptr,
+	sync::atomic,
 };
 
-use super::{Entry, DATA_OFFSET, PAGE_SIZE};
+use super::{
+	Entry, ALLOCATED_STRINGS, DATA_OFFSET, PAGE_SIZE, USED_MEMORY,
+	USED_MEMORY_CHUNKS,
+};
 
 /// Allocates Entries from a pool.
 ///
@@ -34,6 +38,8 @@ impl Allocator {
 			PAGE_SIZE >= mem::size_of::<Entry>(),
 			"PAGE_SIZE must be at least as large as Entry. PAGE_SIZE is {}, but Entry is {} in size.", PAGE_SIZE, mem::size_of::<Entry>()
 		);
+		USED_MEMORY.fetch_add(PAGE_SIZE, atomic::Ordering::Acquire);
+		USED_MEMORY_CHUNKS.fetch_add(1, atomic::Ordering::Acquire);
 		unsafe {
 			let layout = Layout::from_size_align_unchecked(
 				PAGE_SIZE,
@@ -77,6 +83,7 @@ impl Allocator {
 			self.allocate_page();
 		}
 		debug_assert_eq!(self.aligned_offset(), 0);
+		ALLOCATED_STRINGS.fetch_add(1, atomic::Ordering::Acquire);
 
 		unsafe {
 			let entry = &mut *(self.current_pool_start as *mut Entry);
