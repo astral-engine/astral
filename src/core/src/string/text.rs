@@ -10,6 +10,7 @@ use std::{
 	ffi::{OsStr, OsString},
 	fmt::{self, Debug, Display, Formatter},
 	hash::{Hash, Hasher},
+	iter::FromIterator,
 	num::NonZeroU32,
 	ops::{
 		Deref, Index, Range, RangeFrom, RangeFull, RangeInclusive, RangeTo,
@@ -22,7 +23,9 @@ use std::{
 
 use crate::hash::Murmur3;
 
-use super::{Utf16Error, Utf8Error, ENTRY_HASH_TABLE, ENTRY_REFERENCE_MAP};
+use super::{
+	Name, Utf16Error, Utf8Error, ENTRY_HASH_TABLE, ENTRY_REFERENCE_MAP,
+};
 
 /// A UTF-8 encoded, immutable string.
 ///
@@ -64,8 +67,8 @@ use super::{Utf16Error, Utf8Error, ENTRY_HASH_TABLE, ENTRY_REFERENCE_MAP};
 /// The index can be used to trivially check for equality and create a hash.
 ///
 /// [`Text::from`]: #method.from
-/// [`Deref`]: https://doc.rust-lang.org/nightly/std/ops/trait.Deref.html
-/// [`str`]: https://doc.rust-lang.org/nightly/std/primitive.str.html
+/// [`Deref`]: https://doc.rust-lang.org/std/ops/trait.Deref.html
+/// [`str`]: https://doc.rust-lang.org/std/primitive.str.html
 #[derive(Copy, Clone, Eq, PartialEq, Ord, Hash)]
 pub struct Text {
 	index: NonZeroU32,
@@ -97,6 +100,8 @@ impl Text {
 	///
 	/// Returns [`Err`] if the slice is not UTF-8 with a description as to why the
 	/// provided slice is not UTF-8.
+	///
+	/// [`Err`]: https://doc.rust-lang.org/std/result/enum.Result.html#variant.Err
 	///
 	/// # Examples
 	///
@@ -142,7 +147,7 @@ impl Text {
 	/// `from_utf8_lossy()` will replace any invalid UTF-8 sequences with
 	/// [`U+FFFD REPLACEMENT CHARACTER`][U+FFFD], which looks like this: �
 	///
-	/// [U+FFFD]: https://doc.rust-lang.org/nightly/std/char/constant.REPLACEMENT_CHARACTER.html
+	/// [U+FFFD]: https://doc.rust-lang.org/std/char/constant.REPLACEMENT_CHARACTER.html
 	///
 	/// If you are sure that the byte slice is valid UTF-8, and you don't want
 	/// to incur the overhead of the conversion, there is an unsafe version
@@ -221,6 +226,8 @@ impl Text {
 	/// Decode a UTF-16 encoded slice into a `Text`, returning [`Err`]
 	/// if the slice contains any invalid data.
 	///
+	/// [`Err`]: https://doc.rust-lang.org/std/result/enum.Result.html#variant.Err
+	///
 	/// # Examples
 	///
 	/// Basic usage:
@@ -249,7 +256,7 @@ impl Text {
 	/// Decode a UTF-16 encoded slice into a `Text`, replacing
 	/// invalid data with [the replacement character (`U+FFFD`)][U+FFFD].
 	///
-	/// [U+FFFD]: https://doc.rust-lang.org/nightly/std/char/constant.REPLACEMENT_CHARACTER.html
+	/// [U+FFFD]: https://doc.rust-lang.org/std/char/constant.REPLACEMENT_CHARACTER.html
 	///
 	/// # Examples
 	///
@@ -425,6 +432,34 @@ impl FromStr for Text {
 	}
 }
 
+impl Extend<Text> for String {
+	fn extend<I: IntoIterator<Item = Text>>(&mut self, iter: I) {
+		for s in iter {
+			self.push_str(&s)
+		}
+	}
+}
+
+macro_rules! impl_from_iter {
+	($ty:ty) => {
+		impl<'a> FromIterator<$ty> for Text {
+			fn from_iter<I: IntoIterator<Item = $ty>>(iter: I) -> Self {
+				let mut buf = String::new();
+				buf.extend(iter);
+				buf.into()
+			}
+		}
+	};
+}
+
+// TODO(#9): Use anonymous lifetimes
+impl_from_iter!{ &'a str }
+impl_from_iter!{ char }
+impl_from_iter!{ String }
+impl_from_iter!{ Cow<'a, str> }
+impl_from_iter!{ Name }
+impl_from_iter!{ Text }
+
 impl Deref for Text {
 	type Target = str;
 
@@ -576,3 +611,192 @@ impl_cmp!{ str }
 impl_cmp!{ &'a str }
 impl_cmp!{ String }
 impl_cmp!{ Cow<'a, str> }
+
+#[cfg(test)]
+mod test {
+	use super::*;
+
+	#[test]
+	fn test_from_str() {
+		let owned: Option<Text> = "string".parse().ok();
+		assert_eq!(owned.as_ref().map(|s| s.deref()), Some("string"));
+	}
+
+	#[test]
+	fn test_from_cow_str() {
+		assert_eq!(Text::from(Cow::Borrowed("string")), "string");
+		assert_eq!(Text::from(Cow::Owned(String::from("string"))), "string");
+	}
+
+	#[test]
+	fn test_from_utf8() {
+		let xs = b"hello";
+		assert_eq!(Text::from_utf8(xs).unwrap(), Text::from("hello"));
+
+		let xs = "ศไทย中华Việt Nam".as_bytes();
+		assert_eq!(
+			Text::from_utf8(xs).unwrap(),
+			Text::from("ศไทย中华Việt Nam")
+		);
+	}
+
+	#[test]
+	fn test_from_utf8_lossy() {
+		let xs = b"hello";
+		assert_eq!(Text::from_utf8_lossy(xs), "hello");
+
+		let xs = "ศไทย中华Việt Nam".as_bytes();
+		let ys = "ศไทย中华Việt Nam";
+		assert_eq!(Text::from_utf8_lossy(xs), ys);
+
+		let xs = b"Hello\xC2 There\xFF Goodbye";
+		assert_eq!(
+			Text::from_utf8_lossy(xs),
+			Text::from("Hello\u{FFFD} There\u{FFFD} Goodbye")
+		);
+
+		let xs = b"Hello\xC0\x80 There\xE6\x83 Goodbye";
+		assert_eq!(
+			Text::from_utf8_lossy(xs),
+			Text::from("Hello\u{FFFD}\u{FFFD} There\u{FFFD} Goodbye")
+		);
+
+		let xs = b"\xF5foo\xF5\x80bar";
+		assert_eq!(
+			Text::from_utf8_lossy(xs),
+			Text::from("\u{FFFD}foo\u{FFFD}\u{FFFD}bar")
+		);
+
+		let xs = b"\xF1foo\xF1\x80bar\xF1\x80\x80baz";
+		assert_eq!(
+			Text::from_utf8_lossy(xs),
+			Text::from("\u{FFFD}foo\u{FFFD}bar\u{FFFD}baz")
+		);
+
+		let xs = b"\xF4foo\xF4\x80bar\xF4\xBFbaz";
+		assert_eq!(
+			Text::from_utf8_lossy(xs),
+			Text::from("\u{FFFD}foo\u{FFFD}bar\u{FFFD}\u{FFFD}baz")
+		);
+
+		let xs = b"\xF0\x80\x80\x80foo\xF0\x90\x80\x80bar";
+		assert_eq!(
+			Text::from_utf8_lossy(xs),
+			Text::from("\u{FFFD}\u{FFFD}\u{FFFD}\u{FFFD}foo\u{10000}bar")
+		);
+
+		// surrogates
+		let xs = b"\xED\xA0\x80foo\xED\xBF\xBFbar";
+		assert_eq!(
+			Text::from_utf8_lossy(xs),
+			Text::from(
+				"\u{FFFD}\u{FFFD}\u{FFFD}foo\u{FFFD}\u{FFFD}\u{FFFD}bar"
+			)
+		);
+	}
+
+	#[test]
+	fn test_from_utf16() {
+		let pairs: [(Text, Vec<u16>); 5] = [(Text::from("𐍅𐌿𐌻𐍆𐌹𐌻𐌰\n"),
+                  vec![0xd800, 0xdf45, 0xd800, 0xdf3f, 0xd800, 0xdf3b, 0xd800, 0xdf46, 0xd800,
+                       0xdf39, 0xd800, 0xdf3b, 0xd800, 0xdf30, 0x000a]),
+
+                 (Text::from("𐐒𐑉𐐮𐑀𐐲𐑋 𐐏𐐲𐑍\n"),
+                  vec![0xd801, 0xdc12, 0xd801, 0xdc49, 0xd801, 0xdc2e, 0xd801, 0xdc40, 0xd801,
+                       0xdc32, 0xd801, 0xdc4b, 0x0020, 0xd801, 0xdc0f, 0xd801, 0xdc32, 0xd801,
+                       0xdc4d, 0x000a]),
+
+                 (Text::from("𐌀𐌖𐌋𐌄𐌑𐌉·𐌌𐌄𐌕𐌄𐌋𐌉𐌑\n"),
+                  vec![0xd800, 0xdf00, 0xd800, 0xdf16, 0xd800, 0xdf0b, 0xd800, 0xdf04, 0xd800,
+                       0xdf11, 0xd800, 0xdf09, 0x00b7, 0xd800, 0xdf0c, 0xd800, 0xdf04, 0xd800,
+                       0xdf15, 0xd800, 0xdf04, 0xd800, 0xdf0b, 0xd800, 0xdf09, 0xd800, 0xdf11,
+                       0x000a]),
+
+                 (Text::from("𐒋𐒘𐒈𐒑𐒛𐒒 𐒕𐒓 𐒈𐒚𐒍 𐒏𐒜𐒒𐒖𐒆 𐒕𐒆\n"),
+                  vec![0xd801, 0xdc8b, 0xd801, 0xdc98, 0xd801, 0xdc88, 0xd801, 0xdc91, 0xd801,
+                       0xdc9b, 0xd801, 0xdc92, 0x0020, 0xd801, 0xdc95, 0xd801, 0xdc93, 0x0020,
+                       0xd801, 0xdc88, 0xd801, 0xdc9a, 0xd801, 0xdc8d, 0x0020, 0xd801, 0xdc8f,
+                       0xd801, 0xdc9c, 0xd801, 0xdc92, 0xd801, 0xdc96, 0xd801, 0xdc86, 0x0020,
+                       0xd801, 0xdc95, 0xd801, 0xdc86, 0x000a]),
+                 (Text::from("\u{20000}"), vec![0xD840, 0xDC00])];
+
+		for p in &pairs {
+			let (s, u) = (*p).clone();
+			let s_str = s.as_str();
+			let s_as_utf16 = s_str.encode_utf16().collect::<Vec<u16>>();
+			let u_as_string = Text::from_utf16(&u).unwrap().as_str();
+
+			assert!(
+				std::char::decode_utf16(u.iter().cloned()).all(|r| r.is_ok())
+			);
+			assert_eq!(s_as_utf16, u);
+
+			assert_eq!(u_as_string, s);
+			assert_eq!(Text::from_utf16_lossy(&u), s);
+
+			assert_eq!(Text::from_utf16(&s_as_utf16).unwrap(), s);
+			assert_eq!(u_as_string.encode_utf16().collect::<Vec<u16>>(), u);
+		}
+	}
+
+	#[test]
+	fn test_utf16_invalid() {
+		// completely positive cases tested above.
+		// lead + eof
+		assert!(Text::from_utf16(&[0xD800]).is_err());
+		// lead + lead
+		assert!(Text::from_utf16(&[0xD800, 0xD800]).is_err());
+
+		// isolated trail
+		assert!(Text::from_utf16(&[0x0061, 0xDC00]).is_err());
+
+		// general
+		assert!(Text::from_utf16(&[0xD800, 0xd801, 0xdc8b, 0xD800]).is_err());
+	}
+
+	#[test]
+	fn test_from_utf16_lossy() {
+		// completely positive cases tested above.
+		// lead + eof
+		assert_eq!(Text::from_utf16_lossy(&[0xD800]), Text::from("\u{FFFD}"));
+		// lead + lead
+		assert_eq!(
+			Text::from_utf16_lossy(&[0xD800, 0xD800]),
+			Text::from("\u{FFFD}\u{FFFD}")
+		);
+
+		// isolated trail
+		assert_eq!(
+			Text::from_utf16_lossy(&[0x0061, 0xDC00]),
+			Text::from("a\u{FFFD}")
+		);
+
+		// general
+		assert_eq!(
+			Text::from_utf16_lossy(&[0xD800, 0xd801, 0xdc8b, 0xD800]),
+			Text::from("\u{FFFD}𐒋\u{FFFD}")
+		);
+	}
+
+	#[test]
+	fn test_from_iterator() {
+		let s = Text::from("ศไทย中华Việt Nam");
+		let t = "ศไทย中华";
+		let u = "Việt Nam";
+
+		let a: Text = s.chars().collect();
+		assert_eq!(s, a);
+
+		let mut b = t.to_string();
+		b.extend(u.chars());
+		assert_eq!(s, b);
+
+		let c: String = vec![t, u].into_iter().collect();
+		assert_eq!(s, c);
+
+		let mut d = t.to_string();
+		d.extend(vec![u]);
+		assert_eq!(s, d);
+	}
+
+}

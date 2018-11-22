@@ -56,8 +56,8 @@
 //!
 //! [`Text`]: struct.Text.html
 //! [`Name`]: struct.Name.html
-//! [`Deref`]: https://doc.rust-lang.org/nightly/std/ops/trait.Deref.html
-//! [`str`]: https://doc.rust-lang.org/nightly/std/primitive.str.html
+//! [`Deref`]: https://doc.rust-lang.org/std/ops/trait.Deref.html
+//! [`str`]: https://doc.rust-lang.org/std/primitive.str.html
 
 mod allocator;
 mod entry;

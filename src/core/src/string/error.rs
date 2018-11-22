@@ -15,7 +15,7 @@ use std::{
 /// As such, the `from_utf8` family of functions and methods for both [`Name`]s
 /// and [`Text`]s make use of this error, for example.
 ///
-/// [`u8`]: https://doc.rust-lang.org/nightly/std/primitive.u8.html
+/// [`u8`]: https://doc.rust-lang.org/std/primitive.u8.html
 /// [`Name`]: struct.Name.html
 /// [`Text`]: struct.Text.html
 #[derive(Copy, Clone, Eq, PartialEq)]
@@ -70,7 +70,7 @@ impl Utf8Error {
 	///   (after inserting a [`U+FFFD REPLACEMENT CHARACTER`][U+FFFD]) in case of
 	///   lossy decoding.
 	///
-	/// [U+FFFD]: https://doc.rust-lang.org/nightly/std/char/constant.REPLACEMENT_CHARACTER.html
+	/// [U+FFFD]: https://doc.rust-lang.org/std/char/constant.REPLACEMENT_CHARACTER.html
 	#[inline]
 	pub fn error_len(&self) -> Option<usize> {
 		self.inner.error_len()
