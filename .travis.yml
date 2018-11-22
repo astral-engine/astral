@@ -45,7 +45,6 @@ install: |
 
 script: |
   run cargo test --features "$FEATURES" $OPTIONS --all
-  run cargo build --features "$FEATURES" $OPTIONS --examples
 
 matrix:
   fast_finish: true
