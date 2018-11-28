@@ -784,6 +784,9 @@ mod test {
 		);
 	}
 
+	// ToDo(#7): Use tool-lints
+	// Returning `mut` is allowed because of `UnsafeCell`
+	#[cfg_attr(feature = "cargo-clippy", allow(string_extend_chars))]
 	#[test]
 	fn test_from_iterator() {
 		let s = Text::from("ศไทย中华Việt Nam");
