@@ -6,7 +6,6 @@
 //! A collection of basic structures and functions.
 
 #![cfg_attr(unstable, feature(align_offset))]
-#![cfg_attr(unstable, feature(int_to_from_bytes))]
 #![cfg_attr(unstable, feature(untagged_unions))]
 #![doc(
 	html_no_source,
