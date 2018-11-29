@@ -114,7 +114,7 @@ jobs:
         echo '<meta http-equiv="refresh" content="0; url=astral">' > target/doc/index.html
         rm target/doc/aliases.js
         echo '.srclink{display:none;}' >> target/doc/rustdoc.css
-      after_success: |
+      before_deploy: |
         git clone --branch $BRANCH https://$GH_TOKEN@github.com/astral-engine/docs.git documentation
         rm -rf documentation/$TRAVIS_BRANCH
         mkdir -p documentation/$TRAVIS_BRANCH
