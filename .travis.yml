@@ -115,7 +115,7 @@ jobs:
         rm target/doc/aliases.js
         echo '.srclink{display:none;}' >> target/doc/rustdoc.css
       before_deploy: |
-        git clone --branch $BRANCH https://$GH_TOKEN@github.com/astral-engine/docs.git documentation
+        git clone https://$GH_TOKEN@github.com/astral-engine/docs.git documentation
         rm -rf documentation/$TRAVIS_BRANCH
         mkdir -p documentation/$TRAVIS_BRANCH
         mv target/doc/* documentation/$TRAVIS_BRANCH/
