@@ -13,8 +13,8 @@ pub trait OptionExt<T> {
 	/// mapping [`Some(v)`] to [`Ok(v)`] and [`None`] to
 	/// [`Err(Error::new(kind, context))`].
 	///
-	/// [`Option<T>`]: core::option::Option
-	/// [`Result<T, Error<Kind>>`]: core::result::Result
+	/// [`Option<T>`]: Option
+	/// [`Result<T, Error<Kind>>`]: Result
 	/// [`Ok(v)`]: Ok
 	/// [`Err(Error::new(kind, context))`]: Err
 	/// [`Some(v)`]: Some
@@ -55,7 +55,6 @@ pub trait OptionExt<T> {
 	/// [`Ok(v)`]: Ok
 	/// [`Err(Error::new(kind, context))`]: Err
 	/// [`Some(v)`]: Some
-	/// [`None`]: None
 	///
 	/// # Example
 	///
