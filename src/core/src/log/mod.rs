@@ -33,7 +33,6 @@
 //! ### Example
 //!
 //! ```rust
-//! # extern crate astral;
 //! use astral::core::log::{info, warn};
 //!
 //! # #[derive(Debug)] pub struct Yak(String);
@@ -64,8 +63,7 @@
 //! [`trace!`]: macro.trace.html
 //! [`println!`]: https://doc.rust-lang.org/std/macro.println.html
 
-extern crate log;
-
 mod terminal_logger;
 
-pub use self::{log::*, terminal_logger::TerminalLogger};
+pub use self::terminal_logger::TerminalLogger;
+pub use log::*;

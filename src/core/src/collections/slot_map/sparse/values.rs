@@ -9,11 +9,9 @@ use crate::math::num::{AsPrimitive, PrimUnsignedInt};
 
 use super::Iter;
 
-// TODO(#10): Use elided lifetimes
 #[derive(Debug)]
 pub struct Values<'a, T, Idx>(pub(super) Iter<'a, T, Idx>)
 where
-	T: 'a,
 	Idx: PrimUnsignedInt + AsPrimitive<usize>,
 
 	usize: AsPrimitive<Idx>;
@@ -42,7 +40,8 @@ where
 	Idx: PrimUnsignedInt + AsPrimitive<usize>,
 
 	usize: AsPrimitive<Idx>,
-{}
+{
+}
 
 impl<'a, T, Idx> ExactSizeIterator for Values<'a, T, Idx>
 where
@@ -50,4 +49,5 @@ where
 	Idx: PrimUnsignedInt + AsPrimitive<usize>,
 
 	usize: AsPrimitive<Idx>,
-{}
+{
+}

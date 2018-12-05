@@ -3,17 +3,13 @@
 // Proprietary and confidential
 // Written by Tim Diekmann <tim.diekmann@3dvision.de>, November 2018
 
-extern crate simplelog;
-
-use super::{Log, Metadata, Record};
+use log::{LevelFilter, Log, Metadata, Record};
 
 /// Provides a stderr/out based Logger implementation.
 ///
 /// # Example
 ///
 /// ```rust,no_run
-/// # extern crate astral;
-///
 /// use astral::core::log::{self, TerminalLogger, LevelFilter, info};
 ///
 /// # fn main() -> Result<(), log::SetLoggerError> {
@@ -35,18 +31,19 @@ impl Default for TerminalLogger {
 impl TerminalLogger {
 	/// Creates a new `TerminalLogger`
 	pub fn new() -> Self {
-		use super::LevelFilter;
-		TerminalLogger(if let Some(logger) = simplelog::TermLogger::new(
-			LevelFilter::max(),
-			simplelog::Config::default(),
-		) {
-			logger
-		} else {
-			simplelog::SimpleLogger::new(
+		TerminalLogger(
+			if let Some(logger) = simplelog::TermLogger::new(
 				LevelFilter::max(),
 				simplelog::Config::default(),
-			)
-		})
+			) {
+				logger
+			} else {
+				simplelog::SimpleLogger::new(
+					LevelFilter::max(),
+					simplelog::Config::default(),
+				)
+			},
+		)
 	}
 }
 

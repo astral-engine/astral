@@ -38,8 +38,7 @@ impl EntryHashTable {
 
 	/// Searches the table for an entry with the given name and hash.
 	/// Returns [`None`] if no entry was found.
-	// TODO(#7): Use tool-lints
-	#[cfg_attr(feature = "cargo-clippy", allow(cast_possible_truncation))]
+	#[allow(clippy::cast_possible_truncation)]
 	pub fn find(&self, name: &str, hash: u16) -> Option<&Entry> {
 		debug_assert!((hash as usize) < self.head.len());
 
@@ -59,8 +58,7 @@ impl EntryHashTable {
 
 	/// Searches the table for an entry with the given name and hash or insers
 	/// a new one, if none is found.
-	// TODO(#7): Use tool-lints
-	#[cfg_attr(feature = "cargo-clippy", allow(cast_possible_truncation))]
+	#[allow(clippy::cast_possible_truncation)]
 	pub fn find_or_insert(&self, name: &str, hash: u64) -> NonZeroU32 {
 		let hash = hash as u16;
 

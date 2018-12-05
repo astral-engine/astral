@@ -6,7 +6,7 @@
 #![doc(
 	html_no_source,
 	html_logo_url = "https://astral-engine.github.io/docs/logo_astral.svg",
-	html_favicon_url = "https://astral-engine.github.io/docs/logo.svg",
+	html_favicon_url = "https://astral-engine.github.io/docs/logo.svg"
 )]
 #![warn(
 	bad_style,
@@ -20,22 +20,19 @@
 	variant_size_differences,
 	absolute_paths_not_starting_with_crate,
 	future_incompatible,
-	unused
+	unused,
+	clippy::pedantic
 )]
-// TODO(#7): Use tool-lints
-#![cfg_attr(feature = "cargo-clippy", warn(pedantic))]
-#![cfg_attr(feature = "cargo-clippy", allow(stutter))]
-#![allow(unused_extern_crates, single_use_lifetimes)]
+#![allow(single_use_lifetimes)]
 
 pub mod core {
 	//! Low-level support systems for manage mundane but crucial tasks.
-	extern crate astral_core;
 	#[doc(inline)]
-	pub use self::astral_core::*;
+	pub use astral_core::*;
 }
 
 pub mod resource {
 	//! Support systems for creating and loading different resources.
-	extern crate astral_resource;
-	pub use self::astral_resource::*;
+	#[doc(inline)]
+	pub use astral_resource::*;
 }

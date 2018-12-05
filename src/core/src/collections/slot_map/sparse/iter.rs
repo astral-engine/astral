@@ -12,11 +12,9 @@ use crate::math::num::{AsPrimitive, PrimUnsignedInt};
 
 use crate::collections::slot_map::{sparse::Slot, Key};
 
-// TODO(#10): Use elided lifetimes
 #[derive(Debug)]
 pub struct Iter<'a, T, Idx>
 where
-	T: 'a,
 	Idx: PrimUnsignedInt + AsPrimitive<usize>,
 
 	usize: AsPrimitive<Idx>,
@@ -57,7 +55,8 @@ where
 	Idx: PrimUnsignedInt + AsPrimitive<usize>,
 
 	usize: AsPrimitive<Idx>,
-{}
+{
+}
 
 impl<'a, T, Idx> ExactSizeIterator for Iter<'a, T, Idx>
 where
@@ -65,4 +64,5 @@ where
 	Idx: PrimUnsignedInt + AsPrimitive<usize>,
 
 	usize: AsPrimitive<Idx>,
-{}
+{
+}

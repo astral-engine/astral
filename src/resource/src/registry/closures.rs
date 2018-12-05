@@ -43,8 +43,10 @@ impl<R, P> Closures<R, P> {
 
 	pub fn new_asset<F>(loader: F) -> Self
 	where
-		F: Fn(P, &mut (dyn Read))
-				-> result::Result<R, Box<dyn error::Error + Send + Sync>>
+		F: Fn(
+				P,
+				&mut (dyn Read),
+			) -> result::Result<R, Box<dyn error::Error + Send + Sync>>
 			+ Send
 			+ Sync
 			+ 'static,

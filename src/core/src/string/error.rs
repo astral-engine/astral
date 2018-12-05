@@ -17,6 +17,7 @@ use std::{
 ///
 /// [`Name`]: string::Name
 /// [`Text`]: string::Text
+#[allow(clippy::stutter)]
 #[derive(Copy, Clone, Eq, PartialEq)]
 pub struct Utf8Error {
 	inner: str::Utf8Error,
@@ -38,7 +39,7 @@ impl Utf8Error {
 	/// Basic usage:
 	///
 	/// ```
-	/// # extern crate astral;
+
 	/// use astral::core::string::Name;
 	///
 	/// // some invalid bytes, in a vector
@@ -103,7 +104,6 @@ impl error::Error for Utf8Error {}
 /// Basic usage:
 ///
 /// ```
-/// # extern crate astral;
 /// use astral::core::string::Name;
 ///
 /// // 𝄞mu<invalid>ic
@@ -112,6 +112,7 @@ impl error::Error for Utf8Error {}
 ///
 /// assert!(Name::from_utf16(v).is_err());
 /// ```
+#[allow(clippy::stutter)]
 pub struct Utf16Error {
 	pub(super) inner: string::FromUtf16Error,
 }

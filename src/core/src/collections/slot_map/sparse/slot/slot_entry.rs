@@ -7,7 +7,7 @@ use std::mem::ManuallyDrop;
 
 use super::PrimUnsignedInt;
 
-// TODO(#3): Use untagged_unions. See `slot_entry_nightly.rs`
+// TODO: Use untagged_unions.
 pub enum SlotEntry<T, Idx>
 where
 	Idx: PrimUnsignedInt,

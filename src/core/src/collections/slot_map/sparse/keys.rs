@@ -9,11 +9,9 @@ use crate::math::num::{AsPrimitive, PrimUnsignedInt};
 
 use super::{Iter, Key};
 
-// TODO(#10): Use elided lifetimes
 #[derive(Debug)]
 pub struct Keys<'a, T, Idx>(pub(super) Iter<'a, T, Idx>)
 where
-	T: 'a,
 	Idx: PrimUnsignedInt + AsPrimitive<usize>,
 	usize: AsPrimitive<Idx>;
 
@@ -39,11 +37,13 @@ where
 	T: 'a,
 	Idx: PrimUnsignedInt + AsPrimitive<usize>,
 	usize: AsPrimitive<Idx>,
-{}
+{
+}
 
 impl<'a, T, Idx> ExactSizeIterator for Keys<'a, T, Idx>
 where
 	T: 'a,
 	Idx: PrimUnsignedInt + AsPrimitive<usize>,
 	usize: AsPrimitive<Idx>,
-{}
+{
+}

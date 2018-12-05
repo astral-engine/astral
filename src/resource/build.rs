@@ -3,7 +3,6 @@
 // Proprietary and confidential
 // Written by Tim Diekmann <tim.diekmann@3dvision.de>, November 2018
 
-extern crate rustc_version;
 use rustc_version::Channel;
 
 fn main() {

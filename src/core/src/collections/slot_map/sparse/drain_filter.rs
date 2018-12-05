@@ -9,11 +9,9 @@ use crate::math::num::{AsPrimitive, PrimUnsignedInt};
 
 use super::{Key, SlotMap};
 
-// TODO(#10): Use elided lifetimes
 #[derive(Debug)]
 pub struct DrainFilter<'a, T, Idx, F>
 where
-	T: 'a,
 	Idx: PrimUnsignedInt + AsPrimitive<usize>,
 
 	usize: AsPrimitive<Idx>,
@@ -40,19 +38,14 @@ where
 		while self.current < len {
 			let idx = self.current;
 			self.current += Idx::one();
-			// TODO(#6): Use NLL
-			let mut remove = false;
-			let key;
+
 			unsafe {
 				let slot = self.map.slots.get_unchecked_mut(idx.as_());
-				key = Key::new(idx, slot.version());
+				let key = Key::new(idx, slot.version());
 				if slot.occupied() && (self.pred)(key, slot.value_mut()) {
-					remove = true;
+					self.num_left -= Idx::one();
+					return Some((key, self.map.remove(key).unwrap()));
 				}
-			}
-			if remove {
-				self.num_left -= Idx::one();
-				return Some((key, self.map.remove(key).unwrap()));
 			}
 		}
 
@@ -71,7 +64,8 @@ where
 
 	usize: AsPrimitive<Idx>,
 	F: FnMut(Key<Idx>, &mut T) -> bool,
-{}
+{
+}
 
 impl<'a, T, Idx, F> Drop for DrainFilter<'a, T, Idx, F>
 where

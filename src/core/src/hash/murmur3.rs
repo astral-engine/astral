@@ -16,7 +16,6 @@ use std::{hash::Hasher, u32};
 /// # Example
 ///
 /// ```
-/// # extern crate astral;
 /// use std::hash::{Hash, Hasher};
 /// use astral::core::hash::Murmur3;
 ///
@@ -56,8 +55,7 @@ impl Hasher for Murmur3 {
 		self.seed.into()
 	}
 
-	// TODO(#7): Use tool-lints
-	#[cfg_attr(feature = "cargo-clippy", allow(cast_possible_truncation))]
+	#[allow(clippy::cast_possible_truncation)]
 	fn write(&mut self, bytes: &[u8]) {
 		for chunk in bytes.chunks(4) {
 			match chunk.len() {

@@ -9,11 +9,9 @@ use crate::math::num::{AsPrimitive, PrimUnsignedInt};
 
 use super::{Key, SlotMap};
 
-// TODO(#10): Use elided lifetimes
 #[derive(Debug)]
 pub struct Drain<'a, T, Idx>
 where
-	T: 'a,
 	Idx: PrimUnsignedInt + AsPrimitive<usize>,
 
 	usize: AsPrimitive<Idx>,
@@ -37,19 +35,13 @@ where
 		while self.current < len {
 			let idx = self.current;
 			self.current += Idx::one();
-			// TODO(#6): Use NLL
-			let mut remove = false;
-			let key;
 			unsafe {
 				let slot = self.map.slots.get_unchecked(idx.as_());
-				key = Key::new(idx, slot.version());
+				let key = Key::new(idx, slot.version());
 				if slot.occupied() {
-					remove = true;
+					self.num_left -= Idx::one();
+					return Some((key, self.map.remove(key).unwrap()));
 				}
-			}
-			if remove {
-				self.num_left -= Idx::one();
-				return Some((key, self.map.remove(key).unwrap()));
 			}
 		}
 
@@ -67,7 +59,8 @@ where
 	Idx: PrimUnsignedInt + AsPrimitive<usize>,
 
 	usize: AsPrimitive<Idx>,
-{}
+{
+}
 
 impl<'a, T, Idx> ExactSizeIterator for Drain<'a, T, Idx>
 where
@@ -75,7 +68,8 @@ where
 	Idx: PrimUnsignedInt + AsPrimitive<usize>,
 
 	usize: AsPrimitive<Idx>,
-{}
+{
+}
 
 impl<'a, T, Idx> Drop for Drain<'a, T, Idx>
 where

@@ -37,7 +37,7 @@ impl<'loc> Namespace<'loc> {
 	/// # Example
 	///
 	/// ```
-	/// # extern crate astral;
+
 	/// use astral::resource::assets::Namespace;
 	///
 	/// let namespace = Namespace::new();
@@ -56,7 +56,7 @@ impl<'loc> Namespace<'loc> {
 	/// # Example
 	///
 	/// ```
-	/// # extern crate astral;
+
 	/// # fn main() -> Result<(), astral::resource::assets::Error> {
 	/// use astral::resource::assets::{Namespace, FileSystem};
 	///
@@ -93,7 +93,7 @@ impl<'loc> Namespace<'loc> {
 	/// # Example
 	///
 	/// ```
-	/// # extern crate astral;
+
 	/// # fn main() -> Result<(), astral::resource::assets::Error> {
 	/// use astral::resource::assets::{Namespace, FileSystem};
 	///
@@ -114,7 +114,7 @@ impl<'loc> Namespace<'loc> {
 	/// # Example
 	///
 	/// ```
-	/// # extern crate astral;
+
 	/// # fn main() -> Result<(), astral::resource::assets::Error> {
 	/// use astral::resource::assets::{Namespace, FileSystem};
 	///
@@ -137,7 +137,7 @@ impl<'loc> Namespace<'loc> {
 	/// # Example
 	///
 	/// ```
-	/// # extern crate astral;
+
 	/// # fn main() -> Result<(), astral::resource::assets::Error> {
 	/// use astral::resource::assets::{Namespace, FileSystem};
 	///
@@ -162,7 +162,7 @@ impl<'loc> Namespace<'loc> {
 	/// # Example
 	///
 	/// ```no_run
-	/// # extern crate astral;
+
 	/// # fn main() -> Result<(), astral::resource::assets::Error> {
 	/// use astral::resource::assets::{Namespace, FileSystem};
 	///
@@ -198,7 +198,7 @@ impl<'loc> Namespace<'loc> {
 	/// # Example
 	///
 	/// ```
-	/// # extern crate astral;
+
 	/// # fn main() -> Result<(), astral::resource::assets::Error> {
 	/// use astral::resource::assets::{Namespace, FileSystem};
 	///
@@ -229,7 +229,7 @@ impl<'loc> Namespace<'loc> {
 	/// # Example
 	///
 	/// ```
-	/// # extern crate astral;
+
 	/// # fn main() -> Result<(), astral::resource::assets::Error> {
 	/// use astral::resource::assets::{Namespace, FileSystem};
 	///
@@ -256,7 +256,7 @@ impl<'loc> Namespace<'loc> {
 	/// # Example
 	///
 	/// ```no_run
-	/// # extern crate astral;
+
 	/// # fn main() -> Result<(), astral::resource::assets::Error> {
 	/// use astral::resource::assets::{Namespace, FileSystem};
 	///
@@ -317,7 +317,7 @@ impl<'loc> Namespace<'loc> {
 	/// # Example
 	///
 	/// ```
-	/// # extern crate astral;
+
 	/// # fn main() -> Result<(), astral::resource::assets::Error> {
 	/// use astral::resource::assets::{Namespace, FileSystem};
 	///
@@ -351,7 +351,7 @@ impl<'loc> Namespace<'loc> {
 	/// # Example
 	///
 	/// ```no_run
-	/// # extern crate astral;
+
 	/// # fn main() -> Result<(), astral::resource::assets::Error> {
 	/// use astral::core::string::Name;
 	/// use astral::resource::assets::{Namespace, FileSystem};
@@ -380,7 +380,8 @@ impl<'loc> Namespace<'loc> {
 				.iter_mut()
 				.map(|(index, entry)| {
 					(VirtualFileSystemIndex::new(index), entry)
-				}).find(|(_, vfs)| !vfs.readonly())?
+				})
+				.find(|(_, vfs)| !vfs.readonly())?
 		};
 		let write = Some(vfs.create(name));
 		self.paths.insert(name, index);
@@ -400,7 +401,7 @@ impl<'loc> Namespace<'loc> {
 	/// # Example
 	///
 	/// ```no_run
-	/// # extern crate astral;
+
 	/// # fn main() -> Result<(), astral::resource::assets::Error> {
 	/// use astral::core::string::Name;
 	/// use astral::resource::assets::{Namespace, FileSystem};
@@ -429,7 +430,8 @@ impl<'loc> Namespace<'loc> {
 				.iter_mut()
 				.map(|(index, entry)| {
 					(VirtualFileSystemIndex::new(index), entry)
-				}).find(|(_, vfs)| !vfs.readonly())?
+				})
+				.find(|(_, vfs)| !vfs.readonly())?
 		};
 		let write = Some(vfs.create_new(name));
 		self.paths.insert(name, index);
@@ -442,7 +444,7 @@ impl<'loc> Namespace<'loc> {
 	/// # Example
 	///
 	/// ```no_run
-	/// # extern crate astral;
+
 	/// # fn main() -> Result<(), astral::resource::assets::Error> {
 	/// use astral::core::string::Name;
 	/// use astral::resource::assets::{Namespace, FileSystem};
@@ -467,7 +469,7 @@ impl<'loc> Namespace<'loc> {
 	/// # Example
 	///
 	/// ```no_run
-	/// # extern crate astral;
+
 	/// # fn main() -> Result<(), astral::resource::assets::Error> {
 	/// use astral::core::string::Name;
 	/// use astral::resource::assets::{Namespace, FileSystem};
@@ -492,7 +494,7 @@ impl<'loc> Namespace<'loc> {
 	/// # Example
 	///
 	/// ```no_run
-	/// # extern crate astral;
+
 	/// # fn main() -> Result<(), astral::resource::assets::Error> {
 	/// use astral::core::string::Name;
 	/// use astral::resource::assets::{Namespace, FileSystem};
@@ -522,7 +524,7 @@ impl<'loc> Namespace<'loc> {
 	/// # Example
 	///
 	/// ```no_run
-	/// # extern crate astral;
+
 	/// # fn main() -> Result<(), astral::resource::assets::Error> {
 	/// use astral::core::string::Name;
 	/// use astral::resource::assets::{Namespace, FileSystem};
@@ -572,6 +574,7 @@ impl<'loc> Debug for Namespace<'loc> {
 		fmt.debug_map()
 			.entries(
 				self.iter().map(|(location, path)| (location.name(), path)),
-			).finish()
+			)
+			.finish()
 	}
 }

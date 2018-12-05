@@ -1,5 +1,5 @@
 # General
-# edition = "2018"
+edition = "2018"
 use_small_heuristics = "Default"
 
 # Line breaking

@@ -35,7 +35,6 @@ pub use self::{option_ext::OptionExt, result::Result, result_ext::ResultExt};
 /// # Example
 ///
 /// ```rust
-/// # extern crate astral;
 /// use std::fmt::{self, Debug, Display, Formatter};
 /// use std::error::Error as StdError;
 ///
@@ -74,7 +73,6 @@ impl<Kind> Error<Kind> {
 	/// # Example
 	///
 	/// ```rust
-	/// # extern crate astral;
 	/// # use std::fmt::{self, Debug, Display, Formatter};
 	/// # #[derive(Debug, PartialEq)] enum MyErrorKind { Variant }
 	/// # impl Display for MyErrorKind {
@@ -115,7 +113,6 @@ impl<Kind> Error<Kind> {
 	/// # Example
 	///
 	/// ```rust
-	/// # extern crate astral;
 	/// # use std::fmt::{self, Debug, Display, Formatter};
 	/// # #[derive(Debug)] enum MyErrorKind { Variant }
 	/// # impl Display for MyErrorKind {
@@ -161,7 +158,6 @@ impl<Kind> Error<Kind> {
 	/// # Examples
 	///
 	/// ```rust
-	/// # extern crate astral;
 	/// use astral::core::error::Error;
 	///
 	/// #[derive(Debug)]
@@ -200,7 +196,6 @@ impl<Kind> Error<Kind> {
 	/// # Examples
 	///
 	/// ```rust
-	/// # extern crate astral;
 	/// use std::{error, fmt};
 	/// use std::fmt::Display;
 	///
@@ -273,7 +268,6 @@ impl<Kind> Error<Kind> {
 	/// # Example
 	///
 	/// ```rust
-	/// # extern crate astral;
 	/// # use std::fmt::{self, Debug, Display, Formatter};
 	/// # #[derive(Debug)] enum MyErrorKind { Variant }
 	/// # impl Display for MyErrorKind {
@@ -303,7 +297,6 @@ impl<Kind> Error<Kind> {
 	/// # Example
 	///
 	/// ```rust
-	/// # extern crate astral;
 	/// #[derive(Debug, PartialEq)]
 	/// enum MyErrorKind {
 	///     Variant,

@@ -14,7 +14,6 @@ pub trait ResultExt<T, E> {
 	/// # Example
 	///
 	/// ```rust
-	/// # extern crate astral;
 	/// use std::{error, fmt};
 	///
 	/// use astral::core::error::ResultExt;
@@ -51,7 +50,6 @@ pub trait ResultExt<T, E> {
 	/// # Example
 	///
 	/// ```rust
-	/// # extern crate astral;
 	/// use std::{error, fmt};
 	///
 	/// use astral::core::error::ResultExt;
@@ -101,7 +99,6 @@ pub trait ResultExt<T, E> {
 	/// # Example
 	///
 	/// ```rust
-	/// # extern crate astral;
 	/// use std::{error, fmt};
 	///
 	/// use astral::core::error::ResultExt;
@@ -144,8 +141,7 @@ pub trait ResultExt<T, E> {
 		F: FnOnce() -> Context;
 }
 
-// TODO(#7): Use tool-lints
-#[cfg_attr(feature = "cargo-clippy", allow(use_self))]
+#[allow(clippy::use_self)]
 impl<T, E> ResultExt<T, E> for Result<T, E>
 where
 	E: Into<Box<dyn error::Error + Send + Sync>>,

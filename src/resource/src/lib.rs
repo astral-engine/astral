@@ -23,17 +23,10 @@
 	variant_size_differences,
 	absolute_paths_not_starting_with_crate,
 	future_incompatible,
-	unused
+	unused,
+	clippy::pedantic
 )]
-// TODO(#7): Use tool-lints
-#![cfg_attr(feature = "cargo-clippy", warn(pedantic))]
-#![cfg_attr(feature = "cargo-clippy", allow(stutter))]
-#![allow(unused_extern_crates, single_use_lifetimes)]
-
-extern crate serde;
-extern crate walkdir;
-
-extern crate astral_core;
+#![allow(single_use_lifetimes)]
 
 pub mod assets;
 

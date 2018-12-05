@@ -16,7 +16,6 @@
 //! a string literal:
 //!
 //! ```
-//! # extern crate astral;
 //! use astral::core::string::{Text, Name};
 //!
 //! let t = Text::from("foo");
@@ -27,7 +26,6 @@
 //! A `Text` can be converted into [`&'static str`][`str`]:
 //!
 //! ```
-//! # extern crate astral;
 //! use astral::core::string::Text;
 //!
 //! let n = Text::from("foo");
@@ -39,7 +37,6 @@
 //! If you have a slice of valid UTF-8 bytes, you can make a `Text` or a `Name` out of it.
 //!
 //! ```
-//! # extern crate astral;
 //! use astral::core::string::Text;
 //!
 //! let sparkle_heart = &[240, 159, 146, 150];
@@ -56,8 +53,8 @@
 //!
 //! [`Text`]: struct.Text.html
 //! [`Name`]: struct.Name.html
-//! [`Deref`]: https://doc.rust-lang.org/std/ops/trait.Deref.html
-//! [`str`]: https://doc.rust-lang.org/std/primitive.str.html
+//! [`Deref`]: https://doc.rust-lang.org/nightly/std/ops/trait.Deref.html
+//! [`str`]: https://doc.rust-lang.org/nightly/std/primitive.str.html
 // TODO: Use intra doc links
 
 mod allocator;
@@ -68,10 +65,7 @@ mod name;
 mod static_ref_vector;
 mod text;
 
-use std::{
-	ptr,
-	sync::atomic::{self, AtomicUsize},
-};
+use std::sync::atomic::{self, AtomicUsize};
 
 use lazy_static::lazy_static;
 
@@ -104,11 +98,7 @@ static ALLOCATED_STRINGS: AtomicUsize = AtomicUsize::new(0);
 static USED_MEMORY: AtomicUsize = AtomicUsize::new(0);
 static USED_MEMORY_CHUNKS: AtomicUsize = AtomicUsize::new(0);
 
-// TODO(#8): Use `Allocator::new()`
-static mut ALLOCATOR: Allocator = Allocator {
-	current_pool_start: ptr::null_mut(),
-	current_pool_end: ptr::null_mut(),
-};
+static mut ALLOCATOR: Allocator = Allocator::new();
 
 /// Returns the number of unique allocated strings.
 pub fn allocated_strings() -> usize {

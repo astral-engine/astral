@@ -36,7 +36,7 @@ impl FileSystem {
 	/// # Example
 	///
 	/// ```no_run
-	/// # extern crate astral;
+
 	/// # fn main() -> Result<(), astral::resource::assets::Error> {
 	/// use astral::resource::assets::{FileSystem, VirtualFileSystem};
 	///

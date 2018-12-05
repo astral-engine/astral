@@ -54,7 +54,6 @@ where
 	/// # Example
 	///
 	/// ```
-	/// # extern crate astral;
 	/// use astral::core::collections::SparseSlotMap;
 	///
 	/// let mut map: SparseSlotMap<i32> = SparseSlotMap::new();
@@ -71,7 +70,6 @@ where
 	/// # Example
 	///
 	/// ```
-	/// # extern crate astral;
 	/// use astral::core::collections::SparseSlotMap;
 	///
 	/// let mut map: SparseSlotMap<i32> = SparseSlotMap::with_capacity(10);
@@ -101,7 +99,6 @@ where
 	/// # Examples
 	///
 	/// ```
-	/// # extern crate astral;
 	/// use astral::core::collections::SparseSlotMap;
 	///
 	/// let map: SparseSlotMap<i32> = SparseSlotMap::with_capacity(10);
@@ -124,7 +121,6 @@ where
 	/// # Examples
 	///
 	/// ```
-	/// # extern crate astral;
 	/// use astral::core::collections::SparseSlotMap;
 	///
 	/// let mut map: SparseSlotMap<i32> = SparseSlotMap::with_capacity(1);
@@ -145,7 +141,6 @@ where
 	/// # Examples
 	///
 	/// ```
-	/// # extern crate astral;
 	/// use astral::core::collections::SparseSlotMap;
 	///
 	/// let mut map: SparseSlotMap<i32> = SparseSlotMap::with_capacity(3);
@@ -165,7 +160,6 @@ where
 	/// # Examples
 	///
 	/// ```
-	/// # extern crate astral;
 	/// use astral::core::collections::SparseSlotMap;
 	///
 	/// let mut map: SparseSlotMap<i32> = SparseSlotMap::with_capacity(1);
@@ -188,7 +182,6 @@ where
 	/// # Example
 	///
 	/// ```
-	/// # extern crate astral;
 	/// use astral::core::collections::SparseSlotMap;
 	///
 	/// let mut map: SparseSlotMap<u32> = SparseSlotMap::with_capacity(2);
@@ -204,14 +197,11 @@ where
 	/// ```
 	pub fn create_key(&mut self) -> Key<Idx> {
 		let idx = self.free_head;
-		// TODO(#6): Use NLL
 		let len = self.slots.len();
 
-		{
-			if let Some(slot) = self.slots.get_mut(idx.as_()) {
-				self.free_head = slot.index();
-				return Key::new(idx, slot.version());
-			}
+		if let Some(slot) = self.slots.get_mut(idx.as_()) {
+			self.free_head = slot.index();
+			return Key::new(idx, slot.version());
 		}
 		assert_ne!(
 			len,
@@ -229,7 +219,6 @@ where
 	/// # Example
 	///
 	/// ```
-	/// # extern crate astral;
 	/// use astral::core::collections::SparseSlotMap;
 	///
 	/// let mut map: SparseSlotMap<u32> = SparseSlotMap::new();
@@ -241,7 +230,6 @@ where
 	/// until inserted with `insert_with_key()`
 	///
 	/// ```
-	/// # extern crate astral;
 	/// # use astral::core::collections::SparseSlotMap;
 	/// # let mut map: SparseSlotMap<u32> = SparseSlotMap::new();
 	///	let key2 = map.create_key();
@@ -264,7 +252,6 @@ where
 	/// # Example
 	///
 	/// ```
-	/// # extern crate astral;
 	/// use astral::core::collections::SparseSlotMap;
 	///
 	/// let mut map: SparseSlotMap<u32> = SparseSlotMap::new();
@@ -289,7 +276,6 @@ where
 	/// # Example
 	///
 	/// ```
-	/// # extern crate astral;
 	/// use astral::core::collections::SparseSlotMap;
 	///
 	/// let mut map: SparseSlotMap<u32> = SparseSlotMap::new();
@@ -301,7 +287,6 @@ where
 	///
 	/// If the key is used again, the value will be overwritten:
 	/// ```
-	/// # extern crate astral;
 	/// # use astral::core::collections::SparseSlotMap;
 	/// # let mut map: SparseSlotMap<u32> = SparseSlotMap::new();
 	/// # let key = map.insert(100);
@@ -311,7 +296,6 @@ where
 	///
 	/// If the key is not valid, the value will be passed back:
 	/// ```
-	/// # extern crate astral;
 	/// # use astral::core::collections::SparseSlotMap;
 	/// # let mut map: SparseSlotMap<u32> = SparseSlotMap::new();
 	/// # let key = map.insert(200);
@@ -345,7 +329,6 @@ where
 	/// # Example
 	///
 	/// ```
-	/// # extern crate astral;
 	/// use astral::core::collections::SparseSlotMap;
 	///
 	/// let mut map: SparseSlotMap<u32> = SparseSlotMap::new();
@@ -359,7 +342,6 @@ where
 	/// this function as well
 	///
 	/// ```
-	/// # extern crate astral;
 	/// # use astral::core::collections::SparseSlotMap;
 	///
 	/// # let mut map: SparseSlotMap<u32> = SparseSlotMap::new();
@@ -397,7 +379,6 @@ where
 	/// # Examples
 	///
 	/// ```
-	/// # extern crate astral;
 	/// use astral::core::collections::SparseSlotMap;
 	///
 	/// let mut map: SparseSlotMap<i32> = SparseSlotMap::with_capacity(10);
@@ -425,7 +406,6 @@ where
 	/// # Examples
 	///
 	/// ```
-	/// # extern crate astral;
 	/// use astral::core::collections::SparseSlotMap;
 	///
 	/// let mut map: SparseSlotMap<i32> = SparseSlotMap::with_capacity(4);
@@ -450,7 +430,6 @@ where
 	/// # Examples
 	///
 	/// ```
-	/// # extern crate astral;
 	/// use astral::core::collections::SparseSlotMap;
 	///
 	/// let mut map: SparseSlotMap<i32> = SparseSlotMap::with_capacity(1);
@@ -472,7 +451,6 @@ where
 	/// # Examples
 	///
 	/// ```
-	/// # extern crate astral;
 	/// use astral::core::collections::SparseSlotMap;
 	///
 	/// let mut map: SparseSlotMap<f32> = SparseSlotMap::with_capacity(1);
@@ -499,7 +477,6 @@ where
 	/// # Examples
 	///
 	/// ```
-	/// # extern crate astral;
 	/// use astral::core::collections::SparseSlotMap;
 	///
 	/// let mut map: SparseSlotMap<i32> = SparseSlotMap::with_capacity(3);
@@ -532,7 +509,6 @@ where
 	/// # Examples
 	///
 	/// ```
-	/// # extern crate astral;
 	/// use astral::core::collections::SparseSlotMap;
 	///
 	/// let mut map: SparseSlotMap<i32> = SparseSlotMap::with_capacity(3);
@@ -566,7 +542,6 @@ where
 	/// # Examples
 	///
 	/// ```
-	/// # extern crate astral;
 	/// use astral::core::collections::SparseSlotMap;
 	///
 	/// let mut map: SparseSlotMap<i32> = SparseSlotMap::with_capacity(3);
@@ -590,7 +565,6 @@ where
 	/// # Examples
 	///
 	/// ```
-	/// # extern crate astral;
 	/// use astral::core::collections::SparseSlotMap;
 	///
 	/// let mut map: SparseSlotMap<i32> = SparseSlotMap::with_capacity(3);
@@ -614,7 +588,6 @@ where
 	/// # Examples
 	///
 	/// ```
-	/// # extern crate astral;
 	/// use astral::core::collections::SparseSlotMap;
 	///
 	/// let mut map: SparseSlotMap<i32> = SparseSlotMap::with_capacity(3);
@@ -635,7 +608,6 @@ where
 	/// # Examples
 	///
 	/// ```
-	/// # extern crate astral;
 	/// use astral::core::collections::SparseSlotMap;
 	///
 	/// let mut map: SparseSlotMap<i32> = SparseSlotMap::with_capacity(3);
@@ -665,7 +637,6 @@ where
 	/// # Examples
 	///
 	/// ```
-	/// # extern crate astral;
 	/// use astral::core::collections::SparseSlotMap;
 	///
 	/// let mut map: SparseSlotMap<i32> = SparseSlotMap::with_capacity(4);

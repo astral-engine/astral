@@ -22,7 +22,6 @@ pub trait OptionExt<T> {
 	/// # Example
 	///
 	/// ```rust
-	/// # extern crate astral;
 	/// use std::{error, fmt};
 	///
 	/// use astral::core::error::OptionExt;
@@ -59,7 +58,6 @@ pub trait OptionExt<T> {
 	/// # Example
 	///
 	/// ```rust
-	/// # extern crate astral;
 	/// use std::{error, fmt};
 	///
 	/// use astral::core::error::OptionExt;

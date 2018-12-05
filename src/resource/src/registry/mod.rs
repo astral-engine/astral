@@ -52,8 +52,10 @@ where
 			+ Send
 			+ Sync
 			+ 'static,
-		F2: Fn(P, &mut (dyn Read))
-				-> result::Result<R, Box<dyn error::Error + Send + Sync>>
+		F2: Fn(
+				P,
+				&mut (dyn Read),
+			) -> result::Result<R, Box<dyn error::Error + Send + Sync>>
 			+ Send
 			+ Sync
 			+ 'static,
@@ -119,8 +121,10 @@ where
 		loader: F,
 	) -> ResourceId
 	where
-		F: Fn(P, &mut (dyn Read))
-				-> result::Result<R, Box<dyn error::Error + Send + Sync>>
+		F: Fn(
+				P,
+				&mut (dyn Read),
+			) -> result::Result<R, Box<dyn error::Error + Send + Sync>>
 			+ Send
 			+ Sync
 			+ 'static,
@@ -170,7 +174,8 @@ where
 					.ok_or_error(
 						ErrorKind::Loading,
 						"location could not be found in catalog",
-					)?.context(ErrorKind::Loading)?;
+					)?
+					.context(ErrorKind::Loading)?;
 				loader(parameters, &mut read)
 			}
 			Closures::Resource(loader) => loader(parameters),

@@ -17,16 +17,14 @@ use super::{
 /// Allocates Entries from a pool.
 ///
 /// The allocated Entries will never be dropped.
-// TODO(#8): Make fields private
 pub struct Allocator {
-	pub(super) current_pool_start: *mut u8,
-	pub(super) current_pool_end: *mut u8,
+	current_pool_start: *mut u8,
+	current_pool_end: *mut u8,
 }
 
 impl Allocator {
 	/// Constructs a new `Allocator`.
-	// TODO(#8): make const
-	pub fn new() -> Self {
+	pub const fn new() -> Self {
 		Self {
 			current_pool_start: ptr::null_mut(),
 			current_pool_end: ptr::null_mut(),
@@ -72,11 +70,7 @@ impl Allocator {
 	}
 
 	/// Allocates a new entry and sets the `index` to 0.
-	// TODO(#7): Use tool-lints
-	#[cfg_attr(
-		feature = "cargo-clippy",
-		allow(cast_possible_truncation, cast_ptr_alignment)
-	)]
+	#[allow(clippy::cast_possible_truncation, clippy::cast_ptr_alignment)]
 	pub fn allocate(&mut self, string: &str) -> *mut Entry {
 		let len = string.len();
 		if self.capacity() < len + DATA_OFFSET {

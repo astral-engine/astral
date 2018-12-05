@@ -20,10 +20,7 @@ type Page<'a, T> = Box<[Option<&'a T>; ELEMENTS_PER_PAGE]>;
 ///
 /// Retrieving the pointers is implemented wait-free. Pushing new pointers
 /// however requires external synchronization.
-pub struct StaticRefVector<'a, T>
-where
-	T: 'a,
-{
+pub struct StaticRefVector<'a, T> {
 	pages: Box<[UnsafeCell<Option<Page<'a, T>>>]>,
 	len: AtomicUsize,
 }
@@ -75,35 +72,30 @@ where
 		}
 	}
 
-	// TODO(#8): make const
-	fn page_index(index: usize) -> usize {
+	const fn page_index(index: usize) -> usize {
 		index / ELEMENTS_PER_PAGE
 	}
 
-	// TODO(#8): make const
-	fn element_index(index: usize) -> usize {
+	const fn element_index(index: usize) -> usize {
 		index % ELEMENTS_PER_PAGE
 	}
 
-	// ToDo(#7): Use tool-lints
 	// Returning `mut` is allowed because of `UnsafeCell`
-	#[cfg_attr(feature = "cargo-clippy", allow(mut_from_ref))]
+	#[allow(clippy::mut_from_ref)]
 	unsafe fn page(&self, index: usize) -> &mut Option<Page<'a, T>> {
 		let page_index = Self::page_index(index);
 		debug_assert!(page_index < self.pages.len());
 		&mut *self.pages.get_unchecked(page_index).get()
 	}
 
-	// ToDo(#7): Use tool-lints
 	// Returning `mut` is allowed because of `UnsafeCell`
-	#[cfg_attr(feature = "cargo-clippy", allow(mut_from_ref))]
+	#[allow(clippy::mut_from_ref)]
 	unsafe fn page_or_create(&self, index: usize) -> &mut Page<'a, T> {
 		let page = self.page(index);
 		if let Some(page) = page {
 			page
 		} else {
-			// TODO(#11): Use Option::replace
-			mem::replace(page, Some(Box::new(mem::zeroed())));
+			Option::replace(page, Box::new(mem::zeroed()));
 			page.as_mut().unwrap_or_else(|| {
 				debug_assert!(false, "page was not created");
 				hint::unreachable_unchecked();
@@ -124,16 +116,14 @@ where
 	/// # Safety
 	///
 	/// This is unsafe because pushing to the collection is not thread safe.
-	// ToDo(#7): Use tool-lints
-	#[cfg_attr(feature = "cargo-clippy", allow(cast_possible_truncation))]
+	#[allow(clippy::cast_possible_truncation)]
 	pub unsafe fn push(&self, value: &'a T) -> NonZeroU32 {
 		let index = self.len.load(atomic::Ordering::Relaxed);
 
 		let page = self.page_or_create(index);
 		let element = Self::element(page, Self::element_index(index));
 		debug_assert!(element.is_none());
-		// TODO(#11): Use Option::replace
-		mem::replace(element, Some(value));
+		Option::replace(element, value);
 
 		self.len.store(index + 1, atomic::Ordering::Release);
 		NonZeroU32::new_unchecked(index as u32 + 1)

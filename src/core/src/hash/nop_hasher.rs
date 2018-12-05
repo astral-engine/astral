@@ -19,7 +19,6 @@ use std::{hash::Hasher, ptr};
 /// Usage:
 ///
 /// ```
-/// # extern crate astral;
 /// use std::hash::{Hash, Hasher};
 /// use astral::core::hash::NopHasher;
 ///
@@ -32,7 +31,6 @@ use std::{hash::Hasher, ptr};
 /// `Hash::hash_slice` may be used instead:
 ///
 /// ```
-/// # extern crate astral;
 /// use std::hash::{Hash, Hasher};
 /// use astral::core::hash::NopHasher;
 ///
@@ -57,8 +55,7 @@ impl Hasher for NopHasher {
 			"Only values with a size of 8 bytes or integrals that fit into 8 bytes are allowed."
 		);
 		unsafe {
-			// TODO(#7): Use tool-lints
-			#[cfg_attr(feature = "cargo-clippy", allow(cast_ptr_alignment))]
+			#[allow(clippy::cast_ptr_alignment)]
 			ptr::copy_nonoverlapping(
 				bytes.as_ptr() as *const u64,
 				&mut self.value,
@@ -111,8 +108,7 @@ mod tests {
 		hasher.finish()
 	}
 
-	// TODO(#7): Use tool-lints
-	#[cfg_attr(feature = "cargo-clippy", allow(cast_sign_loss))]
+	#[allow(clippy::cast_sign_loss)]
 	#[test]
 	fn test_integrals() {
 		assert_eq!(hash(10_u8), 10);

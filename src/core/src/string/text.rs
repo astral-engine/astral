@@ -34,7 +34,6 @@ use super::{
 /// You can create a `Text` from a literal string with [`Text::from`]:
 ///
 /// ```
-/// # extern crate astral;
 /// use astral::core::string::Text;
 ///
 /// let hello = Text::from("Hello, world!");
@@ -47,7 +46,6 @@ use super::{
 /// function which takes a [`&str`][`str`] by using an ampersand (`&`):
 ///
 /// ```
-/// # extern crate astral;
 /// use astral::core::string::Text;
 ///
 /// fn takes_str(s: &str) { }
@@ -105,7 +103,7 @@ impl Text {
 	/// Basic usage:
 	///
 	/// ```
-	/// # extern crate astral;
+
 	/// use astral::core::string::Text;
 	///
 	/// // some bytes, in a vector
@@ -120,7 +118,7 @@ impl Text {
 	/// Incorrect bytes:
 	///
 	/// ```
-	/// # extern crate astral;
+
 	/// use astral::core::string::Text;
 	///
 	/// // some invalid bytes, in a vector
@@ -158,7 +156,7 @@ impl Text {
 	/// Basic usage:
 	///
 	/// ```
-	/// # extern crate astral;
+
 	/// use astral::core::string::Text;
 	///
 	/// // some bytes, in a vector
@@ -172,7 +170,7 @@ impl Text {
 	/// Incorrect bytes:
 	///
 	/// ```
-	/// # extern crate astral;
+
 	/// use astral::core::string::Text;
 	///
 	/// // some invalid bytes
@@ -204,7 +202,7 @@ impl Text {
 	/// Basic usage:
 	///
 	/// ```
-	/// # extern crate astral;
+
 	/// use astral::core::string::Text;
 	///
 	/// // some bytes, in a vector
@@ -228,7 +226,7 @@ impl Text {
 	/// Basic usage:
 	///
 	/// ```
-	/// # extern crate astral;
+
 	/// use astral::core::string::Text;
 	///
 	/// // 𝄞music
@@ -258,7 +256,7 @@ impl Text {
 	/// Basic usage:
 	///
 	/// ```
-	/// # extern crate astral;
+
 	/// use astral::core::string::Text;
 	///
 	/// // 𝄞mus<invalid>ic<invalid>
@@ -280,7 +278,7 @@ impl Text {
 	/// Basic usage:
 	///
 	/// ```
-	/// # extern crate astral;
+
 	/// use astral::core::string::Text;
 	///
 	/// let s = Text::from("foo");
@@ -304,7 +302,7 @@ impl Text {
 	/// Basic usage:
 	///
 	/// ```
-	/// # extern crate astral;
+
 	/// use astral::core::string::Text;
 	///
 	/// assert!(Text::from("").is_empty());
@@ -328,7 +326,7 @@ impl Text {
 	/// Basic usage:
 	///
 	/// ```
-	/// # extern crate astral;
+
 	/// use astral::core::string::Text;
 	///
 	/// let a = Text::from("foo");
@@ -372,8 +370,7 @@ impl<'a> From<Cow<'a, str>> for Text {
 	}
 }
 
-// TODO(#9): Use anonymous lifetimes
-impl<'a> From<Text> for Cow<'a, str> {
+impl From<Text> for Cow<'_, str> {
 	#[inline]
 	fn from(string: Text) -> Cow<'static, str> {
 		Cow::Borrowed(string.as_str())
@@ -436,8 +433,17 @@ impl Extend<Text> for String {
 }
 
 macro_rules! impl_from_iter {
+	($lifetime:tt, $ty:ty) => {
+		impl<$lifetime> FromIterator<$ty> for Text {
+			fn from_iter<I: IntoIterator<Item = $ty>>(iter: I) -> Self {
+				let mut buf = String::new();
+				buf.extend(iter);
+				buf.into()
+			}
+		}
+	};
 	($ty:ty) => {
-		impl<'a> FromIterator<$ty> for Text {
+		impl FromIterator<$ty> for Text {
 			fn from_iter<I: IntoIterator<Item = $ty>>(iter: I) -> Self {
 				let mut buf = String::new();
 				buf.extend(iter);
@@ -447,13 +453,12 @@ macro_rules! impl_from_iter {
 	};
 }
 
-// TODO(#9): Use anonymous lifetimes
-impl_from_iter!{ &'a str }
-impl_from_iter!{ char }
-impl_from_iter!{ String }
-impl_from_iter!{ Cow<'a, str> }
-impl_from_iter!{ Name }
-impl_from_iter!{ Text }
+impl_from_iter! { 'a, &'a str }
+impl_from_iter! { char }
+impl_from_iter! { String }
+impl_from_iter! { 'a, Cow<'a, str> }
+impl_from_iter! { Name }
+impl_from_iter! { Text }
 
 impl Deref for Text {
 	type Target = str;
@@ -564,28 +569,28 @@ impl AsRef<Path> for Text {
 
 macro_rules! impl_cmp {
 	($ty:ty) => {
-		impl<'a> PartialEq<$ty> for Text {
+		impl PartialEq<$ty> for Text {
 			#[inline]
 			fn eq(&self, other: &$ty) -> bool {
 				PartialEq::eq(&self[..], &other[..])
 			}
 		}
 
-		impl<'a> PartialEq<Text> for $ty {
+		impl PartialEq<Text> for $ty {
 			#[inline]
 			fn eq(&self, other: &Text) -> bool {
 				PartialEq::eq(&self[..], &other[..])
 			}
 		}
 
-		impl<'a> PartialOrd<$ty> for Text {
+		impl PartialOrd<$ty> for Text {
 			#[inline]
 			fn partial_cmp(&self, other: &$ty) -> Option<Ordering> {
 				PartialOrd::partial_cmp(&self[..], &other[..])
 			}
 		}
 
-		impl<'a> PartialOrd<Text> for $ty {
+		impl PartialOrd<Text> for $ty {
 			#[inline]
 			fn partial_cmp(&self, other: &Text) -> Option<Ordering> {
 				PartialOrd::partial_cmp(&self[..], &other[..])
@@ -601,11 +606,10 @@ impl PartialOrd for Text {
 	}
 }
 
-// TODO(#9): Use anonymous lifetimes
-impl_cmp!{ str }
-impl_cmp!{ &'a str }
-impl_cmp!{ String }
-impl_cmp!{ Cow<'a, str> }
+impl_cmp! { str }
+impl_cmp! { &str }
+impl_cmp! { String }
+impl_cmp! { Cow<'_, str> }
 
 #[cfg(test)]
 mod test {
@@ -784,9 +788,8 @@ mod test {
 		);
 	}
 
-	// ToDo(#7): Use tool-lints
 	// Returning `mut` is allowed because of `UnsafeCell`
-	#[cfg_attr(feature = "cargo-clippy", allow(string_extend_chars))]
+	#[allow(clippy::string_extend_chars)]
 	#[test]
 	fn test_from_iterator() {
 		let s = Text::from("ศไทย中华Việt Nam");

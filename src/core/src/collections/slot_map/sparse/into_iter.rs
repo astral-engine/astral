@@ -53,11 +53,13 @@ where
 	Idx: PrimUnsignedInt + AsPrimitive<usize>,
 
 	usize: AsPrimitive<Idx>,
-{}
+{
+}
 
 impl<T, Idx> ExactSizeIterator for IntoIter<T, Idx>
 where
 	Idx: PrimUnsignedInt + AsPrimitive<usize>,
 
 	usize: AsPrimitive<Idx>,
-{}
+{
+}

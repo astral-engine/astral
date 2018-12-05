@@ -30,7 +30,6 @@ use super::{
 /// You can create a `Name` from a literal string with [`Name::from`](From):
 ///
 /// ```
-/// # extern crate astral;
 /// use astral::core::string::Name;
 ///
 /// let hello = Name::from("Hello, world!");
@@ -99,7 +98,7 @@ impl Name {
 	/// # Example
 	///
 	/// ```
-	/// # extern crate astral;
+
 	/// use std::borrow::Cow;
 	///
 	/// use astral::core::string::Name;
@@ -115,7 +114,7 @@ impl Name {
 	/// Remember, than a digital suffix with leading zeros cannot be optimized:
 	///
 	/// ```
-	/// # extern crate astral;
+
 	/// use std::borrow::Cow;
 	///
 	/// use astral::core::string::Name;
@@ -153,7 +152,7 @@ impl Name {
 	/// Basic usage:
 	///
 	/// ```
-	/// # extern crate astral;
+
 	/// use astral::core::string::Name;
 	///
 	/// // some bytes, in a vector
@@ -168,7 +167,7 @@ impl Name {
 	/// Incorrect bytes:
 	///
 	/// ```
-	/// # extern crate astral;
+
 	/// use astral::core::string::Name;
 	///
 	/// // some invalid bytes, in a vector
@@ -206,7 +205,7 @@ impl Name {
 	/// Basic usage:
 	///
 	/// ```
-	/// # extern crate astral;
+
 	/// use astral::core::string::Name;
 	///
 	/// // some bytes, in a vector
@@ -220,7 +219,7 @@ impl Name {
 	/// Incorrect bytes:
 	///
 	/// ```
-	/// # extern crate astral;
+
 	/// use astral::core::string::Name;
 	///
 	/// // some invalid bytes
@@ -252,7 +251,7 @@ impl Name {
 	/// Basic usage:
 	///
 	/// ```
-	/// # extern crate astral;
+
 	/// use astral::core::string::Name;
 	///
 	/// // some bytes, in a vector
@@ -276,7 +275,7 @@ impl Name {
 	/// Basic usage:
 	///
 	/// ```
-	/// # extern crate astral;
+
 	/// use astral::core::string::Name;
 	///
 	/// // 𝄞music
@@ -306,7 +305,7 @@ impl Name {
 	/// Basic usage:
 	///
 	/// ```
-	/// # extern crate astral;
+
 	/// use astral::core::string::Name;
 	///
 	/// // 𝄞mus<invalid>ic<invalid>
@@ -330,7 +329,7 @@ impl Name {
 	/// Basic usage:
 	///
 	/// ```
-	/// # extern crate astral;
+
 	/// use astral::core::string::Name;
 	///
 	/// assert!(Name::from("").is_empty());
@@ -358,7 +357,7 @@ impl Name {
 	/// Basic usage:
 	///
 	/// ```
-	/// # extern crate astral;
+
 	/// use astral::core::string::Name;
 	///
 	/// let a = Name::from("foo");
@@ -414,8 +413,7 @@ impl<'a> From<Cow<'a, str>> for Name {
 	}
 }
 
-// TODO(#9): Use anonymous lifetimes
-impl<'a> From<Name> for Cow<'a, str> {
+impl From<Name> for Cow<'_, str> {
 	#[inline]
 	fn from(string: Name) -> Cow<'static, str> {
 		string.as_str()
@@ -495,8 +493,17 @@ impl Extend<Name> for String {
 }
 
 macro_rules! impl_from_iter {
+	($lifetime:tt, $ty:ty) => {
+		impl<$lifetime> FromIterator<$ty> for Name {
+			fn from_iter<I: IntoIterator<Item = $ty>>(iter: I) -> Self {
+				let mut buf = String::new();
+				buf.extend(iter);
+				buf.into()
+			}
+		}
+	};
 	($ty:ty) => {
-		impl<'a> FromIterator<$ty> for Name {
+		impl FromIterator<$ty> for Name {
 			fn from_iter<I: IntoIterator<Item = $ty>>(iter: I) -> Self {
 				let mut buf = String::new();
 				buf.extend(iter);
@@ -506,13 +513,12 @@ macro_rules! impl_from_iter {
 	};
 }
 
-// TODO(#9): Use anonymous lifetimes
-impl_from_iter!{ &'a str }
-impl_from_iter!{ char }
-impl_from_iter!{ String }
-impl_from_iter!{ Cow<'a, str> }
-impl_from_iter!{ Text }
-impl_from_iter!{ Name }
+impl_from_iter! { 'a, &'a str }
+impl_from_iter! { char }
+impl_from_iter! { String }
+impl_from_iter! { 'a, Cow<'a, str> }
+impl_from_iter! { Text }
+impl_from_iter! { Name }
 
 macro_rules! impl_cmp {
 	($ty:ty) => {
@@ -584,12 +590,11 @@ impl PartialOrd for Name {
 	}
 }
 
-// TODO(#9): Use anonymous lifetimes
-impl_cmp!{ str }
-impl_cmp!{ &'a str }
-impl_cmp!{ String }
-impl_cmp!{ Cow<'a, str> }
-impl_cmp!{ Text }
+impl_cmp! { str }
+impl_cmp! { &str }
+impl_cmp! { String }
+impl_cmp! { Cow<'_, str> }
+impl_cmp! { Text }
 
 #[cfg(test)]
 mod test {
@@ -790,9 +795,8 @@ mod test {
 		);
 	}
 
-	// ToDo(#7): Use tool-lints
+	#[allow(clippy::string_extend_chars)]
 	// Returning `mut` is allowed because of `UnsafeCell`
-	#[cfg_attr(feature = "cargo-clippy", allow(string_extend_chars))]
 	#[test]
 	fn test_from_iterator() {
 		let s = Name::from("ศไทย中华Việt Nam");

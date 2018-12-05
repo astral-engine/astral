@@ -36,8 +36,7 @@ macro_rules! nonzero_traits {
                 unsafe fn new_unchecked(n: Self::Int) -> Self {
                     Self::new_unchecked(n)
                 }
-                // TODO(#7): Use tool-lints
-                #[cfg_attr(feature = "cargo-clippy", allow(new_ret_no_self))]
+	#[allow(clippy::new_ret_no_self)]
                 fn new(n: Self::Int) -> Option<Self> {
                     Self::new(n)
                 }

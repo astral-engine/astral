@@ -57,8 +57,7 @@ pub trait VirtualFileSystem: Debug + Send + Sync {
 	fn remove(&mut self, path: Name) -> Result<()>;
 }
 
-// TODO(#7): Use tool-lints
-#[cfg_attr(feature = "cargo-clippy", allow(use_self))]
+#[allow(clippy::use_self)]
 impl<'loc, L> From<L> for Box<dyn VirtualFileSystem + 'loc>
 where
 	L: VirtualFileSystem + 'loc,

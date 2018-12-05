@@ -36,7 +36,7 @@ impl<'loc> Catalog<'loc> {
 	/// # Example
 	///
 	/// ```
-	/// # extern crate astral;
+
 	/// use astral::resource::assets::Catalog;
 	///
 	/// let catalog = Catalog::new();
@@ -57,7 +57,7 @@ impl<'loc> Catalog<'loc> {
 	/// # Example
 	///
 	/// ```
-	/// # extern crate astral;
+
 	/// use astral::resource::assets::{Catalog, Namespace};
 	///
 	/// let mut catalog = Catalog::with_capacity(1);
@@ -83,7 +83,7 @@ impl<'loc> Catalog<'loc> {
 	/// # Example
 	///
 	/// ```
-	/// # extern crate astral;
+
 	/// use astral::resource::assets::{Catalog, Namespace};
 	///
 	/// let mut catalog = Catalog::new();
@@ -103,7 +103,7 @@ impl<'loc> Catalog<'loc> {
 	/// # Example
 	///
 	/// ```
-	/// # extern crate astral;
+
 	/// use astral::resource::assets::{Catalog, Namespace};
 	///
 	/// let mut catalog = Catalog::new();
@@ -125,7 +125,7 @@ impl<'loc> Catalog<'loc> {
 	/// # Example
 	///
 	/// ```
-	/// # extern crate astral;
+
 	/// use astral::resource::assets::{Catalog, Namespace};
 	///
 	/// let mut catalog = Catalog::new();
@@ -147,7 +147,7 @@ impl<'loc> Catalog<'loc> {
 	/// # Example
 	///
 	/// ```
-	/// # extern crate astral;
+
 	/// use astral::resource::assets::{Catalog, Namespace};
 	///
 	/// let mut catalog = Catalog::new();
@@ -171,7 +171,7 @@ impl<'loc> Catalog<'loc> {
 	/// # Example
 	///
 	/// ```
-	/// # extern crate astral;
+
 	/// use astral::resource::assets::{Catalog, Namespace};
 	///
 	/// let mut catalog = Catalog::new();
@@ -194,7 +194,7 @@ impl<'loc> Catalog<'loc> {
 	/// # Example
 	///
 	/// ```
-	/// # extern crate astral;
+
 	/// use astral::resource::assets::{Catalog, Namespace};
 	///
 	/// let mut catalog = Catalog::new();
@@ -217,7 +217,7 @@ impl<'loc> Catalog<'loc> {
 	/// # Example
 	///
 	/// ```
-	/// # extern crate astral;
+
 	/// use astral::resource::assets::{Catalog, Namespace};
 	///
 	/// let mut catalog = Catalog::new();
@@ -239,7 +239,7 @@ impl<'loc> Catalog<'loc> {
 	/// # Example
 	///
 	/// ```
-	/// # extern crate astral;
+
 	/// use astral::resource::assets::{Catalog, Namespace};
 	///
 	/// let mut catalog = Catalog::new();
@@ -267,7 +267,7 @@ impl<'loc> Catalog<'loc> {
 	/// # Example
 	///
 	/// ```no_run
-	/// # extern crate astral;
+
 	/// # fn main() -> Result<(), astral::resource::assets::Error> {
 	/// use astral::core::string::Name;
 	/// use astral::resource::assets::{Catalog, FileSystem, Location, Namespace};
@@ -304,7 +304,7 @@ impl<'loc> Catalog<'loc> {
 	/// # Example
 	///
 	/// ```no_run
-	/// # extern crate astral;
+
 	/// # fn main() -> Result<(), astral::resource::assets::Error> {
 	/// use astral::core::string::Name;
 	/// use astral::resource::assets::{Catalog, FileSystem, Location, Namespace};
@@ -341,7 +341,7 @@ impl<'loc> Catalog<'loc> {
 	/// # Example
 	///
 	/// ```no_run
-	/// # extern crate astral;
+
 	/// use astral::core::string::Name;
 	/// use astral::resource::assets::{Catalog, FileSystem, Location, Namespace};
 	///
@@ -371,7 +371,7 @@ impl<'loc> Catalog<'loc> {
 	/// # Example
 	///
 	/// ```no_run
-	/// # extern crate astral;
+
 	/// use astral::core::string::Name;
 	/// use astral::resource::assets::{Catalog, FileSystem, Location, Namespace};
 	///
@@ -402,7 +402,7 @@ impl<'loc> Catalog<'loc> {
 	/// # Example
 	///
 	/// ```no_run
-	/// # extern crate astral;
+
 	/// # fn main() -> Result<(), astral::resource::assets::Error> {
 	/// use astral::core::string::Name;
 	/// use astral::resource::assets::{Catalog, FileSystem, Location, Namespace};
@@ -437,7 +437,7 @@ impl<'loc> Catalog<'loc> {
 	/// # Example
 	///
 	/// ```no_run
-	/// # extern crate astral;
+
 	/// # fn main() -> Result<(), astral::resource::assets::Error> {
 	/// use astral::core::string::Name;
 	/// use astral::resource::assets::{Catalog, FileSystem, Location, Namespace};
