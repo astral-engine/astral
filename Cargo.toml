@@ -7,7 +7,6 @@ authors = [ "Tim Diekmann <tim.diekmann@3dvision.de>" ]
 repository = "https://gitlab.com/StellarBullet/astral"
 documentation = "https://stellarbullet.gitlab.io/astral"
 readme = "README.md"
-license = "GNU GPLv3"
 
 [workspace]
 members = [
