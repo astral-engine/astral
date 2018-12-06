@@ -18,6 +18,7 @@
 	unused,
 	clippy::pedantic
 )]
+#![allow(clippy::cast_precision_loss)]
 
 use std::{error::Error, str};
 

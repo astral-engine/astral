@@ -26,6 +26,8 @@
 #![allow(single_use_lifetimes)]
 
 pub mod core {
+	#![allow(clippy::stutter)]
+
 	//! Low-level support systems for manage mundane but crucial tasks.
 	#[doc(inline)]
 	pub use astral_core::*;

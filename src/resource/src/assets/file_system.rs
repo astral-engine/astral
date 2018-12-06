@@ -45,6 +45,7 @@ impl FileSystem {
 	/// # Ok(())
 	/// # }
 	/// ```
+	#[allow(clippy::new_ret_no_self)]
 	pub fn new<P: Into<PathBuf>>(root: P, recursive: bool) -> Result<Self> {
 		Ok(Self {
 			root: root.into(),

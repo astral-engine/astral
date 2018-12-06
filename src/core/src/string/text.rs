@@ -608,7 +608,7 @@ impl_cmp! { Cow<'_, str> }
 
 #[cfg(test)]
 mod test {
-	#![cfg_attr(feature = "cargo-clippy", allow(non_ascii_literal, shadow_unrelated))]
+	#![allow(clippy::non_ascii_literal, clippy::shadow_unrelated)]
 
 	use super::*;
 

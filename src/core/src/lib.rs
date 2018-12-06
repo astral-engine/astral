@@ -27,7 +27,7 @@
 	unused,
 	clippy::pedantic
 )]
-#![allow(single_use_lifetimes)]
+#![allow(single_use_lifetimes, clippy::stutter)]
 
 pub mod collections;
 pub mod error;
