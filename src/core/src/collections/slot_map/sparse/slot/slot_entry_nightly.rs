@@ -25,9 +25,11 @@ where
 			value: ManuallyDrop::new(value),
 		}
 	}
+
 	pub fn new_from_index(index: Idx) -> Self {
 		Self { index }
 	}
+
 	pub fn new_reserved() -> Self {
 		Self { reserved: () }
 	}

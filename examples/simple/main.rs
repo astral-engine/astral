@@ -27,7 +27,9 @@ use astral::{
 	core::string::Name,
 	resource::{
 		assets::{Catalog, FileSystem, Location, Namespace},
-		Loader, Resource, ResourceId,
+		Loader,
+		Resource,
+		ResourceId,
 	},
 };
 
@@ -111,8 +113,7 @@ fn app() -> Result<(), Box<dyn Error>> {
 	let mut catalog = Catalog::new();
 	let core_namespace = catalog.add_namespace(Namespace::new());
 
-	catalog[core_namespace]
-		.add_virtual_file_system(FileSystem::new("assets", true)?)?;
+	catalog[core_namespace].add_virtual_file_system(FileSystem::new("assets", true)?)?;
 
 	let mut registry = Loader::<TextFile, Option<&str>>::new(
 		|string| Ok(TextFile::from(string.unwrap().to_string())),
@@ -126,8 +127,7 @@ fn app() -> Result<(), Box<dyn Error>> {
 
 	let cube_model = Location::from_string(core_namespace, "models/cube.obj");
 	let _cube_model_resource_id = registry.declare_asset(cube_model);
-	let _constant_resource_id =
-		registry.declare_resource(Name::from("constant1"));
+	let _constant_resource_id = registry.declare_resource(Name::from("constant1"));
 
 	info!("Hello World");
 

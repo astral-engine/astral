@@ -5,14 +5,12 @@
 
 use std::{
 	alloc::{GlobalAlloc, Layout, System},
-	mem, ptr,
+	mem,
+	ptr,
 	sync::atomic,
 };
 
-use super::{
-	Entry, ALLOCATED_STRINGS, DATA_OFFSET, PAGE_SIZE, USED_MEMORY,
-	USED_MEMORY_CHUNKS,
-};
+use super::{Entry, ALLOCATED_STRINGS, DATA_OFFSET, PAGE_SIZE, USED_MEMORY, USED_MEMORY_CHUNKS};
 
 /// Allocates Entries from a pool.
 ///
@@ -34,15 +32,15 @@ impl Allocator {
 	fn allocate_page(&mut self) {
 		debug_assert!(
 			PAGE_SIZE >= mem::size_of::<Entry>(),
-			"PAGE_SIZE must be at least as large as Entry. PAGE_SIZE is {}, but Entry is {} in size.", PAGE_SIZE, mem::size_of::<Entry>()
+			"PAGE_SIZE must be at least as large as Entry. PAGE_SIZE is {}, but Entry is {} in \
+			 size.",
+			PAGE_SIZE,
+			mem::size_of::<Entry>()
 		);
 		USED_MEMORY.fetch_add(PAGE_SIZE, atomic::Ordering::Acquire);
 		USED_MEMORY_CHUNKS.fetch_add(1, atomic::Ordering::Acquire);
 		unsafe {
-			let layout = Layout::from_size_align_unchecked(
-				PAGE_SIZE,
-				mem::align_of::<Entry>(),
-			);
+			let layout = Layout::from_size_align_unchecked(PAGE_SIZE, mem::align_of::<Entry>());
 			self.current_pool_start = System.alloc(layout);
 			self.current_pool_end = self.current_pool_start.add(PAGE_SIZE)
 		}
@@ -81,17 +79,11 @@ impl Allocator {
 
 		unsafe {
 			let entry = &mut *(self.current_pool_start as *mut Entry);
-			self.current_pool_start =
-				self.current_pool_start.add(len + DATA_OFFSET);
-			self.current_pool_start =
-				self.current_pool_start.add(self.aligned_offset());
+			self.current_pool_start = self.current_pool_start.add(len + DATA_OFFSET);
+			self.current_pool_start = self.current_pool_start.add(self.aligned_offset());
 			entry.index = None;
 			entry.len = len as u16;
-			ptr::copy_nonoverlapping(
-				string.as_ptr(),
-				entry.data.as_mut_ptr(),
-				string.len(),
-			);
+			ptr::copy_nonoverlapping(string.as_ptr(), entry.data.as_mut_ptr(), string.len());
 			entry
 		}
 	}

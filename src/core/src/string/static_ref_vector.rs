@@ -5,7 +5,8 @@
 
 use std::{
 	cell::UnsafeCell,
-	hint, mem,
+	hint,
+	mem,
 	num::NonZeroU32,
 	sync::atomic::{self, AtomicUsize},
 };
@@ -34,8 +35,7 @@ where
 	/// The capacity cannot be changed afterwards. Otherwise it would not be
 	/// possible to access elements in a wait-free thread-safe manner.
 	pub fn new(capacity: usize) -> Self {
-		let needed_pages =
-			(capacity + ELEMENTS_PER_PAGE - 1) / ELEMENTS_PER_PAGE;
+		let needed_pages = (capacity + ELEMENTS_PER_PAGE - 1) / ELEMENTS_PER_PAGE;
 		USED_MEMORY.fetch_add(
 			mem::size_of::<UnsafeCell<Option<Page<'a, T>>>>() * needed_pages,
 			atomic::Ordering::Acquire,

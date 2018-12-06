@@ -5,7 +5,8 @@
 
 use std::sync::{
 	atomic::{AtomicBool, Ordering},
-	Arc, Weak,
+	Arc,
+	Weak,
 };
 
 use crate::LoadPriority;
@@ -40,6 +41,7 @@ impl Declaration {
 			..Self::default()
 		}
 	}
+
 	pub fn completed(&self) -> bool {
 		self.completed.load(Ordering::Relaxed)
 	}

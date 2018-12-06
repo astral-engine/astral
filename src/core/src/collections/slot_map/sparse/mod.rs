@@ -14,8 +14,14 @@ mod values;
 mod values_mut;
 
 pub use self::{
-	drain::Drain, drain_filter::DrainFilter, into_iter::IntoIter, iter::Iter,
-	iter_mut::IterMut, keys::Keys, values::Values, values_mut::ValuesMut,
+	drain::Drain,
+	drain_filter::DrainFilter,
+	into_iter::IntoIter,
+	iter::Iter,
+	iter_mut::IterMut,
+	keys::Keys,
+	values::Values,
+	values_mut::ValuesMut,
 };
 
 use std::{
@@ -302,11 +308,7 @@ where
 	/// map.remove(key);
 	/// assert_eq!(map.insert_with_key(key, 300), Err(300));
 	/// ```
-	pub fn insert_with_key(
-		&mut self,
-		key: Key<Idx>,
-		value: T,
-	) -> Result<Option<T>, T> {
+	pub fn insert_with_key(&mut self, key: Key<Idx>, value: T) -> Result<Option<T>, T> {
 		if let Some(slot) = self.slots.get_mut(key.index().as_()) {
 			if key.version() != slot.version() {
 				return Err(value);
@@ -718,8 +720,8 @@ where
 
 	usize: AsPrimitive<Idx>,
 {
-	type Item = (Key<Idx>, T);
 	type IntoIter = IntoIter<T, Idx>;
+	type Item = (Key<Idx>, T);
 
 	fn into_iter(self) -> Self::IntoIter {
 		IntoIter {
@@ -735,8 +737,8 @@ where
 
 	usize: AsPrimitive<Idx>,
 {
-	type Item = (Key<Idx>, &'a T);
 	type IntoIter = Iter<'a, T, Idx>;
+	type Item = (Key<Idx>, &'a T);
 
 	fn into_iter(self) -> Self::IntoIter {
 		self.iter()
@@ -749,8 +751,8 @@ where
 
 	usize: AsPrimitive<Idx>,
 {
-	type Item = (Key<Idx>, &'a mut T);
 	type IntoIter = IterMut<'a, T, Idx>;
+	type Item = (Key<Idx>, &'a mut T);
 
 	fn into_iter(self) -> Self::IntoIter {
 		self.iter_mut()

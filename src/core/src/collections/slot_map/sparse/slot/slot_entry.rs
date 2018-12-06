@@ -7,7 +7,7 @@ use std::mem::ManuallyDrop;
 
 use super::PrimUnsignedInt;
 
-// TODO: Use untagged_unions.
+// TODO(#2): Use untagged_unions.
 pub enum SlotEntry<T, Idx>
 where
 	Idx: PrimUnsignedInt,
@@ -24,9 +24,11 @@ where
 	pub fn new_from_value(value: T) -> Self {
 		SlotEntry::Value(ManuallyDrop::new(value))
 	}
+
 	pub fn new_from_index(index: Idx) -> Self {
 		SlotEntry::Index(index)
 	}
+
 	pub fn new_reserved() -> Self {
 		SlotEntry::Reserved
 	}

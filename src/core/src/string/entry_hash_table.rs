@@ -75,8 +75,7 @@ impl EntryHashTable {
 			(*entry).index = Some(ENTRY_REFERENCE_MAP.push(&*entry));
 			let head = self.head[hash as usize].load(atomic::Ordering::Relaxed);
 			if head.is_null() {
-				self.head[hash as usize]
-					.store(entry, atomic::Ordering::Release);
+				self.head[hash as usize].store(entry, atomic::Ordering::Release);
 			} else {
 				(*head)
 					.iter()

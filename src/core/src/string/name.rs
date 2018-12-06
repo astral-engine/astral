@@ -19,9 +19,7 @@ use std::{
 
 use crate::hash::Murmur3;
 
-use super::{
-	Text, Utf16Error, Utf8Error, ENTRY_HASH_TABLE, ENTRY_REFERENCE_MAP,
-};
+use super::{Text, Utf16Error, Utf8Error, ENTRY_HASH_TABLE, ENTRY_REFERENCE_MAP};
 
 /// A UTF-8 encoded, immutable string optimized for numeric suffixes.
 ///
@@ -598,10 +596,7 @@ impl_cmp! { Text }
 
 #[cfg(test)]
 mod test {
-	#![cfg_attr(
-		feature = "cargo-clippy",
-		allow(non_ascii_literal, shadow_unrelated)
-	)]
+	#![cfg_attr(feature = "cargo-clippy", allow(non_ascii_literal, shadow_unrelated))]
 
 	use super::*;
 
@@ -706,9 +701,7 @@ mod test {
 		let xs = b"\xED\xA0\x80foo\xED\xBF\xBFbar";
 		assert_eq!(
 			Name::from_utf8_lossy(xs),
-			Name::from(
-				"\u{FFFD}\u{FFFD}\u{FFFD}foo\u{FFFD}\u{FFFD}\u{FFFD}bar"
-			)
+			Name::from("\u{FFFD}\u{FFFD}\u{FFFD}foo\u{FFFD}\u{FFFD}\u{FFFD}bar")
 		);
 	}
 
@@ -743,9 +736,7 @@ mod test {
 			let s_as_utf16 = s_str.encode_utf16().collect::<Vec<u16>>();
 			let u_as_string = Name::from_utf16(&u).unwrap().as_str();
 
-			assert!(
-				std::char::decode_utf16(u.iter().cloned()).all(|r| r.is_ok())
-			);
+			assert!(std::char::decode_utf16(u.iter().cloned()).all(|r| r.is_ok()));
 			assert_eq!(s_as_utf16, u);
 
 			assert_eq!(u_as_string, s);

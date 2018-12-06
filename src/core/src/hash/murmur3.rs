@@ -31,10 +31,10 @@ pub struct Murmur3 {
 impl Murmur3 {
 	const C1: u32 = 0xCC9E_2D51;
 	const C2: u32 = 0x1B87_3593;
-	const R1: u32 = 15;
-	const R2: u32 = 13;
 	const M: u32 = 5;
 	const N: u32 = 0xE654_6B64;
+	const R1: u32 = 15;
+	const R2: u32 = 13;
 
 	fn write_chunk(&mut self, chunk: [u8; 4]) {
 		#[cfg(not(unstable))]

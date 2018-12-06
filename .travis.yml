@@ -95,7 +95,7 @@ jobs:
     - stage: rustfmt
       os: linux
       language: rust
-      rust: stable
+      rust: nightly
       install:
         - rustup component add rustfmt-preview
       script:

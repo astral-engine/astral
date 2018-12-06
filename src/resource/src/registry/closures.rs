@@ -9,10 +9,8 @@ use astral_core::error::ResultExt;
 
 use crate::{ErrorKind, Result};
 
-pub type ResourceLoader<R, P> =
-	Arc<dyn Fn(P) -> Result<R> + Send + Sync + 'static>;
-pub type AssetLoader<R, P> =
-	Arc<dyn Fn(P, &mut (dyn Read)) -> Result<R> + Send + Sync + 'static>;
+pub type ResourceLoader<R, P> = Arc<dyn Fn(P) -> Result<R> + Send + Sync + 'static>;
+pub type AssetLoader<R, P> = Arc<dyn Fn(P, &mut (dyn Read)) -> Result<R> + Send + Sync + 'static>;
 
 pub enum Closures<R, P> {
 	Resource(ResourceLoader<R, P>),
@@ -31,10 +29,7 @@ impl<R, P> Clone for Closures<R, P> {
 impl<R, P> Closures<R, P> {
 	pub fn new_resource<F>(loader: F) -> Self
 	where
-		F: Fn(P) -> result::Result<R, Box<dyn error::Error + Send + Sync>>
-			+ Send
-			+ Sync
-			+ 'static,
+		F: Fn(P) -> result::Result<R, Box<dyn error::Error + Send + Sync>> + Send + Sync + 'static,
 	{
 		Closures::Resource(Arc::new(move |parameters| {
 			loader(parameters).chain(ErrorKind::Loading, "could not load asset")
@@ -43,17 +38,13 @@ impl<R, P> Closures<R, P> {
 
 	pub fn new_asset<F>(loader: F) -> Self
 	where
-		F: Fn(
-				P,
-				&mut (dyn Read),
-			) -> result::Result<R, Box<dyn error::Error + Send + Sync>>
+		F: Fn(P, &mut (dyn Read)) -> result::Result<R, Box<dyn error::Error + Send + Sync>>
 			+ Send
 			+ Sync
 			+ 'static,
 	{
 		Closures::Asset(Arc::new(move |parameters, read| {
-			loader(parameters, read)
-				.chain(ErrorKind::Loading, "could not load asset")
+			loader(parameters, read).chain(ErrorKind::Loading, "could not load asset")
 		}))
 	}
 }

@@ -5,16 +5,19 @@
 
 use std::{
 	fmt::{Binary, Debug, Display, LowerHex, Octal, UpperHex},
-	num::{
-		NonZeroU128, NonZeroU16, NonZeroU32, NonZeroU64, NonZeroU8,
-		NonZeroUsize,
-	},
+	num::{NonZeroU128, NonZeroU16, NonZeroU32, NonZeroU64, NonZeroU8, NonZeroUsize},
 	ops::{AddAssign, DivAssign, MulAssign, RemAssign, SubAssign},
 };
 
 use super::{
-	NonZero, PrimInt, Unsigned, WrappingAdd, WrappingMul, WrappingShl,
-	WrappingShr, WrappingSub,
+	NonZero,
+	PrimInt,
+	Unsigned,
+	WrappingAdd,
+	WrappingMul,
+	WrappingShl,
+	WrappingShr,
+	WrappingSub,
 };
 
 /// Functions for primitive unsigned integral types.

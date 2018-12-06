@@ -49,8 +49,7 @@ where
 	}
 
 	pub fn occupied(&self) -> bool {
-		let occupied =
-			self.version & Self::occupied_bit() == Self::occupied_bit();
+		let occupied = self.version & Self::occupied_bit() == Self::occupied_bit();
 		if occupied {
 			debug_assert!(self.version & Self::reserved_bit() == Idx::zero());
 		}
@@ -58,8 +57,7 @@ where
 	}
 
 	pub fn reserved(&self) -> bool {
-		let reserved =
-			self.version & Self::reserved_bit() == Self::reserved_bit();
+		let reserved = self.version & Self::reserved_bit() == Self::reserved_bit();
 		if reserved {
 			debug_assert!(self.version & Self::occupied_bit() == Idx::zero());
 		}
@@ -83,8 +81,7 @@ where
 	}
 
 	pub fn set_index(&mut self, index: Idx) -> Option<T> {
-		let entry =
-			mem::replace(&mut self.entry, SlotEntry::new_from_index(index));
+		let entry = mem::replace(&mut self.entry, SlotEntry::new_from_index(index));
 		let occupied = self.occupied();
 		self.version = self.version();
 		debug_assert!(self.free());
@@ -106,8 +103,7 @@ where
 	}
 
 	pub fn set_value(&mut self, value: T) -> Option<T> {
-		let entry =
-			mem::replace(&mut self.entry, SlotEntry::new_from_value(value));
+		let entry = mem::replace(&mut self.entry, SlotEntry::new_from_value(value));
 		let occupied = self.occupied();
 		self.version = self.version() | Self::occupied_bit();
 		debug_assert!(self.occupied());
@@ -132,10 +128,7 @@ where
 
 	pub fn take(&mut self) -> T {
 		debug_assert!(self.occupied());
-		unsafe {
-			mem::replace(&mut self.entry, SlotEntry::new_reserved())
-				.into_inner()
-		}
+		unsafe { mem::replace(&mut self.entry, SlotEntry::new_reserved()).into_inner() }
 	}
 }
 

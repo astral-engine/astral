@@ -12,9 +12,7 @@ use std::{
 	time::SystemTime,
 };
 
-use astral_core::{
-	collections::SparseSlotMap, error::OptionExt, hash::NopHasher, string::Name,
-};
+use astral_core::{collections::SparseSlotMap, error::OptionExt, hash::NopHasher, string::Name};
 
 use super::{ErrorKind, Result, VirtualFileSystem, VirtualFileSystemIndex};
 
@@ -76,13 +74,8 @@ impl<'loc> Namespace<'loc> {
 	/// ```
 	pub fn with_capacity(virtual_file_systems: usize, files: usize) -> Self {
 		Self {
-			virtual_file_systems: SparseSlotMap::with_capacity(
-				virtual_file_systems,
-			),
-			paths: HashMap::with_capacity_and_hasher(
-				files,
-				BuildHasherDefault::default(),
-			),
+			virtual_file_systems: SparseSlotMap::with_capacity(virtual_file_systems),
+			paths: HashMap::with_capacity_and_hasher(files, BuildHasherDefault::default()),
 		}
 	}
 
@@ -176,8 +169,7 @@ impl<'loc> Namespace<'loc> {
 		virtual_file_system: impl Into<Box<dyn VirtualFileSystem + 'loc>>,
 	) -> Result<VirtualFileSystemIndex> {
 		let virtual_file_system = virtual_file_system.into();
-		let index =
-			VirtualFileSystemIndex::new(self.virtual_file_systems.create_key());
+		let index = VirtualFileSystemIndex::new(self.virtual_file_systems.create_key());
 
 		for path in virtual_file_system.iter()? {
 			self.paths.insert(path, index);
@@ -267,10 +259,7 @@ impl<'loc> Namespace<'loc> {
 	/// # Ok(())
 	/// # }
 	/// ```
-	pub fn reload(
-		&mut self,
-		virtual_file_system_index: VirtualFileSystemIndex,
-	) -> Result<()> {
+	pub fn reload(&mut self, virtual_file_system_index: VirtualFileSystemIndex) -> Result<()> {
 		let virtual_file_system = self
 			.virtual_file_systems
 			.get(virtual_file_system_index.key())
@@ -290,15 +279,14 @@ impl<'loc> Namespace<'loc> {
 
 		Ok(())
 	}
-	fn get_virtual_file_system(
-		&self,
-		name: Name,
-	) -> Option<&dyn VirtualFileSystem> {
+
+	fn get_virtual_file_system(&self, name: Name) -> Option<&dyn VirtualFileSystem> {
 		let virtual_file_system_id = self.paths.get(&name)?;
 		self.virtual_file_systems
 			.get(virtual_file_system_id.key())
 			.map(Box::as_ref)
 	}
+
 	fn get_virtual_file_system_mut(
 		&mut self,
 		name: Name,
@@ -378,9 +366,7 @@ impl<'loc> Namespace<'loc> {
 		} else {
 			self.virtual_file_systems
 				.iter_mut()
-				.map(|(index, entry)| {
-					(VirtualFileSystemIndex::new(index), entry)
-				})
+				.map(|(index, entry)| (VirtualFileSystemIndex::new(index), entry))
 				.find(|(_, vfs)| !vfs.readonly())?
 		};
 		let write = Some(vfs.create(name));
@@ -428,9 +414,7 @@ impl<'loc> Namespace<'loc> {
 		} else {
 			self.virtual_file_systems
 				.iter_mut()
-				.map(|(index, entry)| {
-					(VirtualFileSystemIndex::new(index), entry)
-				})
+				.map(|(index, entry)| (VirtualFileSystemIndex::new(index), entry))
 				.find(|(_, vfs)| !vfs.readonly())?
 		};
 		let write = Some(vfs.create_new(name));
@@ -554,8 +538,7 @@ impl<'loc> Namespace<'loc> {
 }
 
 struct Iter<'loc> {
-	virtual_file_systems:
-		&'loc SparseSlotMap<Box<dyn VirtualFileSystem + 'loc>>,
+	virtual_file_systems: &'loc SparseSlotMap<Box<dyn VirtualFileSystem + 'loc>>,
 	paths: hash_map::Iter<'loc, Name, VirtualFileSystemIndex>,
 }
 
@@ -572,9 +555,7 @@ impl<'loc> Iterator for Iter<'loc> {
 impl<'loc> Debug for Namespace<'loc> {
 	fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
 		fmt.debug_map()
-			.entries(
-				self.iter().map(|(location, path)| (location.name(), path)),
-			)
+			.entries(self.iter().map(|(location, path)| (location.name(), path)))
 			.finish()
 	}
 }

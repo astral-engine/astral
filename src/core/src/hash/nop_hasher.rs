@@ -56,11 +56,7 @@ impl Hasher for NopHasher {
 		);
 		unsafe {
 			#[allow(clippy::cast_ptr_alignment)]
-			ptr::copy_nonoverlapping(
-				bytes.as_ptr() as *const u64,
-				&mut self.value,
-				1,
-			);
+			ptr::copy_nonoverlapping(bytes.as_ptr() as *const u64, &mut self.value, 1);
 		}
 	}
 

@@ -186,16 +186,13 @@ impl VirtualFileSystem for FileSystem {
 			OpenOptions::new()
 				.read(true)
 				.open(&path)
-				.chain_with(ErrorKind::Io, || {
-					format!("Could not open path {:?}", path)
-				})?,
+				.chain_with(ErrorKind::Io, || format!("Could not open path {:?}", path))?,
 		))
 	}
 
 	fn remove(&mut self, path: Name) -> Result<()> {
 		let path = self.concat_path(path);
-		fs::remove_file(&path).chain_with(ErrorKind::Io, || {
-			format!("Could not open path {:?}", path)
-		})
+		fs::remove_file(&path)
+			.chain_with(ErrorKind::Io, || format!("Could not open path {:?}", path))
 	}
 }

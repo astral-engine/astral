@@ -3,9 +3,7 @@
 // Proprietary and confidential
 // Written by Tim Diekmann <tim.diekmann@3dvision.de>, November 2018
 
-use std::num::{
-	NonZeroU128, NonZeroU16, NonZeroU32, NonZeroU64, NonZeroU8, NonZeroUsize,
-};
+use std::num::{NonZeroU128, NonZeroU16, NonZeroU32, NonZeroU64, NonZeroU8, NonZeroUsize};
 
 use super::PrimUnsignedInt;
 

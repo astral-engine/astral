@@ -18,9 +18,7 @@ pub(super) enum Repr<Kind> {
 }
 
 impl<Kind> Repr<Kind> {
-	pub fn get_ref(
-		&self,
-	) -> Option<&(dyn error::Error + Send + Sync + 'static)> {
+	pub fn get_ref(&self) -> Option<&(dyn error::Error + Send + Sync + 'static)> {
 		match self {
 			Repr::Simple(..) => None,
 			Repr::Custom(c) => Some(c.error.as_ref()),
@@ -28,9 +26,7 @@ impl<Kind> Repr<Kind> {
 		}
 	}
 
-	pub fn get_mut(
-		&mut self,
-	) -> Option<&mut (dyn error::Error + Send + Sync + 'static)> {
+	pub fn get_mut(&mut self) -> Option<&mut (dyn error::Error + Send + Sync + 'static)> {
 		match self {
 			Repr::Simple(..) => None,
 			Repr::Custom(c) => Some(c.error.as_mut()),
@@ -61,9 +57,7 @@ where
 {
 	fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
 		match *self {
-			Repr::Simple(ref kind) => {
-				fmt.debug_tuple("Kind").field(&kind).finish()
-			}
+			Repr::Simple(ref kind) => fmt.debug_tuple("Kind").field(&kind).finish(),
 			Repr::Custom(ref c) => Debug::fmt(&c, fmt),
 			Repr::Chained(ref c) => Debug::fmt(&c, fmt),
 		}

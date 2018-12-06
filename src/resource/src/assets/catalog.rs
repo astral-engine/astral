@@ -155,10 +155,7 @@ impl<'loc> Catalog<'loc> {
 	/// let namespace_id = catalog.add_namespace(Namespace::new());
 	/// assert!(catalog.get_namespace(namespace_id).is_some());
 	/// ```
-	pub fn get_namespace(
-		&self,
-		namespace_id: NamespaceId,
-	) -> Option<&Namespace<'loc>> {
+	pub fn get_namespace(&self, namespace_id: NamespaceId) -> Option<&Namespace<'loc>> {
 		self.namespaces.get(namespace_id.key())
 	}
 
@@ -179,10 +176,7 @@ impl<'loc> Catalog<'loc> {
 	/// let namespace_id = catalog.add_namespace(Namespace::new());
 	/// assert!(catalog.get_namespace_mut(namespace_id).unwrap().is_empty());
 	/// ```
-	pub fn get_namespace_mut(
-		&mut self,
-		namespace_id: NamespaceId,
-	) -> Option<&mut Namespace<'loc>> {
+	pub fn get_namespace_mut(&mut self, namespace_id: NamespaceId) -> Option<&mut Namespace<'loc>> {
 		self.namespaces.get_mut(namespace_id.key())
 	}
 
@@ -202,10 +196,7 @@ impl<'loc> Catalog<'loc> {
 	/// let namespace_id = catalog.add_namespace(Namespace::new());
 	/// assert!(catalog.remove_namespace(namespace_id).is_some());
 	/// ```
-	pub fn remove_namespace(
-		&mut self,
-		namespacae_id: NamespaceId,
-	) -> Option<Namespace<'loc>> {
+	pub fn remove_namespace(&mut self, namespacae_id: NamespaceId) -> Option<Namespace<'loc>> {
 		self.namespaces.remove(namespacae_id.key())
 	}
 
@@ -249,9 +240,7 @@ impl<'loc> Catalog<'loc> {
 	/// 	// do something with the namespace
 	/// }
 	/// ```
-	pub fn iter_namespaces(
-		&self,
-	) -> impl Iterator<Item = (NamespaceId, &Namespace<'loc>)> {
+	pub fn iter_namespaces(&self) -> impl Iterator<Item = (NamespaceId, &Namespace<'loc>)> {
 		self.namespaces
 			.iter()
 			.map(|(key, namespace)| (NamespaceId::new(key), namespace))
@@ -289,9 +278,7 @@ impl<'loc> Catalog<'loc> {
 		virtual_file_system_index: Option<VirtualFileSystemIndex>,
 	) -> Option<Result<impl Write>> {
 		self.get_namespace_mut(location.namespace_id)
-			.and_then(|namespace| {
-				namespace.create(location.name, virtual_file_system_index)
-			})
+			.and_then(|namespace| namespace.create(location.name, virtual_file_system_index))
 	}
 
 	/// Opens a file in write-only mode at the given [`VirtualFileSystem`].
@@ -326,9 +313,7 @@ impl<'loc> Catalog<'loc> {
 		virtual_file_system_index: Option<VirtualFileSystemIndex>,
 	) -> Option<Result<impl Write>> {
 		self.get_namespace_mut(location.namespace_id)
-			.and_then(|namespace| {
-				namespace.create_new(location.name, virtual_file_system_index)
-			})
+			.and_then(|namespace| namespace.create_new(location.name, virtual_file_system_index))
 	}
 
 	/// Returns whether the `Catalog` is aware of the file and the

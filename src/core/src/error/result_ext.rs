@@ -82,11 +82,7 @@ pub trait ResultExt<T, E> {
 	///
 	/// assert_eq!(x.to_string(), "An error occured");
 	/// ```
-	fn chain<Kind, Context>(
-		self,
-		kind: Kind,
-		context: Context,
-	) -> Result<T, Error<Kind>>
+	fn chain<Kind, Context>(self, kind: Kind, context: Context) -> Result<T, Error<Kind>>
 	where
 		Context: Into<Box<dyn error::Error + Send + Sync>>;
 
@@ -131,11 +127,7 @@ pub trait ResultExt<T, E> {
 	///
 	/// assert_eq!(x.to_string(), "An error occured");
 	/// ```
-	fn chain_with<Kind, Context, F>(
-		self,
-		kind: Kind,
-		context: F,
-	) -> Result<T, Error<Kind>>
+	fn chain_with<Kind, Context, F>(self, kind: Kind, context: F) -> Result<T, Error<Kind>>
 	where
 		Context: Into<Box<dyn error::Error + Send + Sync>>,
 		F: FnOnce() -> Context;
@@ -150,22 +142,14 @@ where
 		self.map_err(|error| Error::new(kind, error))
 	}
 
-	fn chain<Kind, Context>(
-		self,
-		kind: Kind,
-		context: Context,
-	) -> Result<T, Error<Kind>>
+	fn chain<Kind, Context>(self, kind: Kind, context: Context) -> Result<T, Error<Kind>>
 	where
 		Context: Into<Box<dyn error::Error + Send + Sync>>,
 	{
 		self.map_err(|source| Error::chained(kind, context.into(), source))
 	}
 
-	fn chain_with<Kind, Context, F>(
-		self,
-		kind: Kind,
-		context: F,
-	) -> Result<T, Error<Kind>>
+	fn chain_with<Kind, Context, F>(self, kind: Kind, context: F) -> Result<T, Error<Kind>>
 	where
 		Context: Into<Box<dyn error::Error + Send + Sync>>,
 		F: FnOnce() -> Context,

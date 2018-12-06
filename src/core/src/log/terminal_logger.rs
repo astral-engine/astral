@@ -32,16 +32,12 @@ impl TerminalLogger {
 	/// Creates a new `TerminalLogger`
 	pub fn new() -> Self {
 		TerminalLogger(
-			if let Some(logger) = simplelog::TermLogger::new(
-				LevelFilter::max(),
-				simplelog::Config::default(),
-			) {
+			if let Some(logger) =
+				simplelog::TermLogger::new(LevelFilter::max(), simplelog::Config::default())
+			{
 				logger
 			} else {
-				simplelog::SimpleLogger::new(
-					LevelFilter::max(),
-					simplelog::Config::default(),
-				)
+				simplelog::SimpleLogger::new(LevelFilter::max(), simplelog::Config::default())
 			},
 		)
 	}

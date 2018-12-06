@@ -4,9 +4,11 @@
 // Written by Tim Diekmann <tim.diekmann@3dvision.de>, November 2018
 
 use std::{
-	hint, mem,
+	hint,
+	mem,
 	num::NonZeroU32,
-	slice, str,
+	slice,
+	str,
 	sync::atomic::{self, AtomicPtr},
 };
 
@@ -84,8 +86,7 @@ impl Entry {
 	/// Returns a string from its length and data.
 	pub fn as_str(&self) -> &str {
 		unsafe {
-			let slice =
-				slice::from_raw_parts(self.data.as_ptr(), self.len as usize);
+			let slice = slice::from_raw_parts(self.data.as_ptr(), self.len as usize);
 			str::from_utf8_unchecked(slice)
 		}
 	}

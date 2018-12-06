@@ -36,11 +36,7 @@ pub trait OptionExt<T> {
 	///
 	/// assert_eq!(x.kind(), &MyErrorKind::Variant);
 	/// ```
-	fn ok_or_error<Kind, Context>(
-		self,
-		kind: Kind,
-		context: Context,
-	) -> Result<T, Error<Kind>>
+	fn ok_or_error<Kind, Context>(self, kind: Kind, context: Context) -> Result<T, Error<Kind>>
 	where
 		Context: Into<Box<dyn error::Error + Send + Sync>>;
 
@@ -72,32 +68,21 @@ pub trait OptionExt<T> {
 	///
 	/// assert_eq!(x.kind(), &MyErrorKind::Variant);
 	/// ```
-	fn ok_or_error_with<Kind, Context, F>(
-		self,
-		kind: Kind,
-		context: F,
-	) -> Result<T, Error<Kind>>
+	fn ok_or_error_with<Kind, Context, F>(self, kind: Kind, context: F) -> Result<T, Error<Kind>>
 	where
 		Context: Into<Box<dyn error::Error + Send + Sync>>,
 		F: FnOnce() -> Context;
 }
 
 impl<T> OptionExt<T> for Option<T> {
-	fn ok_or_error<Kind, Context>(
-		self,
-		kind: Kind,
-		context: Context,
-	) -> Result<T, Error<Kind>>
+	fn ok_or_error<Kind, Context>(self, kind: Kind, context: Context) -> Result<T, Error<Kind>>
 	where
 		Context: Into<Box<dyn error::Error + Send + Sync>>,
 	{
 		self.ok_or_else(|| Error::new(kind, context))
 	}
-	fn ok_or_error_with<Kind, Context, F>(
-		self,
-		kind: Kind,
-		context: F,
-	) -> Result<T, Error<Kind>>
+
+	fn ok_or_error_with<Kind, Context, F>(self, kind: Kind, context: F) -> Result<T, Error<Kind>>
 	where
 		Context: Into<Box<dyn error::Error + Send + Sync>>,
 		F: FnOnce() -> Context,

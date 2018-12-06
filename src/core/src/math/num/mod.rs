@@ -9,9 +9,22 @@
 //! See the individual documentation for each piece for more information.
 
 pub use num_traits::{
-	AsPrimitive, Bounded, Num, NumCast, NumOps, One, PrimInt, Saturating,
-	Signed, Unsigned, WrappingAdd, WrappingMul, WrappingShl, WrappingShr,
-	WrappingSub, Zero,
+	AsPrimitive,
+	Bounded,
+	Num,
+	NumCast,
+	NumOps,
+	One,
+	PrimInt,
+	Saturating,
+	Signed,
+	Unsigned,
+	WrappingAdd,
+	WrappingMul,
+	WrappingShl,
+	WrappingShr,
+	WrappingSub,
+	Zero,
 };
 
 mod non_zero;

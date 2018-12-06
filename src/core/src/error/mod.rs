@@ -178,9 +178,7 @@ impl<Kind> Error<Kind> {
 	///     print_error(&Error::new(MyErrorKind::Variant, "oh no!"));
 	/// }
 	/// ```
-	pub fn get_ref(
-		&self,
-	) -> Option<&(dyn error::Error + Send + Sync + 'static)> {
+	pub fn get_ref(&self) -> Option<&(dyn error::Error + Send + Sync + 'static)> {
 		self.repr.get_ref()
 	}
 
@@ -251,9 +249,7 @@ impl<Kind> Error<Kind> {
 	///     print_error(&change_error(Error::new(MyErrorKind::Variant, MyError::new())));
 	/// }
 	/// ```
-	pub fn get_mut(
-		&mut self,
-	) -> Option<&mut (dyn error::Error + Send + Sync + 'static)> {
+	pub fn get_mut(&mut self) -> Option<&mut (dyn error::Error + Send + Sync + 'static)> {
 		self.repr.get_mut()
 	}
 

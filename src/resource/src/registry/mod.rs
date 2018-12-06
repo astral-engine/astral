@@ -14,7 +14,8 @@ use std::{
 	fmt::{self, Debug, Formatter},
 	hash::BuildHasherDefault,
 	io::Read,
-	mem, result,
+	mem,
+	result,
 	sync::Arc,
 };
 
@@ -26,7 +27,10 @@ use astral_core::{
 
 use crate::{
 	assets::{Catalog, Location},
-	ErrorKind, Resource, ResourceId, Result,
+	ErrorKind,
+	Resource,
+	ResourceId,
+	Result,
 };
 
 use self::closures::{AssetLoader, Closures, ResourceLoader};
@@ -35,11 +39,7 @@ pub struct Loader<R, P> {
 	catalog: Option<Arc<Catalog<'static>>>,
 	default_resource_loader: ResourceLoader<R, P>,
 	default_asset_loader: AssetLoader<R, P>,
-	declarations: HashMap<
-		ResourceId,
-		Option<Closures<R, P>>,
-		BuildHasherDefault<NopHasher>,
-	>,
+	declarations: HashMap<ResourceId, Option<Closures<R, P>>, BuildHasherDefault<NopHasher>>,
 }
 
 impl<R, P> Loader<R, P>
@@ -48,14 +48,8 @@ where
 {
 	pub fn new<F1, F2>(resource_loader: F1, asset_loader: F2) -> Self
 	where
-		F1: Fn(P) -> result::Result<R, Box<dyn error::Error + Send + Sync>>
-			+ Send
-			+ Sync
-			+ 'static,
-		F2: Fn(
-				P,
-				&mut (dyn Read),
-			) -> result::Result<R, Box<dyn error::Error + Send + Sync>>
+		F1: Fn(P) -> result::Result<R, Box<dyn error::Error + Send + Sync>> + Send + Sync + 'static,
+		F2: Fn(P, &mut (dyn Read)) -> result::Result<R, Box<dyn error::Error + Send + Sync>>
 			+ Send
 			+ Sync
 			+ 'static,
@@ -72,10 +66,7 @@ where
 		}
 	}
 
-	pub fn set_catalog<C>(
-		&mut self,
-		catalog: C,
-	) -> Option<Arc<Catalog<'static>>>
+	pub fn set_catalog<C>(&mut self, catalog: C) -> Option<Arc<Catalog<'static>>>
 	where
 		C: Into<Arc<Catalog<'static>>>,
 	{
@@ -92,16 +83,9 @@ where
 		resource_id
 	}
 
-	pub fn declare_resource_with_loader<F>(
-		&mut self,
-		name: Name,
-		loader: F,
-	) -> ResourceId
+	pub fn declare_resource_with_loader<F>(&mut self, name: Name, loader: F) -> ResourceId
 	where
-		F: Fn(P) -> result::Result<R, Box<dyn error::Error + Send + Sync>>
-			+ Send
-			+ Sync
-			+ 'static,
+		F: Fn(P) -> result::Result<R, Box<dyn error::Error + Send + Sync>> + Send + Sync + 'static,
 	{
 		let resource_id = ResourceId::from_name(name);
 		self.declarations
@@ -115,16 +99,9 @@ where
 		resource_id
 	}
 
-	pub fn declare_asset_with_loader<F>(
-		&mut self,
-		location: Location,
-		loader: F,
-	) -> ResourceId
+	pub fn declare_asset_with_loader<F>(&mut self, location: Location, loader: F) -> ResourceId
 	where
-		F: Fn(
-				P,
-				&mut (dyn Read),
-			) -> result::Result<R, Box<dyn error::Error + Send + Sync>>
+		F: Fn(P, &mut (dyn Read)) -> result::Result<R, Box<dyn error::Error + Send + Sync>>
 			+ Send
 			+ Sync
 			+ 'static,
@@ -171,10 +148,7 @@ where
 			Closures::Asset(loader) => {
 				let mut read = catalog
 					.open(resource_id.location().unwrap())
-					.ok_or_error(
-						ErrorKind::Loading,
-						"location could not be found in catalog",
-					)?
+					.ok_or_error(ErrorKind::Loading, "location could not be found in catalog")?
 					.context(ErrorKind::Loading)?;
 				loader(parameters, &mut read)
 			}

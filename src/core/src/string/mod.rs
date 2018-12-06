@@ -16,7 +16,7 @@
 //! a string literal:
 //!
 //! ```
-//! use astral::core::string::{Text, Name};
+//! use astral::core::string::{Name, Text};
 //!
 //! let t = Text::from("foo");
 //! let n: Name = "foo".into();
@@ -34,7 +34,8 @@
 //! assert_eq!("foo", s)
 //! ```
 //!
-//! If you have a slice of valid UTF-8 bytes, you can make a `Text` or a `Name` out of it.
+//! If you have a slice of valid UTF-8 bytes, you can make a `Text` or a `Name`
+//! out of it.
 //!
 //! ```
 //! use astral::core::string::Text;
@@ -55,7 +56,7 @@
 //! [`Name`]: struct.Name.html
 //! [`Deref`]: https://doc.rust-lang.org/nightly/std/ops/trait.Deref.html
 //! [`str`]: https://doc.rust-lang.org/nightly/std/primitive.str.html
-// TODO: Use intra doc links
+// TODO(#1): Use intra doc links
 
 mod allocator;
 mod entry;
