@@ -8,33 +8,6 @@
 	html_logo_url = "https://astral-engine.github.io/docs/logo_astral.svg",
 	html_favicon_url = "https://astral-engine.github.io/docs/logo.svg"
 )]
-#![warn(
-	bad_style,
-	nonstandard_style,
-	warnings,
-	rust_2018_compatibility,
-	rust_2018_idioms,
-	single_use_lifetimes,
-	trivial_casts,
-	trivial_numeric_casts,
-	variant_size_differences,
-	absolute_paths_not_starting_with_crate,
-	future_incompatible,
-	unused,
-	clippy::pedantic
-)]
-#![allow(single_use_lifetimes)]
 
-pub mod core {
-	#![allow(clippy::stutter)]
-
-	//! Low-level support systems for manage mundane but crucial tasks.
-	#[doc(inline)]
-	pub use astral_core::*;
-}
-
-pub mod resource {
-	//! Support systems for creating and loading different resources.
-	#[doc(inline)]
-	pub use astral_resource::*;
-}
+#[doc(inline)]
+pub use {astral_core as core, astral_resource as resource};

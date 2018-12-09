@@ -28,9 +28,7 @@ use astral::{
 	core::string::Name,
 	resource::{
 		assets::{Catalog, FileSystem, Location, Namespace},
-		Loader,
-		Resource,
-		ResourceId,
+		Loader, Resource, ResourceId,
 	},
 };
 

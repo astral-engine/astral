@@ -1,6 +1,6 @@
 @startuml skinparameter
 
-hide stereotype 
+hide stereotype
 hide empty members
 
 skinparam BackgroundColor #1E1E1E

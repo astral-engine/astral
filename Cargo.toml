@@ -1,23 +1,23 @@
 [package]
 name = "astral"
-version = "0.0.1"
+version = "0.0.0"
 edition = "2018"
 authors = [ "Tim Diekmann <tim.diekmann@3dvision.de>" ]
-repository = "https://gitlab.com/StellarBullet/astral"
-documentation = "https://stellarbullet.gitlab.io/astral"
+repository = "https://github.com/astral-engine/astral"
+documentation = "https://astral-engine.github.io/docs"
 readme = "README.md"
 
 [workspace]
 members = [
-    "src/core",
-    "src/resource",
-    "src/video",
+    "src/libcore",
+    "src/libresource",
+    "src/libvideo",
 ]
 
 [dependencies]
-astral-core = { path = "src/core", version = "0.0.1", default-features = false }
-astral-resource = { path = "src/resource", version = "0.0.1", default-features = false }
-astral-video = { path = "src/video", version = "0.0.1", default-features = false }
+astral-core = { path = "src/libcore", version = "0.0.0", default-features = false }
+astral-resource = { path = "src/libresource", version = "0.0.0", default-features = false }
+astral-video = { path = "src/libvideo", version = "0.0.0", default-features = false }
 
 [features]
 max_level_off = ["astral-core/max_level_off"]
