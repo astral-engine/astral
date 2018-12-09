@@ -6,7 +6,8 @@
 use std::{
 	error,
 	fmt::{self, Debug, Display, Formatter},
-	str, string,
+	str,
+	string,
 };
 
 /// Errors which can occur when attempting to interpret a sequence of [`u8`]

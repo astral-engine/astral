@@ -14,8 +14,14 @@ mod values;
 mod values_mut;
 
 pub(super) use self::{
-	drain::Drain, drain_filter::DrainFilter, into_iter::IntoIter, iter::Iter, iter_mut::IterMut,
-	keys::Keys, values::Values, values_mut::ValuesMut,
+	drain::Drain,
+	drain_filter::DrainFilter,
+	into_iter::IntoIter,
+	iter::Iter,
+	iter_mut::IterMut,
+	keys::Keys,
+	values::Values,
+	values_mut::ValuesMut,
 };
 
 use std::{

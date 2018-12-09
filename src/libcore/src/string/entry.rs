@@ -4,9 +4,11 @@
 // Written by Tim Diekmann <tim.diekmann@3dvision.de>, November 2018
 
 use std::{
-	hint, mem,
+	hint,
+	mem,
 	num::NonZeroU32,
-	slice, str,
+	slice,
+	str,
 	sync::atomic::{self, AtomicPtr},
 };
 

@@ -5,7 +5,8 @@
 
 use std::{
 	alloc::{GlobalAlloc, Layout, System},
-	mem, ptr,
+	mem,
+	ptr,
 	sync::atomic,
 };
 

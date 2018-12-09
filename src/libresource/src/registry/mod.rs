@@ -14,7 +14,8 @@ use std::{
 	fmt::{self, Debug, Formatter},
 	hash::BuildHasherDefault,
 	io::Read,
-	mem, result,
+	mem,
+	result,
 	sync::Arc,
 };
 
@@ -26,7 +27,10 @@ use astral_core::{
 
 use crate::{
 	assets::{Catalog, Location},
-	ErrorKind, Resource, ResourceId, Result,
+	ErrorKind,
+	Resource,
+	ResourceId,
+	Result,
 };
 
 use self::closures::{AssetLoader, Closures, ResourceLoader};

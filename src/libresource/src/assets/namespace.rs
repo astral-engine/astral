@@ -170,7 +170,13 @@ impl<'loc> Namespace<'loc> {
 		}
 		let _ = self
 			.virtual_file_systems
-			.insert_with_key(index.key(), virtual_file_system).map_err(|_| Error::new(ErrorKind::Other, "Virtual file system could not be inserted"))?;
+			.insert_with_key(index.key(), virtual_file_system)
+			.map_err(|_| {
+				Error::new(
+					ErrorKind::Other,
+					"Virtual file system could not be inserted",
+				)
+			})?;
 
 		Ok(index)
 	}

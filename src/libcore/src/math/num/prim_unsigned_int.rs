@@ -10,7 +10,14 @@ use std::{
 };
 
 use super::{
-	NonZero, PrimInt, Unsigned, WrappingAdd, WrappingMul, WrappingShl, WrappingShr, WrappingSub,
+	NonZero,
+	PrimInt,
+	Unsigned,
+	WrappingAdd,
+	WrappingMul,
+	WrappingShl,
+	WrappingShr,
+	WrappingSub,
 };
 
 /// Functions for primitive unsigned integral types.

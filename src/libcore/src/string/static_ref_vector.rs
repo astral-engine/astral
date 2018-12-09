@@ -5,7 +5,8 @@
 
 use std::{
 	cell::UnsafeCell,
-	hint, mem,
+	hint,
+	mem,
 	num::NonZeroU32,
 	sync::atomic::{self, AtomicUsize},
 };

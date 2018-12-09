@@ -5,7 +5,8 @@
 
 use std::sync::{
 	atomic::{AtomicBool, Ordering},
-	Arc, Weak,
+	Arc,
+	Weak,
 };
 
 use crate::LoadPriority;
