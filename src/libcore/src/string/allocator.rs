@@ -50,6 +50,7 @@ impl Allocator {
 	}
 
 	#[cfg(not(unstable))]
+	// ToDo(#3): Use `align_offset`
 	fn aligned_offset(&self) -> usize {
 		let addr = self.current_pool_start as usize;
 		let remainder = addr % mem::align_of::<Entry>();

@@ -38,6 +38,7 @@ impl Murmur3 {
 	const R2: u32 = 13;
 
 	fn write_chunk(&mut self, chunk: [u8; 4]) {
+		// ToDo(#4): Use u32::from_ne_bytes
 		#[cfg(not(unstable))]
 		let mut k = unsafe { std::mem::transmute::<_, u32>(chunk) }.to_le();
 		#[cfg(unstable)]
