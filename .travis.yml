@@ -29,6 +29,7 @@ install: |
   if [[ $TRAVIS_OS_NAME = linux ]]; then
     mkdir -p registry
     mkdir -p target
+    docker pull astralengine/$TARGET:$TOOLCHAIN
     run() {
       docker run \
         --rm \
@@ -53,7 +54,6 @@ matrix:
   allow_failures:
     # Windows builds are in early access stage on Travis CI and may timeout.
     - os: windows
-    - env: TOOLCHAIN=nightly
 jobs:
   include:
     ############################################################################
