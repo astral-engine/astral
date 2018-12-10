@@ -12,9 +12,7 @@ cache:
     - target
 
 stages:
-  - name: rustfmt
-    if: tag IS NOT present
-  - name: clippy
+  - name: tools
     if: tag IS NOT present
   - test
   - documentation
@@ -60,49 +58,61 @@ jobs:
     ###                                 Tests                                ###
     ############################################################################
     # Linux
-    - env: TARGET=x86_64-unknown-linux-gnu TOOLCHAIN=stable
-    - env: TARGET=x86_64-unknown-linux-gnu TOOLCHAIN=beta
-    - env: TARGET=x86_64-unknown-linux-gnu TOOLCHAIN=nightly
-    - env: TARGET=i686-unknown-linux-gnu TOOLCHAIN=stable
-    - env: TARGET=i686-unknown-linux-gnu TOOLCHAIN=beta
-    - env: TARGET=i686-unknown-linux-gnu TOOLCHAIN=nightly
+    - name: x86_64-unknown-linux-gnu - stable
+      env: TARGET=x86_64-unknown-linux-gnu TOOLCHAIN=stable
+    - name: x86_64-unknown-linux-gnu - beta
+      env: TARGET=x86_64-unknown-linux-gnu TOOLCHAIN=beta
+    - name: x86_64-unknown-linux-gnu - nightly
+      env: TARGET=x86_64-unknown-linux-gnu TOOLCHAIN=nightly
+    - name: i686-unknown-linux-gnu - stable
+      env: TARGET=i686-unknown-linux-gnu TOOLCHAIN=stable
+    - name: i686-unknown-linux-gnu - beta
+      env: TARGET=i686-unknown-linux-gnu TOOLCHAIN=beta
+    - name: i686-unknown-linux-gnu - nightly
+      env: TARGET=i686-unknown-linux-gnu TOOLCHAIN=nightly
 
     # MacOS
-    - os: osx
+    - name: x86_64-apple-darwin - stable
+      os: osx
       language: rust
       rust: stable-x86_64-apple-darwin
-    - os: osx
+    - name: i686-apple-darwin - stable
+      os: osx
       language: rust
       rust: stable-i686-apple-darwin
 
     # Windows
-    - os: windows
+    - name: x86_64-pc-windows - stable
+      os: windows
       language: rust
       rust: stable-x86_64-pc-windows-msvc
-    - os: windows
+    - name: i686-pc-windows - stable
+      os: windows
       language: rust
       rust: stable-i686-pc-windows-msvc
-    - os: windows
+    - name: x86_64-pc-windows - stable
+      os: windows
       language: rust
       rust: stable-x86_64-pc-windows-gnu
 
       # Android
-    - env: CUSTOM_TARGET=aarch64-linux-android TOOLCHAIN=stable
-    - env: CUSTOM_TARGET=arm-linux-androideabi TOOLCHAIN=stable
-    - env: CUSTOM_TARGET=x86_64-linux-android TOOLCHAIN=stable
+    - name: aarch64-linux-android  - stable
+      env: CUSTOM_TARGET=aarch64-linux-android TOOLCHAIN=stable
+    - name: arm-linux-androideabi - stable
+      env: CUSTOM_TARGET=arm-linux-androideabi TOOLCHAIN=stable
+    - name: x86_64-linux-android - stable
+      env: CUSTOM_TARGET=x86_64-linux-android TOOLCHAIN=stable
 
     ############################################################################
-    ###                                Rustfmt                               ###
+    ###                                 tools                                ###
     ############################################################################
-    - stage: rustfmt
+    - stage: tools
+      name: rustfmt - nightly
       env: TARGET=x86_64-unknown-linux-gnu TOOLCHAIN=nightly
       script:
         - run cargo fmt --all -- --check
-
-    ############################################################################
-    ###                                 Clippy                               ###
-    ############################################################################
-    - stage: clippy
+    - stage: tools
+      name: clippy - nightly
       env: TARGET=x86_64-unknown-linux-gnu TOOLCHAIN=nightly
       script:
         - run cargo clippy --all --examples
@@ -146,7 +156,7 @@ jobs:
     ############################################################################
     - <<: *documentation
       stage: release
-      name: "Documentation"
+      name: Documentation
       after_success: false
       before_deploy: |
         mkdir documentation
@@ -165,6 +175,7 @@ jobs:
             tags: true
     - &release
       stage: release
+      name: linux-x86_64-gnu
       os: linux
       language: rust
       rust: stable
@@ -183,9 +194,11 @@ jobs:
         on:
           tags: true
     - <<: *release
+      name: darwin-x86_64
       os: osx
       env: ARCHIVE=darwin_x86_64.tar.gz
     - <<: *release
+      name: windows-x86_64
       os: windows
       env: ARCHIVE=windows_x86_64.zip
       before_deploy: |
