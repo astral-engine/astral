@@ -19,6 +19,9 @@ astral-core = { path = "src/libcore", version = "0.0.0", default-features = fals
 astral-resource = { path = "src/libresource", version = "0.0.0", default-features = false }
 astral-video = { path = "src/libvideo", version = "0.0.0", default-features = false }
 
+[dev-dependencies]
+rustc_version = "0.2"
+
 [features]
 max_level_off = ["astral-core/max_level_off"]
 max_level_error = ["astral-core/max_level_error"]

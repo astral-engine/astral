@@ -147,6 +147,8 @@ fn main() {
 	if let Err(err) = log::set_boxed_logger(logger) {
 		eprintln!("Could not initialize logging: {}", err);
 	}
+	let rustc = rustc_version::version().unwrap();
+	info!("rustc: {}.{}.{}", rustc.major, rustc.minor, rustc.patch);
 	if let Err(err) = app() {
 		let mut err: &dyn std::error::Error = err.as_ref();
 		error!("{}", err);
