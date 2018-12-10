@@ -14,6 +14,8 @@ cache:
 stages:
   - name: rustfmt
     if: tag IS NOT present
+  - name: clippy
+    if: tag IS NOT present
   - test
   - documentation
   - name: release
@@ -96,6 +98,14 @@ jobs:
       env: TARGET=x86_64-unknown-linux-gnu TOOLCHAIN=nightly
       script:
         - run cargo fmt --all -- --check
+
+    ############################################################################
+    ###                                 Clippy                               ###
+    ############################################################################
+    - stage: clippy
+      env: TARGET=x86_64-unknown-linux-gnu TOOLCHAIN=nightly
+      script:
+        - run cargo clippy --all --examples
 
     ############################################################################
     ###                             Documentation                            ###
