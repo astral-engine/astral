@@ -93,13 +93,9 @@ jobs:
     ###                                Rustfmt                               ###
     ############################################################################
     - stage: rustfmt
-      os: linux
-      language: rust
-      rust: nightly
-      install:
-        - rustup component add rustfmt-preview
+      env: TARGET=x86_64-unknown-linux-gnu TOOLCHAIN=nightly
       script:
-        - cargo fmt --all -- --check
+        - run cargo fmt --all -- --check
 
     ############################################################################
     ###                             Documentation                            ###
