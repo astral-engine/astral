@@ -122,12 +122,11 @@ jobs:
     ###                             Documentation                            ###
     ############################################################################
     - &documentation
+      name: x86_64-unknown-linux-gnu - nightly
       stage: documentation
-      os: linux
-      language: rust
-      rust: nightly
+      env: TARGET=x86_64-unknown-linux-gnu TOOLCHAIN=nightly
       script: |
-        cargo doc --features "$FEATURES" --no-deps
+        run cargo doc --features "$FEATURES" --no-deps
         echo '<meta http-equiv="refresh" content="0; url=astral">' > target/doc/index.html
         rm target/doc/aliases.js
         echo '.srclink{display:none;}' >> target/doc/rustdoc.css
@@ -177,7 +176,6 @@ jobs:
     - &release
       stage: release
       name: linux-x86_64-gnu
-      os: linux
       language: rust
       rust: stable
       env: ARCHIVE=linux_gnu_x86_64.tar.gz
