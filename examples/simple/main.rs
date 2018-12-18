@@ -147,14 +147,25 @@ fn app(engine: &astral::Engine) -> Result<(), Box<dyn Error>> {
 	Ok(())
 }
 
-use slog::{crit as critical, debug, error, info, trace, warn, Drain};
+use astral::third_party::slog::{
+	crit as critical,
+	debug,
+	error,
+	info,
+	o,
+	trace,
+	warn,
+	Drain,
+	Logger,
+};
 
 fn main() {
 	let decorator = slog_term::TermDecorator::new().build();
 	let drain = slog_term::CompactFormat::new(decorator).build().fuse();
 	// let drain = slog_async::Async::new(drain).build().fuse();
 
-	let log = slog::Logger::root(std::sync::Mutex::new(drain).fuse(), slog::o!());
+	let log = Logger::root(std::sync::Mutex::new(drain).fuse(), o!());
+	trace!(log, "test");
 
 	let engine = astral::Engine::new(&log);
 

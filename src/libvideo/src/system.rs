@@ -16,6 +16,7 @@ impl System {
 	///
 	/// ```
 	/// use astral::{video, Engine};
+	/// # use astral::third_party::slog;
 	///
 	/// # let logger = slog::Logger::root(slog::Discard, slog::o!());
 	///	let engine = Engine::new(&logger);
@@ -32,9 +33,11 @@ impl System {
 	/// # Example
 	///
 	/// ```
-	/// use slog::info;
-	///
-	/// use astral::video;
+	/// use astral::{
+	/// 	third_party::slog::info,
+	/// 	video,
+	/// };
+	/// # use astral::third_party::slog;
 	///
 	/// # let logger = slog::Logger::root(slog::Discard, slog::o!());
 	/// # let engine = astral::Engine::new(&logger);

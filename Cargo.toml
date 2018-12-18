@@ -21,13 +21,12 @@ astral-resource = { path = "src/libresource", version = "0.0.0", default-feature
 astral-video = { path = "src/libvideo", version = "0.0.0", default-features = false }
 
 [dev-dependencies]
-slog = { version = "2.4", features = ["max_level_trace"] }
 slog-term = "2.4"
 slog-async = "2.3"
 rustc_version = "0.2"
-lazy_static = "1.2"
 
 [features]
+default = ["max_level_trace"]
 max_level_off = ["astral-engine/max_level_off"]
 max_level_error = ["astral-engine/max_level_error"]
 max_level_warn = ["astral-engine/max_level_warn"]

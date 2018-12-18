@@ -19,8 +19,11 @@ impl Subsystem {
 	/// # Example
 	///
 	/// ```
-	/// use astral::Engine;
-	/// use astral::resource::{self, assets};
+	/// use astral::{
+	/// 	Engine,
+	/// 	resource::{self, assets},
+	/// };
+	/// # use astral::third_party::slog;
 	///
 	/// # let logger = slog::Logger::root(slog::Discard, slog::o!());
 	///	let engine = Engine::new(&logger);
@@ -38,10 +41,12 @@ impl Subsystem {
 	/// # Example
 	///
 	/// ```
-	/// use slog::info;
-	///
-	/// use astral::Engine;
-	/// use astral::resource::{self, assets};
+	/// use astral::{
+	/// 	Engine,
+	/// 	resource::{self, assets},
+	/// 	third_party::slog::info,
+	/// };
+	/// # use astral::third_party::slog;
 	///
 	/// # let logger = slog::Logger::root(slog::Discard, slog::o!());
 	/// # let engine = astral::Engine::new(&logger);

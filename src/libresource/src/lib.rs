@@ -3,7 +3,11 @@
 // Proprietary and confidential
 // Written by Tim Diekmann <tim.diekmann@3dvision.de>, November 2018
 
-//! Support systems for creating and loading different resources.
+//! Resource creating and loading.
+//!
+//! See the [resource system] for further details.
+//!
+//! [resource system]: struct.System.html
 
 #![cfg_attr(unstable, feature(non_exhaustive))]
 #![cfg_attr(unstable, feature(doc_spotlight))]

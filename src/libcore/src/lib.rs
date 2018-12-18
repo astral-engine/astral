@@ -3,7 +3,11 @@
 // Proprietary and confidential
 // Written by Tim Diekmann <tim.diekmann@3dvision.de>, November 2018
 
-//! Low-level support systems for manage mundane but crucial tasks.
+//! Low-level support for mundane but crucial tasks.
+//!
+//! See the [core system] for further details.
+//!
+//! [core system]: struct.System.html
 
 #![cfg_attr(unstable, feature(align_offset))]
 #![cfg_attr(unstable, feature(untagged_unions))]

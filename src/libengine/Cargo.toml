@@ -9,17 +9,16 @@ repository = "https://github.com/astral-engine/astral"
 lazy_static = "1.2"
 num-traits = "0.2"
 serde = { version = "1.0", features = ["derive"] }
-slog = { version = "2.4", features = ["max_level_trace"] }
+slog = { version = "2.4"}
 walkdir = "2.2"
 
 [build-dependencies]
 rustc_version = "0.2"
 
 [dev-dependencies]
+astral = { path = "../../", version = "0.0.0", default-features = false }
 slog-term = "2.4"
 slog-async = "2.3"
-
-astral = { path = "../../", version = "0.0.0", default-features = false }
 
 [features]
 max_level_off = ["slog/max_level_off"]
