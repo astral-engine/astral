@@ -8,7 +8,7 @@
 //! This module provides traits that are useful when doing numerical work.
 //! See the individual documentation for each piece for more information.
 
-pub use num_traits::{
+pub use astral_engine::third_party::num_traits::{
 	AsPrimitive,
 	Bounded,
 	Num,

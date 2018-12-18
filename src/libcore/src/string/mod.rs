@@ -76,7 +76,7 @@ use std::{
 	},
 };
 
-use lazy_static::lazy_static;
+use astral_engine::third_party::lazy_static::lazy_static;
 
 #[doc]
 pub use std::string::String;

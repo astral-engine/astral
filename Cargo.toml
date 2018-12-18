@@ -19,24 +19,24 @@ astral-engine = { path = "src/libengine", version = "0.0.0", default-features = 
 astral-core = { path = "src/libcore", version = "0.0.0", default-features = false }
 astral-resource = { path = "src/libresource", version = "0.0.0", default-features = false }
 astral-video = { path = "src/libvideo", version = "0.0.0", default-features = false }
-slog = { version = "2.4", features = ["max_level_trace"] }
 
 [dev-dependencies]
+slog = { version = "2.4", features = ["max_level_trace"] }
 slog-term = "2.4"
 slog-async = "2.3"
 rustc_version = "0.2"
 lazy_static = "1.2"
 
 [features]
-max_level_off = ["astral-core/max_level_off"]
-max_level_error = ["astral-core/max_level_error"]
-max_level_warn = ["astral-core/max_level_warn"]
-max_level_info = ["astral-core/max_level_info"]
-max_level_debug = ["astral-core/max_level_debug"]
-max_level_trace = ["astral-core/max_level_trace"]
-release_max_level_off = ["astral-core/release_max_level_off"]
-release_max_level_error = ["astral-core/release_max_level_error"]
-release_max_level_warn = ["astral-core/release_max_level_warn"]
-release_max_level_info = ["astral-core/release_max_level_info"]
-release_max_level_debug = ["astral-core/release_max_level_debug"]
-release_max_level_trace = ["astral-core/release_max_level_trace"]
+max_level_off = ["astral-engine/max_level_off"]
+max_level_error = ["astral-engine/max_level_error"]
+max_level_warn = ["astral-engine/max_level_warn"]
+max_level_info = ["astral-engine/max_level_info"]
+max_level_debug = ["astral-engine/max_level_debug"]
+max_level_trace = ["astral-engine/max_level_trace"]
+release_max_level_off = ["astral-engine/release_max_level_off"]
+release_max_level_error = ["astral-engine/release_max_level_error"]
+release_max_level_warn = ["astral-engine/release_max_level_warn"]
+release_max_level_info = ["astral-engine/release_max_level_info"]
+release_max_level_debug = ["astral-engine/release_max_level_debug"]
+release_max_level_trace = ["astral-engine/release_max_level_trace"]

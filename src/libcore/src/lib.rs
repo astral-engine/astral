@@ -44,6 +44,4 @@ pub mod math;
 pub mod string;
 mod system;
 
-pub use slog;
-
 pub use self::system::System;

@@ -12,7 +12,7 @@
 #[doc(inline)]
 pub use {
 	astral_core as core,
-	astral_engine::Engine,
+	astral_engine::*,
 	astral_resource as resource,
 	astral_video as video,
 };

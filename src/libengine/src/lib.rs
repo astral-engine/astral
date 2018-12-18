@@ -35,6 +35,8 @@
 	clippy::pedantic
 )]
 
+pub mod third_party;
+
 use std::fmt::{self, Debug, Formatter};
 
 use slog::{info, o, Logger};
@@ -45,7 +47,12 @@ pub struct Engine {
 }
 
 impl Engine {
-	/// Initialize the engine with the given Logger.
+	/// Initialize the engine with the given [`Logger`].
+	///
+	/// For more information on the logger see the [slog] crate.
+	///
+	/// [`Logger`]: third_party::slog::Logger
+	/// [slog]: third_party::slog
 	///
 	/// # Example
 	///
@@ -70,7 +77,7 @@ impl Engine {
 		Self { log }
 	}
 
-	/// Returns the logger of the engine.
+	/// Returns the logger of this engine.
 	///
 	/// # Example
 	///
@@ -82,7 +89,7 @@ impl Engine {
 	/// # let logger = slog::Logger::root(slog::Discard, slog::o!());
 	/// let engine = Engine::new(&logger);
 	///
-	/// info!(engine.logger(), "foo bar");
+	/// info!(engine.logger(), "foo bar"; "additional" => "information");
 	/// ```
 	pub fn logger(&self) -> &Logger {
 		&self.log

@@ -6,7 +6,11 @@ authors = [ "Tim Diekmann <tim.diekmann@3dvision.de>" ]
 repository = "https://github.com/astral-engine/astral"
 
 [dependencies]
+lazy_static = "1.2"
+num-traits = "0.2"
+serde = { version = "1.0", features = ["derive"] }
 slog = { version = "2.4", features = ["max_level_trace"] }
+walkdir = "2.2"
 
 [build-dependencies]
 rustc_version = "0.2"
@@ -16,3 +20,17 @@ slog-term = "2.4"
 slog-async = "2.3"
 
 astral = { path = "../../", version = "0.0.0", default-features = false }
+
+[features]
+max_level_off = ["slog/max_level_off"]
+max_level_error = ["slog/max_level_error"]
+max_level_warn = ["slog/max_level_warn"]
+max_level_info = ["slog/max_level_info"]
+max_level_debug = ["slog/max_level_debug"]
+max_level_trace = ["slog/max_level_trace"]
+release_max_level_off = ["slog/release_max_level_off"]
+release_max_level_error = ["slog/release_max_level_error"]
+release_max_level_warn = ["slog/release_max_level_warn"]
+release_max_level_info = ["slog/release_max_level_info"]
+release_max_level_debug = ["slog/release_max_level_debug"]
+release_max_level_trace = ["slog/release_max_level_trace"]

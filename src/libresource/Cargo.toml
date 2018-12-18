@@ -6,10 +6,6 @@ authors = [ "Tim Diekmann <tim.diekmann@3dvision.de>" ]
 repository = "https://github.com/astral-engine/astral"
 
 [dependencies]
-serde = { version = "1.0", features = ["derive"] }
-slog = "2.4"
-walkdir = "2.2"
-
 astral-engine = { path = "../libengine", version = "0.0.0", default-features = false }
 astral-core = { path = "../libcore", version = "0.0.0", default-features = false }
 

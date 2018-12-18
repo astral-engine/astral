@@ -3,9 +3,6 @@
 // Proprietary and confidential
 // Written by Tim Diekmann <tim.diekmann@3dvision.de>, November 2018
 
-use serde::{Deserialize, Serialize};
-use walkdir::WalkDir;
-
 use std::{
 	boxed::Box,
 	fs::{self, OpenOptions},
@@ -14,9 +11,11 @@ use std::{
 	time::SystemTime,
 };
 
-use slog::{error, o, warn, Logger};
-
 use astral_core::{error::ResultExt, string::Name};
+use astral_engine::third_party::{
+	slog::{error, o, warn, Logger},
+	walkdir::WalkDir,
+};
 
 use super::{ErrorKind, Result, Subsystem, VirtualFileSystem};
 

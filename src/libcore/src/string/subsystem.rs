@@ -5,7 +5,7 @@
 
 use crate::System;
 
-use slog::{info, o, Logger};
+use astral_engine::third_party::slog::{info, o, Logger};
 
 pub struct Subsystem {
 	log: Logger,

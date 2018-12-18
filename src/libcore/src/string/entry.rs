@@ -47,11 +47,11 @@ impl Entry {
 	/// This is unsafe because allocating is not thread safe.
 	pub(super) unsafe fn allocate(string: &str) -> *mut Self {
 		if string.len() > MAX_STRING_LENGTH {
-			log::warn!(
-				"name is greater than the allowed size of {}: {:?}",
-				MAX_STRING_LENGTH,
-				string
-			);
+			// log::warn!(
+			// 	"name is greater than the allowed size of {}: {:?}",
+			// 	MAX_STRING_LENGTH,
+			// 	string
+			// );
 			ALLOCATOR.allocate(&string[0..MAX_STRING_LENGTH])
 		} else {
 			ALLOCATOR.allocate(string)
