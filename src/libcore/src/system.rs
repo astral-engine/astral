@@ -11,7 +11,7 @@ pub struct System {
 
 impl System {
 	pub fn new(engine: &astral_engine::Engine) -> Self {
-		let log = engine.logger().new(o!("system" => "resource"));
+		let log = engine.logger().new(o!("system" => "core"));
 		info!(log, "initializing"; "version" => env!("CARGO_PKG_VERSION"));
 		Self { log }
 	}

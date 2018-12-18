@@ -47,6 +47,7 @@ mod load_priority;
 mod registry;
 mod resource;
 mod resource_id;
+mod system;
 
 pub use self::{
 	declaration::Declaration,
@@ -56,4 +57,5 @@ pub use self::{
 	registry::{Loader, State},
 	resource::Resource,
 	resource_id::ResourceId,
+	system::System,
 };

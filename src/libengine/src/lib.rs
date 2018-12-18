@@ -5,14 +5,14 @@
 
 use slog::{info, o, Logger};
 
-pub struct System {
+pub struct Engine {
 	log: Logger,
 }
 
-impl System {
-	pub fn new(engine: &astral_engine::Engine) -> Self {
-		let log = engine.logger().new(o!("system" => "resource"));
-		info!(log, "initializing"; "version" => env!("CARGO_PKG_VERSION"));
+impl Engine {
+	pub fn new(logging_root: &Logger) -> Self {
+		let log = logging_root.new(o!());
+		info!(log, "initializing Astral Engine"; "version" => env!("CARGO_PKG_VERSION"));
 		Self { log }
 	}
 
@@ -21,7 +21,7 @@ impl System {
 	}
 }
 
-impl Drop for System {
+impl Drop for Engine {
 	fn drop(&mut self) {
 		info!(self.logger(), "shutting down")
 	}

@@ -3,6 +3,14 @@
 // Proprietary and confidential
 // Written by Tim Diekmann <tim.diekmann@3dvision.de>, November 2018
 
-mod system;
+use rustc_version::Channel;
 
-pub use self::system::System;
+fn main() {
+	println!("cargo:rerun-if-changed=build.rs");
+
+	if let Ok(meta) = rustc_version::version_meta() {
+		if let Channel::Nightly = meta.channel {
+			println!("cargo:rustc-cfg=unstable");
+		}
+	}
+}

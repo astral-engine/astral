@@ -1,15 +1,12 @@
 [package]
-name = "astral-video"
+name = "astral-engine"
 version = "0.0.0"
 edition = "2018"
 authors = [ "Tim Diekmann <tim.diekmann@3dvision.de>" ]
 repository = "https://github.com/astral-engine/astral"
 
 [dependencies]
-slog = "2.4"
-
-astral-core = { path = "../libcore", version = "0.0.0", default-features = false }
-astral-engine = { path = "../libengine", version = "0.0.0", default-features = false }
+slog = { version = "2.4", features = ["max_level_trace"] }
 
 [build-dependencies]
 rustc_version = "0.2"

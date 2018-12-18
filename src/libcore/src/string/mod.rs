@@ -64,9 +64,17 @@ mod entry_hash_table;
 mod error;
 mod name;
 mod static_ref_vector;
+mod subsystem;
 mod text;
 
-use std::sync::atomic::{self, AtomicUsize};
+use std::{
+	ptr,
+	sync::{
+		atomic::{self, AtomicPtr, AtomicUsize},
+		Once,
+		ONCE_INIT,
+	},
+};
 
 use lazy_static::lazy_static;
 
@@ -77,6 +85,7 @@ pub use self::{
 	entry::MAX_STRING_LENGTH,
 	error::{Utf16Error, Utf8Error},
 	name::Name,
+	subsystem::Subsystem,
 	text::Text,
 };
 
@@ -98,6 +107,16 @@ const PAGE_SIZE: usize = 64 * 1024;
 static ALLOCATED_STRINGS: AtomicUsize = AtomicUsize::new(0);
 static USED_MEMORY: AtomicUsize = AtomicUsize::new(0);
 static USED_MEMORY_CHUNKS: AtomicUsize = AtomicUsize::new(0);
+
+static SUBSYSTEM: AtomicPtr<Subsystem> = AtomicPtr::new(ptr::null_mut());
+static SUBSYSTEM_INIT: Once = ONCE_INIT;
+static SUBSYSTEM_SHUTDOWN: Once = ONCE_INIT;
+
+pub fn init_subsystem(max_strings: usize) {
+	SUBSYSTEM_INIT.call_once(|| {
+		println!("init");
+	})
+}
 
 static mut ALLOCATOR: Allocator = Allocator::new();
 

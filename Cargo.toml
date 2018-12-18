@@ -15,12 +15,17 @@ members = [
 ]
 
 [dependencies]
+astral-engine = { path = "src/libengine", version = "0.0.0", default-features = false }
 astral-core = { path = "src/libcore", version = "0.0.0", default-features = false }
 astral-resource = { path = "src/libresource", version = "0.0.0", default-features = false }
 astral-video = { path = "src/libvideo", version = "0.0.0", default-features = false }
+slog = { version = "2.4", features = ["max_level_trace"] }
 
 [dev-dependencies]
+slog-term = "2.4"
+slog-async = "2.3"
 rustc_version = "0.2"
+lazy_static = "1.2"
 
 [features]
 max_level_off = ["astral-core/max_level_off"]

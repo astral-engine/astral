@@ -1,8 +1,10 @@
 // Copyright (C) Astral Developers - All Rights Reserved
 // Unauthorized copying of this file, via any medium is strictly prohibited
 // Proprietary and confidential
-// Written by Tim Diekmann <tim.diekmann@3dvision.de>, November 2018
+// Written by Tim Diekmann <tim.diekmann@3dvision.de>, December 2018
 
-mod system;
+use std::num::NonZeroU32;
 
-pub use self::system::System;
+pub struct StringId {
+	id: NonZeroU32,
+}

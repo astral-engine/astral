@@ -14,17 +14,16 @@ use std::{
 	time::SystemTime,
 };
 
-use astral_core::{
-	error::ResultExt,
-	log::{error, warn},
-	string::Name,
-};
+use slog::{error, o, warn, Logger};
 
-use super::{ErrorKind, Result, VirtualFileSystem};
+use astral_core::{error::ResultExt, string::Name};
+
+use super::{ErrorKind, Result, Subsystem, VirtualFileSystem};
 
 /// A `FileSystem` is a view into the systems file system.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug)]
 pub struct FileSystem {
+	logger: Logger,
 	root: PathBuf,
 	recursive: bool,
 }
@@ -36,7 +35,6 @@ impl FileSystem {
 	/// # Example
 	///
 	/// ```no_run
-
 	/// # fn main() -> Result<(), astral::resource::assets::Error> {
 	/// use astral::resource::assets::{FileSystem, VirtualFileSystem};
 	///
@@ -46,9 +44,13 @@ impl FileSystem {
 	/// # }
 	/// ```
 	#[allow(clippy::new_ret_no_self)]
-	pub fn new<P: Into<PathBuf>>(root: P, recursive: bool) -> Result<Self> {
+	pub fn new<P: Into<PathBuf>>(subsystem: &Subsystem, root: P, recursive: bool) -> Result<Self> {
+		let root = root.into();
 		Ok(Self {
-			root: root.into(),
+			logger: subsystem
+				.logger()
+				.new(o!("filesystem" => root.to_string_lossy().to_string())),
+			root,
 			recursive,
 		})
 	}
@@ -90,7 +92,11 @@ impl VirtualFileSystem for FileSystem {
 					let entry = match entry {
 						Ok(entry) => entry,
 						Err(err) => {
-							warn!("Could not read file system entry: {}", err);
+							warn!(
+								self.logger,
+								"Could not read file system entry";
+								"error" => &err.to_string()
+							);
 							return None;
 						}
 					};
@@ -103,9 +109,10 @@ impl VirtualFileSystem for FileSystem {
 						}
 						Err(err) => {
 							error!(
-								"Could not read metadata for \"{}\": {}",
-								entry.path().to_string_lossy(),
-								err
+								self.logger,
+								"Could not read metadata";
+								"path" => %entry.path().to_string_lossy(),
+								"error" => &err.to_string()
 							);
 							return None;
 						}
@@ -134,7 +141,11 @@ impl VirtualFileSystem for FileSystem {
 						}
 						Ok(path) => Some(path.to_string_lossy().into()),
 						Err(err) => {
-							warn!("Could not strip file system path: {}", err);
+							warn!(
+								self.logger,
+								"Could not strip file system path";
+								"error" => &err.to_string()
+							);
 							None
 						}
 					}

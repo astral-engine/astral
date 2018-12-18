@@ -3,16 +3,18 @@
 // Proprietary and confidential
 // Written by Tim Diekmann <tim.diekmann@3dvision.de>, December 2018
 
+use crate::System;
+
 use slog::{info, o, Logger};
 
-pub struct System {
+pub struct Subsystem {
 	log: Logger,
 }
 
-impl System {
-	pub fn new(engine: &astral_engine::Engine) -> Self {
-		let log = engine.logger().new(o!("system" => "resource"));
-		info!(log, "initializing"; "version" => env!("CARGO_PKG_VERSION"));
+impl Subsystem {
+	pub fn new(system: &System) -> Self {
+		let log = system.logger().new(o!("subsystem" => "assets"));
+		info!(log, "initializing");
 		Self { log }
 	}
 
@@ -21,7 +23,7 @@ impl System {
 	}
 }
 
-impl Drop for System {
+impl Drop for Subsystem {
 	fn drop(&mut self) {
 		info!(self.logger(), "shutting down")
 	}

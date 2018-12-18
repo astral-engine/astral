@@ -31,6 +31,7 @@ mod file_system;
 mod location;
 mod namespace;
 mod namespace_id;
+mod subsystem;
 mod virtual_file_system;
 mod virtual_file_system_index;
 
@@ -41,6 +42,7 @@ pub use self::{
 	location::Location,
 	namespace::Namespace,
 	namespace_id::NamespaceId,
+	subsystem::Subsystem,
 	virtual_file_system::VirtualFileSystem,
 	virtual_file_system_index::VirtualFileSystemIndex,
 };
