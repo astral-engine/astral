@@ -12,4 +12,7 @@ slog = { version = "2.4", features = ["max_level_trace"] }
 rustc_version = "0.2"
 
 [dev-dependencies]
+slog-term = "2.4"
+slog-async = "2.3"
+
 astral = { path = "../../", version = "0.0.0", default-features = false }
