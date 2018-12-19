@@ -6,7 +6,6 @@
 //! Facade for third party libraries.
 //!
 //! Licenses for third party libraries can be found in the root folder.
-// TODO(#6): Add third party library licenses
 
 #[doc(inline)]
 pub use {lazy_static, num_traits, serde, slog, walkdir};
