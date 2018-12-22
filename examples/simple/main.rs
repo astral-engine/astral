@@ -23,7 +23,7 @@
 use std::error::Error;
 
 use astral::{
-	core::string::Name,
+	core::{collections::SparseSlotMap, string::Name},
 	resource::assets::{FileSystem, VirtualFileSystem},
 };
 
@@ -45,7 +45,6 @@ fn app(engine: &astral::Engine) -> Result<(), Box<dyn Error>> {
 		info!(engine.logger(), "file"; "name" => ?file, "count" => counter);
 	}
 
-	use astral::core::collections::SparseSlotMap;
 	let mut slot_map: SparseSlotMap<u32> = SparseSlotMap::new();
 	slot_map.insert(32);
 	// eprintln!("{:?}", slot_map.drain());
