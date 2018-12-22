@@ -22,7 +22,10 @@
 
 use std::error::Error;
 
-use astral::resource::assets::{FileSystem, VirtualFileSystem};
+use astral::{
+	core::string::Name,
+	resource::assets::{FileSystem, VirtualFileSystem},
+};
 
 fn app(engine: &astral::Engine) -> Result<(), Box<dyn Error>> {
 	let core_system = astral::core::System::new(engine);
@@ -31,7 +34,8 @@ fn app(engine: &astral::Engine) -> Result<(), Box<dyn Error>> {
 	let resource_system = astral::resource::System::new(&engine);
 	let asset_subsystem = astral::resource::assets::Subsystem::new(&resource_system);
 
-	let files = FileSystem::new("/etc/lib", &asset_subsystem, &string_subsystem)?
+	let directory = Name::new("assets", &string_subsystem);
+	let files = FileSystem::new(directory, &asset_subsystem, &string_subsystem)?
 		.iter()?
 		.collect::<Vec<_>>();
 
@@ -40,6 +44,12 @@ fn app(engine: &astral::Engine) -> Result<(), Box<dyn Error>> {
 		counter += 1;
 		info!(engine.logger(), "file"; "name" => ?file, "count" => counter);
 	}
+
+	use astral::core::collections::SparseSlotMap;
+	let mut slot_map: SparseSlotMap<u32> = SparseSlotMap::new();
+	slot_map.insert(32);
+	// eprintln!("{:?}", slot_map.drain());
+	eprintln!("{:?}", slot_map.drain_filter(|_, _| false));
 
 	// catalog[core_namespace].add_virtual_file_system(filesystem)?;
 

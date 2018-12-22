@@ -3,13 +3,15 @@
 // Proprietary and confidential
 // Written by Tim Diekmann <tim.diekmann@3dvision.de>, November 2018
 
-use std::iter::FusedIterator;
+use std::{
+	fmt::{self, Debug, Formatter},
+	iter::FusedIterator,
+};
 
 use crate::math::num::{AsPrimitive, PrimUnsignedInt};
 
 use super::{Key, SlotMap};
 
-#[derive(Debug)]
 pub struct DrainFilter<'a, T, Idx, F>
 where
 	Idx: PrimUnsignedInt + AsPrimitive<usize>,
@@ -21,6 +23,23 @@ where
 	pub(super) map: &'a mut SlotMap<T, Idx>,
 	pub(super) current: Idx,
 	pub(super) pred: F,
+}
+
+impl<T, Idx, F> Debug for DrainFilter<'_, T, Idx, F>
+where
+	T: Debug,
+	Idx: PrimUnsignedInt + AsPrimitive<usize>,
+	F: FnMut(Key<Idx>, &mut T) -> bool,
+
+	usize: AsPrimitive<Idx>,
+{
+	fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
+		fmt.debug_struct("DrainFilter")
+			.field("map", self.map)
+			.field("current", &self.current)
+			.field("size_hint", &self.size_hint())
+			.finish()
+	}
 }
 
 impl<'a, T, Idx, F> Iterator for DrainFilter<'a, T, Idx, F>
