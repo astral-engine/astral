@@ -4,6 +4,7 @@
 // Written by Tim Diekmann <tim.diekmann@3dvision.de>, November 2018
 
 //! Traits and structures for working with Errors in the Astral Engine.
+#![allow(box_pointers)]
 
 mod chained;
 mod custom;

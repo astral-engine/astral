@@ -3,6 +3,8 @@
 // Proprietary and confidential
 // Written by Tim Diekmann <tim.diekmann@3dvision.de>, November 2018
 
+#![allow(box_pointers)]
+
 use std::{
 	cell::UnsafeCell,
 	hint,

@@ -551,6 +551,7 @@ impl<B> Hash for Name<'_, B> {
 	}
 }
 
+#[allow(box_pointers)]
 impl<H> From<Name<'_, H>> for Box<str> {
 	fn from(string: Name<'_, H>) -> Self {
 		string.to_string().into_boxed_str()
@@ -583,12 +584,14 @@ impl<H> From<Name<'_, H>> for PathBuf {
 	}
 }
 
+#[allow(box_pointers)]
 impl<H> From<Name<'_, H>> for Box<dyn Error> {
 	fn from(string: Name<'_, H>) -> Self {
 		Self::from(string.to_string())
 	}
 }
 
+#[allow(box_pointers)]
 impl<H> From<Name<'_, H>> for Box<dyn Error + Send + Sync> {
 	fn from(string: Name<'_, H>) -> Self {
 		Self::from(string.to_string())
