@@ -19,6 +19,96 @@ use crate::{hash::Murmur3, System};
 
 use super::{Allocator, Entry, EntryHashTable, StaticRefVector, StringId};
 
+#[cfg(feature = "track-strings")]
+struct Tracker {
+	used_memory: AtomicUsize,
+	used_chunks: AtomicUsize,
+	string_len: AtomicUsize,
+	strings_allocated: AtomicUsize,
+}
+
+#[cfg(not(feature = "track-strings"))]
+struct Tracker;
+
+impl Tracker {
+	#[cfg(feature = "track-strings")]
+	fn new(memory: usize, allocations: usize) -> Self {
+		Self {
+			used_memory: memory.into(),
+			used_chunks: allocations.into(),
+			string_len: 0.into(),
+			strings_allocated: 0.into(),
+		}
+	}
+
+	#[cfg(not(feature = "track-strings"))]
+	fn new(_memory: usize, _allocations: usize) -> Self {
+		Tracker
+	}
+
+	#[cfg(feature = "track-strings")]
+	fn add_memory(&self, memory: usize) {
+		let _ = self
+			.used_memory
+			.fetch_add(memory, atomic::Ordering::Relaxed);
+	}
+
+	#[cfg(feature = "track-strings")]
+	fn add_chunks(&self, chunks: usize) {
+		let _ = self
+			.used_chunks
+			.fetch_add(chunks, atomic::Ordering::Relaxed);
+	}
+
+	#[cfg(feature = "track-strings")]
+	fn add_allocations(&self, allocations: usize) {
+		let _ = self
+			.strings_allocated
+			.fetch_add(allocations, atomic::Ordering::Relaxed);
+	}
+
+	#[cfg(feature = "track-strings")]
+	fn add_len(&self, len: usize) {
+		let _ = self.string_len.fetch_add(len, atomic::Ordering::Relaxed);
+	}
+
+	#[cfg(not(feature = "track-strings"))]
+	fn add_memory(&self, _memory: usize) {}
+
+	#[cfg(not(feature = "track-strings"))]
+	fn add_chunks(&self, _chunks: usize) {}
+
+	#[cfg(not(feature = "track-strings"))]
+	fn add_allocations(&self, _allocations: usize) {}
+
+	#[cfg(not(feature = "track-strings"))]
+	fn add_len(&self, _len: usize) {}
+
+	#[cfg(feature = "track-strings")]
+	fn memory(&self) -> usize {
+		self.used_memory.load(Ordering::Relaxed)
+	}
+
+	#[cfg(feature = "track-strings")]
+	fn chunks(&self) -> usize {
+		self.used_chunks.load(Ordering::Relaxed)
+	}
+
+	#[cfg(feature = "track-strings")]
+	fn allocations(&self) -> usize {
+		self.strings_allocated.load(Ordering::Relaxed)
+	}
+
+	#[cfg(feature = "track-strings")]
+	fn average_length(&self) -> usize {
+		if self.allocations() == 0 {
+			0
+		} else {
+			self.string_len.load(Ordering::Relaxed) / self.allocations()
+		}
+	}
+}
+
 /// Manages optimized string allocation.
 ///
 /// See the [module-level documentation] for more.
@@ -29,11 +119,8 @@ pub struct Subsystem<H = BuildHasherDefault<Murmur3>> {
 	allocator: Mutex<Allocator>,
 	entry_hash_table: EntryHashTable,
 	entry_reference_map: StaticRefVector<Entry>,
-	used_memory: AtomicUsize,
-	used_chunks: AtomicUsize,
-	string_len: AtomicUsize,
-	strings_allocated: AtomicUsize,
 	build_hasher: H,
+	tracker: Tracker,
 }
 
 impl Subsystem<BuildHasherDefault<Murmur3>> {
@@ -67,11 +154,8 @@ impl Subsystem<BuildHasherDefault<Murmur3>> {
 			allocator: Mutex::new(Allocator::default()),
 			entry_hash_table,
 			entry_reference_map,
-			used_memory: (table_memory + map_memory).into(),
-			used_chunks: (table_chunks + map_chunks).into(),
-			string_len: 0.into(),
-			strings_allocated: 0.into(),
 			build_hasher: BuildHasherDefault::default(),
+			tracker: Tracker::new(table_memory + map_memory, table_chunks + map_chunks),
 		}
 	}
 }
@@ -115,11 +199,8 @@ where
 			allocator: Mutex::new(Allocator::default()),
 			entry_hash_table,
 			entry_reference_map,
-			used_memory: (table_memory + map_memory).into(),
-			used_chunks: (table_chunks + map_chunks).into(),
-			string_len: 0.into(),
-			strings_allocated: 0.into(),
 			build_hasher: hasher,
+			tracker: Tracker::new(table_memory + map_memory, table_chunks + map_chunks),
 		}
 	}
 
@@ -137,19 +218,11 @@ where
 			&self.allocator,
 			self.logger(),
 		);
-		let _ = self
-			.used_memory
-			.fetch_add(memory, atomic::Ordering::Relaxed);
-		let _ = self
-			.used_chunks
-			.fetch_add(chunks, atomic::Ordering::Relaxed);
+		self.tracker.add_memory(memory);
+		self.tracker.add_chunks(chunks);
 		if allocated {
-			let _ = self
-				.strings_allocated
-				.fetch_add(1, atomic::Ordering::Relaxed);
-			let _ = self
-				.string_len
-				.fetch_add(string.len(), atomic::Ordering::Relaxed);
+			self.tracker.add_allocations(1);
+			self.tracker.add_len(string.len());
 		}
 		debug_assert!(
 			!self
@@ -165,27 +238,35 @@ where
 
 impl<H> Subsystem<H> {
 	/// Returns the used memory.
+	///
+	/// Requires the `track-strings` feature to be enabled.
+	#[cfg(feature = "track-strings")]
 	pub fn used_memory(&self) -> usize {
-		self.used_memory.load(Ordering::Relaxed)
+		self.tracker.memory()
 	}
 
 	/// Returns the used memory chunks.
+	///
+	/// Requires the `track-strings` feature to be enabled.
+	#[cfg(feature = "track-strings")]
 	pub fn allocations(&self) -> usize {
-		self.used_chunks.load(Ordering::Relaxed)
+		self.tracker.chunks()
 	}
 
 	/// Returns the number of unique allocated strings.
+	///
+	/// Requires the `track-strings` feature to be enabled.
+	#[cfg(feature = "track-strings")]
 	pub fn strings_allocated(&self) -> usize {
-		self.strings_allocated.load(Ordering::Relaxed)
+		self.tracker.allocations()
 	}
 
 	/// Returns the average string length.
+	///
+	/// Requires the `track-strings` feature to be enabled.
+	#[cfg(feature = "track-strings")]
 	pub fn average_string_length(&self) -> usize {
-		if self.strings_allocated() == 0 {
-			0
-		} else {
-			self.string_len.load(Ordering::Relaxed) / self.strings_allocated()
-		}
+		self.tracker.average_length()
 	}
 
 	/// Returns the logger of this string subsystem.
@@ -250,23 +331,30 @@ impl<H> Subsystem<H> {
 
 impl<H> Debug for Subsystem<H> {
 	fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
-		fmt.debug_struct("Subsystem")
-			.field("strings_allocated", &self.strings_allocated())
-			.field("used_memory", &self.used_memory())
-			.field("allocations", &self.allocations())
-			.field("average_string_length", &self.average_string_length())
-			.finish()
+		let mut debug = fmt.debug_struct("Subsystem");
+		#[cfg(feature = "track-strings")]
+		{
+			let _ = debug
+				.field("strings_allocated", &self.strings_allocated())
+				.field("used_memory", &self.used_memory())
+				.field("allocations", &self.allocations())
+				.field("average_string_length", &self.average_string_length());
+		}
+		debug.finish()
 	}
 }
 
 impl<H> Drop for Subsystem<H> {
 	fn drop(&mut self) {
+		#[cfg(feature = "track-strings")]
 		info!(self.logger(), "shutting down";
 			"strings" => self.strings_allocated(),
 			"memory" => self.used_memory(),
 			"allocations" => self.allocations(),
 			"average_string_length" => self.average_string_length(),
-		)
+		);
+		#[cfg(not(feature = "track-strings"))]
+		info!(self.logger(), "shutting down");
 	}
 }
 

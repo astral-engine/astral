@@ -13,3 +13,6 @@ rustc_version = "0.2"
 
 [dev-dependencies]
 astral = { path = "../../", version = "0.0.0", default-features = false }
+
+[features]
+track-strings = []

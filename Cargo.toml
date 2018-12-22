@@ -26,7 +26,8 @@ slog-async = "2.3"
 rustc_version = "0.2"
 
 [features]
-default = ["max_level_trace"]
+default = ["max_level_trace", "track-strings"]
+track-strings = ["astral-core/track-strings"]
 max_level_off = ["astral-engine/max_level_off"]
 max_level_error = ["astral-engine/max_level_error"]
 max_level_warn = ["astral-engine/max_level_warn"]
