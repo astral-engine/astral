@@ -680,11 +680,18 @@ mod test {
 
 	use super::*;
 
-	#[cfg(target_arch = "x86_64")]
+	#[cfg(target_pointer_width = "64")]
 	#[test]
 	fn test_size() {
 		assert_eq!(std::mem::size_of::<Text<'_>>(), 16);
 		assert_eq!(std::mem::size_of::<Option<Text<'_>>>(), 16);
+	}
+
+	#[cfg(target_pointer_width = "32")]
+	#[test]
+	fn test_size() {
+		assert_eq!(std::mem::size_of::<Text<'_>>(), 12);
+		assert_eq!(std::mem::size_of::<Option<Text<'_>>>(), 8);
 	}
 
 	#[test]
