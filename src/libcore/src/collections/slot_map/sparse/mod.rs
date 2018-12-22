@@ -62,7 +62,8 @@ where
 	/// ```
 	/// use astral::core::collections::SparseSlotMap;
 	///
-	/// let mut map: SparseSlotMap<i32> = SparseSlotMap::new();
+	/// # #[allow(unused_variables)]
+	/// let map: SparseSlotMap<i32> = SparseSlotMap::new();
 	/// ```
 	pub fn new() -> Self {
 		Self::with_capacity(0)
@@ -188,6 +189,7 @@ where
 	/// # Example
 	///
 	/// ```
+	/// # fn main() -> Result<(), u32> {
 	/// use astral::core::collections::SparseSlotMap;
 	///
 	/// let mut map: SparseSlotMap<u32> = SparseSlotMap::with_capacity(2);
@@ -196,10 +198,11 @@ where
 	///
 	/// assert!(map.is_empty());
 	///
-	/// map.insert_with_key(key2, 200);
-	/// map.insert_with_key(key1, 100);
+	/// map.insert_with_key(key2, 200)?;
+	/// map.insert_with_key(key1, 100)?;
 	/// assert_eq!(map[key1], 100);
 	/// assert_eq!(map[key2], 200);
+	/// # Ok(()) }
 	/// ```
 	pub fn create_key(&mut self) -> Key<Idx> {
 		let idx = self.free_head;
@@ -236,12 +239,14 @@ where
 	/// until inserted with `insert_with_key()`
 	///
 	/// ```
+	/// # fn main() -> Result<(), u32> {
 	/// # use astral::core::collections::SparseSlotMap;
 	/// # let mut map: SparseSlotMap<u32> = SparseSlotMap::new();
 	///	let key2 = map.create_key();
 	/// assert!(!map.contains_key(key2));
-	/// map.insert_with_key(key2, 200);
+	/// map.insert_with_key(key2, 200)?;
 	/// assert!(map.contains_key(key2));
+	/// # Ok(()) }
 	/// ```
 	pub fn contains_key(&self, key: Key<Idx>) -> bool {
 		self.slots.get(key.index().as_()).map_or(false, |slot| {
@@ -414,6 +419,7 @@ where
 	///
 	/// let k1 = map.insert(1);
 	/// let k2 = map.insert(2);
+	/// # #[allow(unused_variables)]
 	/// let k3 = map.insert(3);
 	/// let k4 = map.insert(4);
 	///
@@ -515,8 +521,10 @@ where
 	///
 	/// let mut map: SparseSlotMap<i32> = SparseSlotMap::with_capacity(3);
 	///
+	/// # #[allow(unused_variables)]
 	/// let k0 = map.insert(10);
 	/// let k1 = map.insert(20);
+	/// # #[allow(unused_variables)]
 	/// let k2 = map.insert(30);
 	///
 	/// for (k, v) in map.iter_mut() {

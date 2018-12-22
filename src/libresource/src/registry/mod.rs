@@ -35,14 +35,15 @@ use crate::{
 
 use self::closures::{AssetLoader, Closures, ResourceLoader};
 
-pub struct Loader<R, P> {
-	catalog: Option<Arc<Catalog<'static>>>,
+pub struct Loader<'system, R, P> {
+	catalog: Option<Arc<Catalog<'system, 'static>>>,
 	default_resource_loader: ResourceLoader<R, P>,
 	default_asset_loader: AssetLoader<R, P>,
-	declarations: HashMap<ResourceId, Option<Closures<R, P>>, BuildHasherDefault<NopHasher>>,
+	declarations:
+		HashMap<ResourceId<'system>, Option<Closures<R, P>>, BuildHasherDefault<NopHasher>>,
 }
 
-impl<R, P> Loader<R, P>
+impl<'system, R, P> Loader<'system, R, P>
 where
 	R: Resource + 'static,
 {

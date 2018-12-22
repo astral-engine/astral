@@ -6,13 +6,12 @@
 use std::{
 	hint,
 	mem,
-	num::NonZeroU32,
 	slice,
 	str,
 	sync::atomic::{self, AtomicPtr},
 };
 
-use super::{ALLOCATOR, PAGE_SIZE};
+use super::{StringId, PAGE_SIZE};
 
 pub(super) const DATA_OFFSET: usize = 6 + mem::size_of::<AtomicPtr<Entry>>();
 /// The maximum length of one string like  [`Text`] or [`Name`].
@@ -25,11 +24,11 @@ pub const MAX_STRING_LENGTH: usize = PAGE_SIZE - DATA_OFFSET;
 ///
 /// It stores the index into the global entry table, the length of the underlying
 /// string and the string data.
-// Don't forget to adjust `MAX_STRING_LENGTH` when adding fields to match `PAGE_SIZE` (64KB)
+// CAUTION: Don't forget to adjust `MAX_STRING_LENGTH` when adding fields to match `PAGE_SIZE` (64KB)
 #[repr(C)]
 pub(super) struct Entry {
 	pub(super) next: AtomicPtr<Entry>,
-	pub(super) index: Option<NonZeroU32>,
+	pub(super) id: Option<StringId>,
 	pub(super) len: u16,
 
 	pub(super) data: [u8; MAX_STRING_LENGTH],
@@ -39,51 +38,25 @@ pub(super) struct Entry {
 }
 
 impl Entry {
-	/// Allocates a new `Entry` and returns a pointer to it. Allocating needs external
-	/// synchronization.
-	///
-	/// # Safety
-	///
-	/// This is unsafe because allocating is not thread safe.
-	pub(super) unsafe fn allocate(string: &str) -> *mut Self {
-		if string.len() > MAX_STRING_LENGTH {
-			// log::warn!(
-			// 	"name is greater than the allowed size of {}: {:?}",
-			// 	MAX_STRING_LENGTH,
-			// 	string
-			// );
-			ALLOCATOR.allocate(&string[0..MAX_STRING_LENGTH])
-		} else {
-			ALLOCATOR.allocate(string)
-		}
-	}
-
-	/// Returns the index of the entry.
-	pub(super) fn index(&self) -> NonZeroU32 {
-		self.index.unwrap_or_else(|| {
+	pub(super) fn id(&self) -> StringId {
+		self.id.unwrap_or_else(|| {
 			debug_assert!(false, "Entry was not initialized");
 			unsafe { hint::unreachable_unchecked() }
 		})
 	}
 
-	/// Returns a pointer to the next hash entry in the global hash bucket.
 	pub(super) fn next(&self) -> &AtomicPtr<Self> {
 		&self.next
 	}
 
-	/// Returns `true` if it has a length of zero.
-	///
-	/// Returns `false` otherwise.
 	pub(super) fn len(&self) -> u16 {
 		self.len
 	}
 
-	/// Returns the length in bytes.
 	pub(super) fn is_empty(&self) -> bool {
 		self.len() == 0
 	}
 
-	/// Returns a string from its length and data.
 	pub(super) fn as_str(&self) -> &str {
 		unsafe {
 			let slice = slice::from_raw_parts(self.data.as_ptr(), self.len as usize);
@@ -91,26 +64,29 @@ impl Entry {
 		}
 	}
 
-	/// Returns an Iterator over all known entries with the same hash value.
-	pub(super) fn iter(&'static self) -> impl Iterator<Item = &'static Self> {
-		Entries { current: self }
+	pub(super) fn iter(&self) -> impl Iterator<Item = &Self> {
+		Entries {
+			current: Some(self),
+		}
 	}
 }
 
-struct Entries {
-	current: *const Entry,
+struct Entries<'a> {
+	current: Option<&'a Entry>,
 }
 
-impl Iterator for Entries {
-	type Item = &'static Entry;
+impl<'a> Iterator for Entries<'a> {
+	type Item = &'a Entry;
 
 	fn next(&mut self) -> Option<Self::Item> {
-		if self.current.is_null() {
-			None
-		} else {
-			let current = unsafe { &*self.current };
-			self.current = current.next().load(atomic::Ordering::Relaxed);
-			Some(current)
-		}
+		self.current.map(|current| {
+			let next = current.next().load(atomic::Ordering::Acquire);
+			self.current = if next.is_null() {
+				None
+			} else {
+				unsafe { Some(&*next) }
+			};
+			current
+		})
 	}
 }

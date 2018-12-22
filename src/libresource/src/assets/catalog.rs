@@ -5,12 +5,13 @@
 
 use std::{
 	fmt::{self, Debug, Formatter},
+	hash::BuildHasherDefault,
 	io::{Read, Write},
 	ops::{Index, IndexMut},
 	time::SystemTime,
 };
 
-use astral_core::collections::SparseSlotMap;
+use astral_core::{collections::SparseSlotMap, hash::Murmur3};
 
 use super::{Location, Namespace, NamespaceId, Result, VirtualFileSystemIndex};
 
@@ -25,25 +26,25 @@ use super::{Location, Namespace, NamespaceId, Result, VirtualFileSystemIndex};
 /// [`NamespaceId`]: struct.NamespaceId.html
 /// [`VirtualFileSystem`]: trait.VirtualFileSystem.html
 /// [`Location`]: struct.Location.html
-#[derive(Default)]
-pub struct Catalog<'loc> {
-	namespaces: SparseSlotMap<Namespace<'loc>, u16>,
+pub struct Catalog<'str, 'vfs, H = BuildHasherDefault<Murmur3>> {
+	namespaces: SparseSlotMap<Namespace<'str, 'vfs, H>, u16>,
 }
 
-impl<'loc> Catalog<'loc> {
+impl<'str, 'vfs, H> Catalog<'str, 'vfs, H> {
 	/// Construct a new empty `Catalog`.
 	///
 	/// # Example
 	///
 	/// ```
-
 	/// use astral::resource::assets::Catalog;
 	///
-	/// let catalog = Catalog::new();
+	/// let catalog: Catalog<'_, '_> = Catalog::new();
 	/// assert!(catalog.is_empty());
 	/// ```
 	pub fn new() -> Self {
-		Self::default()
+		Self {
+			namespaces: SparseSlotMap::default(),
+		}
 	}
 
 	/// Construct a new, empty `Catalog` with the specified capacity.
@@ -57,10 +58,9 @@ impl<'loc> Catalog<'loc> {
 	/// # Example
 	///
 	/// ```
-
 	/// use astral::resource::assets::{Catalog, Namespace};
 	///
-	/// let mut catalog = Catalog::with_capacity(1);
+	/// let mut catalog: Catalog<'_, '_> = Catalog::with_capacity(1);
 	///
 	/// assert_eq!(catalog.len(), 0);
 	///
@@ -83,10 +83,9 @@ impl<'loc> Catalog<'loc> {
 	/// # Example
 	///
 	/// ```
-
 	/// use astral::resource::assets::{Catalog, Namespace};
 	///
-	/// let mut catalog = Catalog::new();
+	/// let mut catalog = Catalog::default();
 	///
 	/// assert_eq!(catalog.len(), 0);
 	/// catalog.add_namespace(Namespace::new());
@@ -103,10 +102,9 @@ impl<'loc> Catalog<'loc> {
 	/// # Example
 	///
 	/// ```
-
 	/// use astral::resource::assets::{Catalog, Namespace};
 	///
-	/// let mut catalog = Catalog::new();
+	/// let mut catalog = Catalog::default();
 	///
 	/// assert!(catalog.is_empty());
 	/// catalog.add_namespace(Namespace::new());
@@ -125,16 +123,15 @@ impl<'loc> Catalog<'loc> {
 	/// # Example
 	///
 	/// ```
-
 	/// use astral::resource::assets::{Catalog, Namespace};
 	///
-	/// let mut catalog = Catalog::new();
+	/// let mut catalog = Catalog::default();
 	///
 	/// assert_eq!(catalog.len(), 0);
-	/// let namespace_id = catalog.add_namespace(Namespace::new());
+	/// catalog.add_namespace(Namespace::new());
 	/// assert_eq!(catalog.len(), 1);
 	/// ```
-	pub fn add_namespace(&mut self, namespace: Namespace<'loc>) -> NamespaceId {
+	pub fn add_namespace(&mut self, namespace: Namespace<'str, 'vfs, H>) -> NamespaceId {
 		NamespaceId::new(self.namespaces.insert(namespace))
 	}
 
@@ -147,15 +144,14 @@ impl<'loc> Catalog<'loc> {
 	/// # Example
 	///
 	/// ```
-
 	/// use astral::resource::assets::{Catalog, Namespace};
 	///
-	/// let mut catalog = Catalog::new();
+	/// let mut catalog = Catalog::default();
 	///
 	/// let namespace_id = catalog.add_namespace(Namespace::new());
 	/// assert!(catalog.get_namespace(namespace_id).is_some());
 	/// ```
-	pub fn get_namespace(&self, namespace_id: NamespaceId) -> Option<&Namespace<'loc>> {
+	pub fn get_namespace(&self, namespace_id: NamespaceId) -> Option<&Namespace<'str, 'vfs, H>> {
 		self.namespaces.get(namespace_id.key())
 	}
 
@@ -168,15 +164,17 @@ impl<'loc> Catalog<'loc> {
 	/// # Example
 	///
 	/// ```
-
 	/// use astral::resource::assets::{Catalog, Namespace};
 	///
-	/// let mut catalog = Catalog::new();
+	/// let mut catalog = Catalog::default();
 	///
 	/// let namespace_id = catalog.add_namespace(Namespace::new());
 	/// assert!(catalog.get_namespace_mut(namespace_id).unwrap().is_empty());
 	/// ```
-	pub fn get_namespace_mut(&mut self, namespace_id: NamespaceId) -> Option<&mut Namespace<'loc>> {
+	pub fn get_namespace_mut(
+		&mut self,
+		namespace_id: NamespaceId,
+	) -> Option<&mut Namespace<'str, 'vfs, H>> {
 		self.namespaces.get_mut(namespace_id.key())
 	}
 
@@ -188,15 +186,17 @@ impl<'loc> Catalog<'loc> {
 	/// # Example
 	///
 	/// ```
-
 	/// use astral::resource::assets::{Catalog, Namespace};
 	///
-	/// let mut catalog = Catalog::new();
+	/// let mut catalog = Catalog::default();
 	///
 	/// let namespace_id = catalog.add_namespace(Namespace::new());
 	/// assert!(catalog.remove_namespace(namespace_id).is_some());
 	/// ```
-	pub fn remove_namespace(&mut self, namespacae_id: NamespaceId) -> Option<Namespace<'loc>> {
+	pub fn remove_namespace(
+		&mut self,
+		namespacae_id: NamespaceId,
+	) -> Option<Namespace<'str, 'vfs, H>> {
 		self.namespaces.remove(namespacae_id.key())
 	}
 
@@ -208,10 +208,9 @@ impl<'loc> Catalog<'loc> {
 	/// # Example
 	///
 	/// ```
-
 	/// use astral::resource::assets::{Catalog, Namespace};
 	///
-	/// let mut catalog = Catalog::new();
+	/// let mut catalog = Catalog::default();
 	///
 	/// let namespace_id = catalog.add_namespace(Namespace::new());
 	/// assert!(catalog.contains_namespace(namespace_id));
@@ -230,17 +229,19 @@ impl<'loc> Catalog<'loc> {
 	/// # Example
 	///
 	/// ```
-
 	/// use astral::resource::assets::{Catalog, Namespace};
 	///
-	/// let mut catalog = Catalog::new();
+	/// let mut catalog = Catalog::default();
 	///
 	/// catalog.add_namespace(Namespace::new());
+	/// # #[allow(unused_variables)]
 	/// for (id, namespace) in catalog.iter_namespaces() {
 	/// 	// do something with the namespace
 	/// }
 	/// ```
-	pub fn iter_namespaces(&self) -> impl Iterator<Item = (NamespaceId, &Namespace<'_>)> {
+	pub fn iter_namespaces(
+		&self,
+	) -> impl Iterator<Item = (NamespaceId, &Namespace<'str, 'vfs, H>)> {
 		self.namespaces
 			.iter()
 			.map(|(key, namespace)| (NamespaceId::new(key), namespace))
@@ -256,25 +257,33 @@ impl<'loc> Catalog<'loc> {
 	/// # Example
 	///
 	/// ```no_run
-
+	/// # use astral::{third_party::slog, Engine, core::{self, string}, resource::{self, assets}};
 	/// # fn main() -> Result<(), astral::resource::assets::Error> {
+	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
+	///	# let engine = Engine::new(&logger);
+	///	# let core_system = core::System::new(&engine);
+	///	# let string_subsystem = string::Subsystem::new(64, &core_system);
+	///	# let resource_system = resource::System::new(&engine);
+	///	# let asset_subsystem = assets::Subsystem::new(&resource_system);
 	/// use astral::core::string::Name;
 	/// use astral::resource::assets::{Catalog, FileSystem, Location, Namespace};
 	///
 	/// let mut namespace = Namespace::new();
-	/// let cwd_index = namespace.add_virtual_file_system(FileSystem::new(".", false)?)?;
+	/// let file_system = FileSystem::new(".", &asset_subsystem,  &string_subsystem)?;
+	/// let cwd_index = namespace.add_virtual_file_system(file_system)?;
 	///
-	/// let mut catalog = Catalog::new();
+	/// let mut catalog = Catalog::default();
 	/// let namespace_id = catalog.add_namespace(namespace);
 	///
-	/// let location = Location::new(namespace_id, Name::from("file.txt"));
+	/// let file_name = Name::new("a.txt", &string_subsystem);
+	/// let location = Location::new(namespace_id, file_name);
 	/// catalog.create(location, Some(cwd_index));
 	/// # Ok(())
 	/// # }
 	/// ```
 	pub fn create(
 		&mut self,
-		location: Location,
+		location: Location<'str, H>,
 		virtual_file_system_index: Option<VirtualFileSystemIndex>,
 	) -> Option<Result<impl Write>> {
 		self.get_namespace_mut(location.namespace_id)
@@ -291,25 +300,33 @@ impl<'loc> Catalog<'loc> {
 	/// # Example
 	///
 	/// ```no_run
-
+	/// # use astral::{third_party::slog, Engine, core::{self, string}, resource::{self, assets}};
 	/// # fn main() -> Result<(), astral::resource::assets::Error> {
+	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
+	///	# let engine = Engine::new(&logger);
+	///	# let core_system = core::System::new(&engine);
+	///	# let string_subsystem = string::Subsystem::new(64, &core_system);
+	///	# let resource_system = resource::System::new(&engine);
+	///	# let asset_subsystem = assets::Subsystem::new(&resource_system);
 	/// use astral::core::string::Name;
 	/// use astral::resource::assets::{Catalog, FileSystem, Location, Namespace};
 	///
 	/// let mut namespace = Namespace::new();
-	/// let cwd_index = namespace.add_virtual_file_system(FileSystem::new(".", false)?)?;
+	/// let file_system = FileSystem::new(".", &asset_subsystem,  &string_subsystem)?;
+	/// let cwd_index = namespace.add_virtual_file_system(file_system)?;
 	///
 	/// let mut catalog = Catalog::new();
 	/// let namespace_id = catalog.add_namespace(namespace);
 	///
-	/// let location = Location::new(namespace_id, Name::from("file.txt"));
+	/// let file_name = Name::new("a.txt", &string_subsystem);
+	/// let location = Location::new(namespace_id, file_name);
 	/// catalog.create_new(location, Some(cwd_index));
 	/// # Ok(())
 	/// # }
 	/// ```
 	pub fn create_new(
 		&mut self,
-		location: Location,
+		location: Location<'str, H>,
 		virtual_file_system_index: Option<VirtualFileSystemIndex>,
 	) -> Option<Result<impl Write>> {
 		self.get_namespace_mut(location.namespace_id)
@@ -326,10 +343,15 @@ impl<'loc> Catalog<'loc> {
 	/// # Example
 	///
 	/// ```no_run
-
+	/// # use astral::{third_party::slog, Engine, core::{self, string}};
+	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
+	///	# let engine = Engine::new(&logger);
+	///	# let core_system = core::System::new(&engine);
+	///	# let string_subsystem = string::Subsystem::new(64, &core_system);
 	/// use astral::core::string::Name;
-	/// use astral::resource::assets::{Catalog, FileSystem, Location, Namespace};
+	/// use astral::resource::assets::{Catalog, Location, Namespace};
 	///
+	/// # #[allow(unused_mut)]
 	/// let mut namespace = Namespace::new();
 	///
 	/// // fill namespace
@@ -337,11 +359,12 @@ impl<'loc> Catalog<'loc> {
 	/// let mut catalog = Catalog::new();
 	/// let namespace_id = catalog.add_namespace(namespace);
 	///
-	/// let location = Location::new(namespace_id, Name::from("does_not_exists.txt"));
+	/// let file_name = Name::new("a.txt", &string_subsystem);
+	/// let location = Location::new(namespace_id, file_name);
 	///
 	/// assert_eq!(catalog.exists(location), false);
 	/// ```
-	pub fn exists(&self, location: Location) -> bool {
+	pub fn exists(&self, location: Location<'str, H>) -> bool {
 		self.get_namespace(location.namespace_id)
 			.map_or(false, |namespace| namespace.exists(location.name))
 	}
@@ -356,9 +379,14 @@ impl<'loc> Catalog<'loc> {
 	/// # Example
 	///
 	/// ```no_run
-
+	/// # #![allow(unused_mut)]
+	/// # use astral::{third_party::slog, Engine, core::{self, string}};
+	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
+	///	# let engine = Engine::new(&logger);
+	///	# let core_system = core::System::new(&engine);
+	///	# let string_subsystem = string::Subsystem::new(64, &core_system);
 	/// use astral::core::string::Name;
-	/// use astral::resource::assets::{Catalog, FileSystem, Location, Namespace};
+	/// use astral::resource::assets::{Catalog, Location, Namespace};
 	///
 	/// let mut namespace = Namespace::new();
 	///
@@ -367,11 +395,12 @@ impl<'loc> Catalog<'loc> {
 	/// let mut catalog = Catalog::new();
 	/// let namespace_id = catalog.add_namespace(namespace);
 	///
-	/// let location = Location::new(namespace_id, Name::from("file.txt"));
+	/// let file_name = Name::new("a.txt", &string_subsystem);
+	/// let location = Location::new(namespace_id, file_name);
 	///
 	/// println!("{:?}", catalog.modified(location));
 	/// ```
-	pub fn modified(&self, location: Location) -> Option<Result<SystemTime>> {
+	pub fn modified(&self, location: Location<'str, H>) -> Option<Result<SystemTime>> {
 		self.get_namespace(location.namespace_id)
 			.and_then(|namespace| namespace.modified(location.name))
 	}
@@ -387,25 +416,34 @@ impl<'loc> Catalog<'loc> {
 	/// # Example
 	///
 	/// ```no_run
-
+	/// # use astral::{third_party::slog, Engine, core::{self, string}, resource::{self, assets}};
 	/// # fn main() -> Result<(), astral::resource::assets::Error> {
+	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
+	///	# let engine = Engine::new(&logger);
+	///	# let core_system = core::System::new(&engine);
+	///	# let string_subsystem = string::Subsystem::new(64, &core_system);
+	///	# let resource_system = resource::System::new(&engine);
+	///	# let asset_subsystem = assets::Subsystem::new(&resource_system);
 	/// use astral::core::string::Name;
 	/// use astral::resource::assets::{Catalog, FileSystem, Location, Namespace};
 	///
 	/// let mut namespace = Namespace::new();
-	/// let cwd_index = namespace.add_virtual_file_system(FileSystem::new(".", false)?)?;
+	/// let file_system = FileSystem::new(".", &asset_subsystem, &string_subsystem)?;
+	/// namespace.add_virtual_file_system(file_system)?;
 	///
 	/// let mut catalog = Catalog::new();
 	/// let namespace_id = catalog.add_namespace(namespace);
 	///
-	/// let location = Location::new(namespace_id, Name::from("file.txt"));
+	/// let file_name = Name::new("a.txt", &string_subsystem);
+	/// let location = Location::new(namespace_id, file_name);
 	/// if let Some(read) = catalog.open(location) {
+	///     # #[allow(unused_variables)]
 	/// 	let file = read?;
 	/// }
 	/// # Ok(())
 	/// # }
 	/// ```
-	pub fn open(&self, location: Location) -> Option<Result<impl Read>> {
+	pub fn open(&self, location: Location<'str, H>) -> Option<Result<impl Read>> {
 		self.get_namespace(location.namespace_id)
 			.and_then(|namespace| namespace.open(location.name))
 	}
@@ -422,38 +460,54 @@ impl<'loc> Catalog<'loc> {
 	/// # Example
 	///
 	/// ```no_run
-
+	/// # use astral::{third_party::slog, Engine, core::{self, string}, resource::{self, assets}};
 	/// # fn main() -> Result<(), astral::resource::assets::Error> {
+	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
+	///	# let engine = Engine::new(&logger);
+	///	# let core_system = core::System::new(&engine);
+	///	# let string_subsystem = string::Subsystem::new(64, &core_system);
+	///	# let resource_system = resource::System::new(&engine);
+	///	# let asset_subsystem = assets::Subsystem::new(&resource_system);
 	/// use astral::core::string::Name;
-	/// use astral::resource::assets::{Catalog, FileSystem, Location, Namespace};
+	/// use astral::resource::assets::{Catalog, FileSystem,Location, Namespace};
 	///
 	/// let mut namespace = Namespace::new();
-	/// let cwd_index = namespace.add_virtual_file_system(FileSystem::new(".", false)?)?;
+	/// let file_system = FileSystem::new(".", &asset_subsystem, &string_subsystem)?;
+	/// namespace.add_virtual_file_system(file_system)?;
 	///
 	/// let mut catalog = Catalog::new();
 	/// let namespace_id = catalog.add_namespace(namespace);
 	///
-	/// let location = Location::new(namespace_id, Name::from("file.txt"));
+	/// let file_name = Name::new("a.txt", &string_subsystem);
+	/// let location = Location::new(namespace_id, file_name);
 	/// if let Some(result) = catalog.remove(location) {
 	/// 	println!("removing file: {:?}", result);
 	/// }
 	/// # Ok(())
 	/// # }
 	/// ```
-	pub fn remove(&mut self, location: Location) -> Option<Result<()>> {
+	pub fn remove(&mut self, location: Location<'str, H>) -> Option<Result<()>> {
 		self.get_namespace_mut(location.namespace_id)
 			.and_then(|namespace| namespace.remove(location.name))
 	}
 }
 
-impl Debug for Catalog<'_> {
+impl Default for Catalog<'_, '_, BuildHasherDefault<Murmur3>> {
+	fn default() -> Self {
+		Self {
+			namespaces: SparseSlotMap::default(),
+		}
+	}
+}
+
+impl<H> Debug for Catalog<'_, '_, H> {
 	fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
 		fmt.debug_map().entries(self.iter_namespaces()).finish()
 	}
 }
 
-impl<'loc> Index<NamespaceId> for Catalog<'loc> {
-	type Output = Namespace<'loc>;
+impl<'str, 'vfs, H> Index<NamespaceId> for Catalog<'str, 'vfs, H> {
+	type Output = Namespace<'str, 'vfs, H>;
 
 	fn index(&self, namespace_id: NamespaceId) -> &Self::Output {
 		self.get_namespace(namespace_id)
@@ -461,7 +515,7 @@ impl<'loc> Index<NamespaceId> for Catalog<'loc> {
 	}
 }
 
-impl IndexMut<NamespaceId> for Catalog<'_> {
+impl<H> IndexMut<NamespaceId> for Catalog<'_, '_, H> {
 	fn index_mut(&mut self, namespace_id: NamespaceId) -> &mut Self::Output {
 		self.get_namespace_mut(namespace_id)
 			.expect("Invalid namespace id")

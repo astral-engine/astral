@@ -5,75 +5,102 @@
 
 use std::{
 	borrow::{Borrow, Cow},
-	cmp::{Ordering, PartialEq, PartialOrd},
+	cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd},
 	error::Error,
 	ffi::{OsStr, OsString},
 	fmt::{self, Debug, Display, Formatter},
-	hash::{Hash, Hasher},
-	iter::FromIterator,
-	num::NonZeroU32,
+	hash::{BuildHasher, BuildHasherDefault, Hash, Hasher},
 	ops::{Deref, Index, Range, RangeFrom, RangeFull, RangeInclusive, RangeTo, RangeToInclusive},
 	path::{Path, PathBuf},
-	str::{self, FromStr},
-	string::ParseError,
+	str,
 };
 
 use crate::hash::Murmur3;
 
-use super::{Name, Utf16Error, Utf8Error, ENTRY_HASH_TABLE, ENTRY_REFERENCE_MAP};
+use super::{Name, StringId, Subsystem, Utf16Error, Utf8Error};
 
 /// A UTF-8 encoded, immutable string.
 ///
 /// # Examples
 ///
-/// You can create a `Text` from a literal string with [`Text::from`]:
+/// `Text` can be created from a literal string:
 ///
 /// ```
+/// # use astral::{third_party::slog, Engine, core::{System, string}};
+///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
+///	# let engine = Engine::new(&logger);
+///	# let system = System::new(&engine);
+///	# let string_subsystem = string::Subsystem::new(64, &system);
 /// use astral::core::string::Text;
 ///
-/// let hello = Text::from("Hello, world!");
+/// let text = Text::new("foo", &string_subsystem);
+/// assert_eq!(text, "foo");
 /// ```
 ///
-/// # Deref
+/// ### Deref
 ///
 /// `Text`s implement [`Deref`]`<Target=str>`, and so inherit all of [`str`]'s
 /// methods. In addition, this means that you can pass a `Text` to a
 /// function which takes a [`&str`][`str`] by using an ampersand (`&`):
 ///
 /// ```
+/// # use astral::{third_party::slog, Engine, core::{System, string}};
+///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
+///	# let engine = Engine::new(&logger);
+///	# let system = System::new(&engine);
+///	# let string_subsystem = string::Subsystem::new(64, &system);
 /// use astral::core::string::Text;
 ///
+/// # #[allow(unused_variables)]
 /// fn takes_str(s: &str) { }
 ///
-/// let s = Text::from("Hello");
+/// let s = Text::new("Hello", &string_subsystem);
 ///
 /// takes_str(&s);
 /// ```
 ///
 /// # Representation
 ///
-/// `Text` stores an index into a global table where the data is stored.
-/// When a new `Text` is created, it is first checked if this `Text` already
-/// exists. If so, it gets the same index as the existing one. If not, a
-/// new entry is created in the table.
+/// `Name` stores a [`StringId`], and a reference to a [`Subsystem`]. When a new `Text` is created,
+/// it is first checked if the string already exists. If so, it gets the same index as the existing
+/// one. If not, a new entry is created.
 ///
-/// The index can be used to trivially check for equality and create a hash.
+/// The [`StringId`] can be used to trivially check for equality.
 ///
-/// [`Text::from`]: core::convert::From
-/// [`Deref`]: core::ops::Deref
-#[derive(Copy, Clone, Eq, PartialEq, Ord, Hash)]
-pub struct Text {
-	index: NonZeroU32,
+/// [`StringId`]: astral_core::string::StringId
+/// [`Subsystem`]: astral_core::string::Subsystem
+/// [`Deref`]: std::ops::Deref
+pub struct Text<'system, H = BuildHasherDefault<Murmur3>> {
+	id: StringId,
+	system: &'system Subsystem<H>,
 }
 
-impl Text {
-	fn new(string: &str) -> Self {
-		let mut hasher = Murmur3::default();
-		Hash::hash_slice(string.as_bytes(), &mut hasher);
-
-		Self {
-			index: ENTRY_HASH_TABLE.find_or_insert(string, hasher.finish()),
-		}
+impl<'system, H> Text<'system, H>
+where
+	H: BuildHasher,
+{
+	/// Creates a `Text` from the given string literal in the specified [`Subsystem`].
+	///
+	/// [`Subsystem`]: astral_core::string::Subsystem
+	///
+	/// # Example
+	///
+	/// ```
+	/// # use astral::{third_party::slog, Engine, core::{System, string}};
+	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
+	///	# let engine = Engine::new(&logger);
+	///	# let system = System::new(&engine);
+	///	# let string_subsystem = string::Subsystem::new(64, &system);
+	/// use astral::core::string::Name;
+	///
+	/// let name = Name::new("foo", &string_subsystem);
+	/// assert_eq!(name, name);
+	/// ```
+	pub fn new<T>(string: T, system: &'system Subsystem<H>) -> Self
+	where
+		T: AsRef<str>,
+	{
+		unsafe { Self::from_raw_parts(system.create_string_id(string), system) }
 	}
 
 	/// Converts a slice of bytes to a `Text`.
@@ -86,26 +113,35 @@ impl Text {
 	/// this function, [`from_utf8_unchecked`], which has the same
 	/// behavior but skips the check.
 	///
-	/// [`from_utf8_unchecked`]: string::Name::from_utf8_unchecked
+	/// [`from_utf8_unchecked`]: astral_core::string::Text::from_utf8_unchecked
 	///
 	/// # Errors
 	///
 	/// Returns [`Err`] if the slice is not UTF-8 with a description as to why the
 	/// provided slice is not UTF-8.
 	///
+	/// See the docs for [`Utf8Error`] for more details on the kinds of
+	/// errors that can be returned.
+	///
+	/// [`Utf8Error`]: astral_core::string::Utf8Error
+	///
 	/// # Examples
 	///
 	/// Basic usage:
 	///
 	/// ```
-
+	/// # use astral::{third_party::slog, Engine, core::{System, string}};
+	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
+	///	# let engine = Engine::new(&logger);
+	///	# let system = System::new(&engine);
+	///	# let string_subsystem = string::Subsystem::new(64, &system);
 	/// use astral::core::string::Text;
 	///
 	/// // some bytes, in a vector
 	/// let sparkle_heart = &[240, 159, 146, 150];
 	///
 	/// // We know these bytes are valid, so just use `unwrap()`.
-	/// let sparkle_heart = Text::from_utf8(sparkle_heart).unwrap();
+	/// let sparkle_heart = Text::from_utf8(sparkle_heart, &string_subsystem).unwrap();
 	///
 	/// assert_eq!("💖", sparkle_heart);
 	/// ```
@@ -113,21 +149,28 @@ impl Text {
 	/// Incorrect bytes:
 	///
 	/// ```
-
+	/// # use astral::{third_party::slog, Engine, core::{System, string}};
+	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
+	///	# let engine = Engine::new(&logger);
+	///	# let system = System::new(&engine);
+	///	# let string_subsystem = string::Subsystem::new(64, &system);
 	/// use astral::core::string::Text;
 	///
 	/// // some invalid bytes, in a vector
 	/// let sparkle_heart = &[0, 159, 146, 150];
 	///
-	/// assert!(Text::from_utf8(sparkle_heart).is_err());
+	/// assert!(Text::from_utf8(sparkle_heart, &string_subsystem).is_err());
 	/// ```
 	///
 	/// See the docs for [`Utf8Error`] for more details on the kinds of
 	/// errors that can be returned.
 	///
-	/// [`Utf8Error`]: string::Utf8Error
-	pub fn from_utf8(v: &[u8]) -> Result<Self, Utf8Error> {
-		Ok(Self::from(str::from_utf8(v).map_err(Utf8Error::from_std)?))
+	/// [`Utf8Error`]: astral_core::string::Utf8Error
+	pub fn from_utf8(v: &[u8], system: &'system Subsystem<H>) -> Result<Self, Utf8Error> {
+		Ok(Self::new(
+			str::from_utf8(v).map_err(Utf8Error::from_std)?,
+			system,
+		))
 	}
 
 	/// Converts a slice of bytes to a `Text`, including invalid characters.
@@ -142,22 +185,26 @@ impl Text {
 	/// of this function, [`from_utf8_unchecked`], which has the same behavior
 	/// but skips the checks.
 	///
-	/// [U+FFFD]: core::char::REPLACEMENT_CHARACTER
-	/// [`from_utf8_unchecked`]: string::Name::from_utf8_unchecked
-	/// [`from_utf8`]: string::Name::from_utf8
+	/// [U+FFFD]: std::char::REPLACEMENT_CHARACTER
+	/// [`from_utf8_unchecked`]: astral_core::string::Text::from_utf8_unchecked
+	/// [`from_utf8`]: astral_core::string::Text::from_utf8
 	///
 	/// # Examples
 	///
 	/// Basic usage:
 	///
 	/// ```
-
+	/// # use astral::{third_party::slog, Engine, core::{System, string}};
+	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
+	///	# let engine = Engine::new(&logger);
+	///	# let system = System::new(&engine);
+	///	# let string_subsystem = string::Subsystem::new(64, &system);
 	/// use astral::core::string::Text;
 	///
 	/// // some bytes, in a vector
 	/// let sparkle_heart = vec![240, 159, 146, 150];
 	///
-	/// let sparkle_heart = Text::from_utf8_lossy(&sparkle_heart);
+	/// let sparkle_heart = Text::from_utf8_lossy(&sparkle_heart, &string_subsystem);
 	///
 	/// assert_eq!("💖", sparkle_heart);
 	/// ```
@@ -165,17 +212,21 @@ impl Text {
 	/// Incorrect bytes:
 	///
 	/// ```
-
+	/// # use astral::{third_party::slog, Engine, core::{System, string}};
+	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
+	///	# let engine = Engine::new(&logger);
+	///	# let system = System::new(&engine);
+	///	# let string_subsystem = string::Subsystem::new(64, &system);
 	/// use astral::core::string::Text;
 	///
 	/// // some invalid bytes
 	/// let input = b"Hello \xF0\x90\x80World";
-	/// let output = Text::from_utf8_lossy(input);
+	/// let output = Text::from_utf8_lossy(input, &string_subsystem);
 	///
 	/// assert_eq!("Hello �World", output);
 	/// ```
-	pub fn from_utf8_lossy(v: &[u8]) -> Self {
-		Self::from(String::from_utf8_lossy(v))
+	pub fn from_utf8_lossy(v: &[u8], system: &'system Subsystem<H>) -> Self {
+		Self::new(String::from_utf8_lossy(v), system)
 	}
 
 	/// Converts a slice of bytes to a `Text` without checking that the
@@ -183,7 +234,7 @@ impl Text {
 	///
 	/// See the safe version, [`from_utf8`], for more details.
 	///
-	/// [`from_utf8`]: string::Name::from_utf8
+	/// [`from_utf8`]: astral_core::string::Text::from_utf8
 	///
 	/// # Safety
 	///
@@ -197,20 +248,24 @@ impl Text {
 	/// Basic usage:
 	///
 	/// ```
-
+	/// # use astral::{third_party::slog, Engine, core::{System, string}};
+	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
+	///	# let engine = Engine::new(&logger);
+	///	# let system = System::new(&engine);
+	///	# let string_subsystem = string::Subsystem::new(64, &system);
 	/// use astral::core::string::Text;
 	///
 	/// // some bytes, in a vector
 	/// let sparkle_heart = &[240, 159, 146, 150];
 	///
 	/// let sparkle_heart = unsafe {
-	///     Text::from_utf8_unchecked(sparkle_heart)
+	///     Text::from_utf8_unchecked(sparkle_heart, &string_subsystem)
 	/// };
 	///
 	/// assert_eq!("💖", sparkle_heart);
 	/// ```
-	pub unsafe fn from_utf8_unchecked(v: &[u8]) -> Self {
-		Self::from(str::from_utf8_unchecked(v))
+	pub unsafe fn from_utf8_unchecked(v: &[u8], system: &'system Subsystem<H>) -> Self {
+		Self::new(str::from_utf8_unchecked(v), system)
 	}
 
 	/// Decode a UTF-16 encoded slice into a `Text`, returning [`Err`]
@@ -221,37 +276,46 @@ impl Text {
 	/// Basic usage:
 	///
 	/// ```
-
+	/// # use astral::{third_party::slog, Engine, core::{System, string}};
+	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
+	///	# let engine = Engine::new(&logger);
+	///	# let system = System::new(&engine);
+	///	# let string_subsystem = string::Subsystem::new(64, &system);
 	/// use astral::core::string::Text;
 	///
 	/// // 𝄞music
 	/// let v = &[0xD834, 0xDD1E, 0x006d, 0x0075,
 	///           0x0073, 0x0069, 0x0063];
-	/// assert_eq!(Text::from("𝄞music"),
-	///            Text::from_utf16(v).unwrap());
+	/// assert_eq!(Text::new("𝄞music", &string_subsystem),
+	///            Text::from_utf16(v, &string_subsystem).unwrap());
 	///
 	/// // 𝄞mu<invalid>ic
 	/// let v = &[0xD834, 0xDD1E, 0x006d, 0x0075,
 	///           0xD800, 0x0069, 0x0063];
-	/// assert!(Text::from_utf16(v).is_err());
+	/// assert!(Text::from_utf16(v, &string_subsystem).is_err());
 	/// ```
-	pub fn from_utf16(v: &[u16]) -> Result<Self, Utf16Error> {
-		Ok(Self::from(
+	pub fn from_utf16(v: &[u16], system: &'system Subsystem<H>) -> Result<Self, Utf16Error> {
+		Ok(Self::new(
 			String::from_utf16(v).map_err(Utf16Error::from_std)?,
+			system,
 		))
 	}
 
 	/// Decode a UTF-16 encoded slice into a `Text`, replacing
 	/// invalid data with [the replacement character (`U+FFFD`)][U+FFFD].
 	///
-	/// [U+FFFD]: core::char::REPLACEMENT_CHARACTER
+	/// [U+FFFD]: std::char::REPLACEMENT_CHARACTER
 	///
 	/// # Examples
 	///
 	/// Basic usage:
 	///
 	/// ```
-
+	/// # use astral::{third_party::slog, Engine, core::{System, string}};
+	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
+	///	# let engine = Engine::new(&logger);
+	///	# let system = System::new(&engine);
+	///	# let string_subsystem = string::Subsystem::new(64, &system);
 	/// use astral::core::string::Text;
 	///
 	/// // 𝄞mus<invalid>ic<invalid>
@@ -259,11 +323,65 @@ impl Text {
 	///           0x0073, 0xDD1E, 0x0069, 0x0063,
 	///           0xD834];
 	///
-	/// assert_eq!(Text::from("𝄞mus\u{FFFD}ic\u{FFFD}"),
-	///            Text::from_utf16_lossy(v));
+	/// assert_eq!(Text::new("𝄞mus\u{FFFD}ic\u{FFFD}", &string_subsystem),
+	///            Text::from_utf16_lossy(v, &string_subsystem));
 	/// ```
-	pub fn from_utf16_lossy(v: &[u16]) -> Self {
-		Self::from(String::from_utf16_lossy(v))
+	pub fn from_utf16_lossy(v: &[u16], system: &'system Subsystem<H>) -> Self {
+		Self::new(String::from_utf16_lossy(v), system)
+	}
+}
+impl<'system, H> Text<'system, H> {
+	/// Creates a `Text` directly from a [`StringId`] in the specified [`Subsystem`].
+	///
+	/// # Safety
+	///
+	/// The `Subsystem` must match the one, which were used to create the `StringId`.
+	///
+	/// # Example
+	///
+	/// ```
+	/// # use astral::{third_party::slog, Engine, core::{System, string}};
+	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
+	///	# let engine = Engine::new(&logger);
+	///	# let system = System::new(&engine);
+	///	# let string_subsystem = string::Subsystem::new(64, &system);
+	/// use astral::core::string::{Text, StringId};
+	///
+	/// let id = StringId::new("Hello, world!", &string_subsystem);
+	/// // safe because the subsystem is the same
+	/// let hello = unsafe { Text::from_raw_parts(id, &string_subsystem) };
+	///
+	/// assert_eq!(hello, "Hello, world!");
+	/// ```
+	///
+	/// [`Subsystem`]: astral_core::string::Subsystem
+	pub unsafe fn from_raw_parts(id: StringId, system: &'system Subsystem<H>) -> Self {
+		Self { id, system }
+	}
+
+	/// Returns the underlying [`StringId`].
+	///
+	/// The `StringId` will be the same, if the strings and the subsystem are equal .
+	///
+	/// # Example
+	///
+	/// ```
+	/// # use astral::{third_party::slog, Engine, core::{System, string}};
+	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
+	///	# let engine = Engine::new(&logger);
+	///	# let system = System::new(&engine);
+	///	# let string_subsystem = string::Subsystem::new(64, &system);
+	/// use astral::core::string::Text;
+	///
+	/// let text1 = Text::new("foo", &string_subsystem);
+	/// let text2 = Text::new("foo", &string_subsystem);
+	///
+	/// assert_eq!(text1.id(), text2.id());
+	/// ```
+	///
+	/// [`StringId`]: astral_core::string::StringId
+	pub fn id(self) -> StringId {
+		self.id
 	}
 
 	/// Extracts a string slice containing the entire `Text`.
@@ -273,19 +391,19 @@ impl Text {
 	/// Basic usage:
 	///
 	/// ```
-
+	/// # use astral::{third_party::slog, Engine, core::{System, string}};
+	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
+	///	# let engine = Engine::new(&logger);
+	///	# let system = System::new(&engine);
+	///	# let string_subsystem = string::Subsystem::new(64, &system);
 	/// use astral::core::string::Text;
 	///
-	/// let s = Text::from("foo");
+	/// let s = Text::new("foo", &string_subsystem);
 	///
 	/// assert_eq!("foo", s.as_str());
 	/// ```
-	pub fn as_str(self) -> &'static str {
-		debug_assert!(
-			ENTRY_REFERENCE_MAP.get(self.index).is_some(),
-			"invalid index"
-		);
-		unsafe { ENTRY_REFERENCE_MAP.get_unchecked(self.index).as_str() }
+	pub fn as_str(self) -> &'system str {
+		self.system.string(self.id)
 	}
 
 	/// Returns `true` if this `Text` has a length of zero.
@@ -297,21 +415,20 @@ impl Text {
 	/// Basic usage:
 	///
 	/// ```
-
+	/// # use astral::{third_party::slog, Engine, core::{System, string}};
+	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
+	///	# let engine = Engine::new(&logger);
+	///	# let system = System::new(&engine);
+	///	# let string_subsystem = string::Subsystem::new(64, &system);
 	/// use astral::core::string::Text;
 	///
-	/// assert!(Text::from("").is_empty());
-	/// assert!(!Text::from("Hello World!").is_empty());
+	/// let s = Text::new("foo", &string_subsystem);
+	///
+	/// assert!(!s.is_empty());
+	/// assert!(Text::new("", &string_subsystem).is_empty());
 	/// ```
 	pub fn is_empty(self) -> bool {
-		debug_assert!(
-			ENTRY_REFERENCE_MAP.get(self.index).is_some(),
-			"invalid index"
-		);
-		unsafe {
-			let entry = ENTRY_REFERENCE_MAP.get_unchecked(self.index);
-			(*entry).is_empty()
-		}
+		self.system.is_empty(self.id)
 	}
 
 	/// Returns the length of this `Text`, in bytes.
@@ -321,141 +438,99 @@ impl Text {
 	/// Basic usage:
 	///
 	/// ```
-
+	/// # use astral::{third_party::slog, Engine, core::{System, string}};
+	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
+	///	# let engine = Engine::new(&logger);
+	///	# let system = System::new(&engine);
+	///	# let string_subsystem = string::Subsystem::new(64, &system);
 	/// use astral::core::string::Text;
 	///
-	/// let a = Text::from("foo");
+	/// let s = Text::new("foo", &string_subsystem);
 	///
-	/// assert_eq!(a.len(), 3);
+	/// assert_eq!(s.len(), 3);
 	/// ```
 	pub fn len(self) -> usize {
-		debug_assert!(
-			ENTRY_REFERENCE_MAP.get(self.index).is_some(),
-			"invalid index"
-		);
-		unsafe {
-			let entry = ENTRY_REFERENCE_MAP.get_unchecked(self.index);
-			(*entry).len() as usize
-		}
+		self.system.len(self.id)
 	}
 }
 
-impl Default for Text {
-	fn default() -> Self {
-		Self::from("")
+impl<H> Clone for Text<'_, H> {
+	fn clone(&self) -> Self {
+		unsafe { Self::from_raw_parts(self.id, self.system) }
 	}
 }
 
-impl From<&str> for Text {
-	fn from(string: &str) -> Self {
-		Self::new(string)
+impl<H> Copy for Text<'_, H> {}
+
+impl<B> Hash for Text<'_, B> {
+	fn hash<H: Hasher>(&self, state: &mut H) {
+		self.id().hash(state);
 	}
 }
 
-impl From<Text> for Box<str> {
-	fn from(string: Text) -> Self {
+impl<H> From<Text<'_, H>> for Box<str> {
+	fn from(string: Text<'_, H>) -> Self {
 		string.to_string().into_boxed_str()
 	}
 }
 
-impl<'a> From<Cow<'a, str>> for Text {
+impl<'system, H> From<Text<'system, H>> for Name<'system, H> {
 	#[inline]
-	fn from(string: Cow<'a, str>) -> Self {
-		Self::from(&string[..])
+	fn from(text: Text<'system, H>) -> Self {
+		unsafe { Self::from_raw_parts(text.id, None, text.system) }
 	}
 }
 
-impl From<Text> for Cow<'_, str> {
+impl<'system, H> From<Text<'system, H>> for Cow<'system, str> {
 	#[inline]
-	fn from(string: Text) -> Cow<'static, str> {
+	fn from(string: Text<'system, H>) -> Cow<'system, str> {
 		Cow::Borrowed(string.as_str())
 	}
 }
 
-impl From<String> for Text {
+impl<H> From<Text<'_, H>> for String {
 	#[inline]
-	fn from(string: String) -> Self {
-		Self::from(&string[..])
-	}
-}
-
-impl From<Text> for String {
-	#[inline]
-	fn from(string: Text) -> Self {
+	fn from(string: Text<'_, H>) -> Self {
 		string.to_string()
 	}
 }
 
-impl From<Text> for OsString {
-	fn from(string: Text) -> Self {
+impl<H> From<Text<'_, H>> for OsString {
+	fn from(string: Text<'_, H>) -> Self {
 		Self::from(&string[..])
 	}
 }
 
-impl From<Text> for PathBuf {
-	fn from(string: Text) -> Self {
+impl<H> From<Text<'_, H>> for PathBuf {
+	fn from(string: Text<'_, H>) -> Self {
 		Self::from(&string[..])
 	}
 }
 
-impl From<Text> for Box<dyn Error> {
-	fn from(string: Text) -> Self {
+impl<H> From<Text<'_, H>> for Box<dyn Error> {
+	fn from(string: Text<'_, H>) -> Self {
 		Self::from(&string[..])
 	}
 }
 
-impl From<Text> for Box<dyn Error + Send + Sync> {
-	fn from(string: Text) -> Self {
+impl<H> From<Text<'_, H>> for Box<dyn Error + Send + Sync> {
+	fn from(string: Text<'_, H>) -> Self {
 		Self::from(&string[..])
 	}
 }
 
-impl FromStr for Text {
-	type Err = ParseError;
-
-	#[inline]
-	fn from_str(s: &str) -> Result<Self, ParseError> {
-		Ok(Self::from(s))
-	}
-}
-
-impl Extend<Text> for String {
-	fn extend<I: IntoIterator<Item = Text>>(&mut self, iter: I) {
+impl<'system, H> Extend<Text<'system, H>> for String
+where
+	H: 'system,
+{
+	fn extend<I: IntoIterator<Item = Text<'system, H>>>(&mut self, iter: I) {
 		for s in iter {
 			self.push_str(&s)
 		}
 	}
 }
 
-macro_rules! impl_from_iter {
-	($lifetime:tt, $ty:ty) => {
-		impl<$lifetime> FromIterator<$ty> for Text {
-			fn from_iter<I: IntoIterator<Item = $ty>>(iter: I) -> Self {
-				let mut buf = String::new();
-				buf.extend(iter);
-				buf.into()
-			}
-		}
-	};
-	($ty:ty) => {
-		impl FromIterator<$ty> for Text {
-			fn from_iter<I: IntoIterator<Item = $ty>>(iter: I) -> Self {
-				let mut buf = String::new();
-				buf.extend(iter);
-				buf.into()
-			}
-		}
-	};
-}
-
-impl_from_iter! { 'a, &'a str }
-impl_from_iter! { char }
-impl_from_iter! { String }
-impl_from_iter! { 'a, Cow<'a, str> }
-impl_from_iter! { Name }
-impl_from_iter! { Text }
-
-impl Deref for Text {
+impl<H> Deref for Text<'_, H> {
 	type Target = str;
 
 	fn deref(&self) -> &Self::Target {
@@ -463,142 +538,131 @@ impl Deref for Text {
 	}
 }
 
-impl Debug for Text {
+impl<H> Debug for Text<'_, H> {
 	fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
 		Debug::fmt(&self[..], fmt)
 	}
 }
 
-impl Display for Text {
+impl<H> Display for Text<'_, H> {
 	fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
 		Display::fmt(&self[..], fmt)
 	}
 }
 
-impl Index<RangeFull> for Text {
-	type Output = str;
+macro_rules! impl_index {
+	($ty:ty) => {
+		impl<H> Index<$ty> for Text<'_, H> {
+			type Output = str;
 
-	#[inline]
-	fn index(&self, _index: RangeFull) -> &str {
-		self.as_str()
-	}
+			#[inline]
+			fn index(&self, index: $ty) -> &str {
+				Index::index(self.as_str(), index)
+			}
+		}
+	};
 }
 
-impl Index<Range<usize>> for Text {
-	type Output = str;
+impl_index!(RangeFull);
+impl_index!(Range<usize>);
+impl_index!(RangeTo<usize>);
+impl_index!(RangeFrom<usize>);
+impl_index!(RangeInclusive<usize>);
+impl_index!(RangeToInclusive<usize>);
 
-	#[inline]
-	fn index(&self, index: Range<usize>) -> &str {
-		Index::index(&self[..], index)
-	}
+macro_rules! impl_as_ref {
+	($ty:ty) => {
+		impl<H> AsRef<$ty> for Text<'_, H> {
+			#[inline]
+			fn as_ref(&self) -> &$ty {
+				AsRef::as_ref(self.as_str())
+			}
+		}
+	};
 }
 
-impl Index<RangeTo<usize>> for Text {
-	type Output = str;
+impl_as_ref!(str);
+impl_as_ref!([u8]);
+impl_as_ref!(OsStr);
+impl_as_ref!(Path);
 
-	#[inline]
-	fn index(&self, index: RangeTo<usize>) -> &str {
-		Index::index(&self[..], index)
-	}
-}
-
-impl Index<RangeFrom<usize>> for Text {
-	type Output = str;
-
-	#[inline]
-	fn index(&self, index: RangeFrom<usize>) -> &str {
-		Index::index(&self[..], index)
-	}
-}
-
-impl Index<RangeInclusive<usize>> for Text {
-	type Output = str;
-
-	#[inline]
-	fn index(&self, index: RangeInclusive<usize>) -> &str {
-		Index::index(&self[..], index)
-	}
-}
-
-impl Index<RangeToInclusive<usize>> for Text {
-	type Output = str;
-
-	#[inline]
-	fn index(&self, index: RangeToInclusive<usize>) -> &str {
-		Index::index(&self[..], index)
-	}
-}
-
-impl Borrow<str> for Text {
+impl<H> Borrow<str> for Text<'_, H> {
 	#[inline]
 	fn borrow(&self) -> &str {
 		self
 	}
 }
 
-impl AsRef<str> for Text {
+impl<H> PartialEq for Text<'_, H> {
 	#[inline]
-	fn as_ref(&self) -> &str {
-		self
+	fn eq(&self, other: &Self) -> bool {
+		let self_system: *const _ = &self.system;
+		let other_system: *const _ = &other.system;
+		if self_system == other_system {
+			self.id == other.id
+		} else {
+			self.as_str() == other.as_str()
+		}
 	}
 }
 
-impl AsRef<[u8]> for Text {
+impl<H> Eq for Text<'_, H> {}
+
+impl<H> PartialOrd for Text<'_, H> {
 	#[inline]
-	fn as_ref(&self) -> &[u8] {
-		self.as_bytes()
+	fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+		let self_system: *const _ = &self.system;
+		let other_system: *const _ = &other.system;
+		if self_system == other_system && self.id == other.id {
+			Some(Ordering::Equal)
+		} else {
+			PartialOrd::partial_cmp(self.as_str(), other.as_str())
+		}
 	}
 }
 
-impl AsRef<OsStr> for Text {
-	fn as_ref(&self) -> &OsStr {
-		(&self[..]).as_ref()
-	}
-}
-
-impl AsRef<Path> for Text {
-	fn as_ref(&self) -> &Path {
-		(&self[..]).as_ref()
+impl<H> Ord for Text<'_, H> {
+	fn cmp(&self, other: &Self) -> Ordering {
+		let self_system: *const _ = &self.system;
+		let other_system: *const _ = &other.system;
+		if self_system == other_system && self.id == other.id {
+			Ordering::Equal
+		} else {
+			Ord::cmp(self.as_str(), other.as_str())
+		}
 	}
 }
 
 macro_rules! impl_cmp {
 	($ty:ty) => {
-		impl PartialEq<$ty> for Text {
+		impl<H> PartialEq<$ty> for Text<'_, H> {
 			#[inline]
 			fn eq(&self, other: &$ty) -> bool {
 				PartialEq::eq(&self[..], &other[..])
 			}
 		}
 
-		impl PartialEq<Text> for $ty {
+		impl<H> PartialEq<Text<'_, H>> for $ty {
 			#[inline]
-			fn eq(&self, other: &Text) -> bool {
+			fn eq(&self, other: &Text<'_, H>) -> bool {
 				PartialEq::eq(&self[..], &other[..])
 			}
 		}
 
-		impl PartialOrd<$ty> for Text {
+		impl<H> PartialOrd<$ty> for Text<'_, H> {
 			#[inline]
 			fn partial_cmp(&self, other: &$ty) -> Option<Ordering> {
 				PartialOrd::partial_cmp(&self[..], &other[..])
 			}
 		}
 
-		impl PartialOrd<Text> for $ty {
+		impl<H> PartialOrd<Text<'_, H>> for $ty {
 			#[inline]
-			fn partial_cmp(&self, other: &Text) -> Option<Ordering> {
+			fn partial_cmp(&self, other: &Text<'_, H>) -> Option<Ordering> {
 				PartialOrd::partial_cmp(&self[..], &other[..])
 			}
 		}
 	};
-}
-
-impl PartialOrd for Text {
-	#[inline]
-	fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-		PartialOrd::partial_cmp(&self[..], &other[..])
-	}
 }
 
 impl_cmp! { str }
@@ -610,193 +674,226 @@ impl_cmp! { Cow<'_, str> }
 mod test {
 	#![allow(clippy::non_ascii_literal, clippy::shadow_unrelated)]
 
+	use astral::third_party::slog;
+
+	use crate::System;
+
 	use super::*;
 
 	#[test]
 	fn test_size() {
-		assert_eq!(std::mem::size_of::<Text>(), 4);
-		assert_eq!(std::mem::size_of::<Option<Text>>(), 4);
-	}
-
-	#[test]
-	fn test_from_str() {
-		let owned: Option<Text> = "string".parse().ok();
-		assert_eq!(owned.as_ref().map(|s| s.deref()), Some("string"));
-	}
-
-	#[test]
-	fn test_from_cow_str() {
-		assert_eq!(Text::from(Cow::Borrowed("string")), "string");
-		assert_eq!(Text::from(Cow::Owned(String::from("string"))), "string");
+		assert_eq!(std::mem::size_of::<Text<'_>>(), 16);
+		assert_eq!(std::mem::size_of::<Option<Text<'_>>>(), 16);
 	}
 
 	#[test]
 	fn test_from_utf8() {
+		let logger = slog::Logger::root(slog::Discard, slog::o!());
+		let engine = astral::Engine::new(&logger);
+		let system = System::new(&engine);
+		let string_subsystem = Subsystem::new(64, &system);
 		let xs = b"hello";
-		assert_eq!(Text::from_utf8(xs).unwrap(), Text::from("hello"));
+		assert_eq!(
+			Text::from_utf8(xs, &string_subsystem).unwrap(),
+			Text::new("hello", &string_subsystem)
+		);
 
 		let xs = "ศไทย中华Việt Nam".as_bytes();
 		assert_eq!(
-			Text::from_utf8(xs).unwrap(),
-			Text::from("ศไทย中华Việt Nam")
+			Text::from_utf8(xs, &string_subsystem).unwrap(),
+			Text::new("ศไทย中华Việt Nam", &string_subsystem)
 		);
 	}
 
 	#[test]
 	fn test_from_utf8_lossy() {
+		let logger = slog::Logger::root(slog::Discard, slog::o!());
+		let engine = astral::Engine::new(&logger);
+		let system = System::new(&engine);
+		let string_subsystem = Subsystem::new(64, &system);
 		let xs = b"hello";
-		assert_eq!(Text::from_utf8_lossy(xs), "hello");
+		assert_eq!(Text::from_utf8_lossy(xs, &string_subsystem), "hello");
 
 		let xs = "ศไทย中华Việt Nam".as_bytes();
 		let ys = "ศไทย中华Việt Nam";
-		assert_eq!(Text::from_utf8_lossy(xs), ys);
+		assert_eq!(Text::from_utf8_lossy(xs, &string_subsystem), ys);
 
 		let xs = b"Hello\xC2 There\xFF Goodbye";
 		assert_eq!(
-			Text::from_utf8_lossy(xs),
-			Text::from("Hello\u{FFFD} There\u{FFFD} Goodbye")
+			Text::from_utf8_lossy(xs, &string_subsystem),
+			Text::new("Hello\u{FFFD} There\u{FFFD} Goodbye", &string_subsystem)
 		);
 
 		let xs = b"Hello\xC0\x80 There\xE6\x83 Goodbye";
 		assert_eq!(
-			Text::from_utf8_lossy(xs),
-			Text::from("Hello\u{FFFD}\u{FFFD} There\u{FFFD} Goodbye")
+			Text::from_utf8_lossy(xs, &string_subsystem),
+			Text::new(
+				"Hello\u{FFFD}\u{FFFD} There\u{FFFD} Goodbye",
+				&string_subsystem
+			)
 		);
 
 		let xs = b"\xF5foo\xF5\x80bar";
 		assert_eq!(
-			Text::from_utf8_lossy(xs),
-			Text::from("\u{FFFD}foo\u{FFFD}\u{FFFD}bar")
+			Text::from_utf8_lossy(xs, &string_subsystem),
+			Text::new("\u{FFFD}foo\u{FFFD}\u{FFFD}bar", &string_subsystem)
 		);
 
 		let xs = b"\xF1foo\xF1\x80bar\xF1\x80\x80baz";
 		assert_eq!(
-			Text::from_utf8_lossy(xs),
-			Text::from("\u{FFFD}foo\u{FFFD}bar\u{FFFD}baz")
+			Text::from_utf8_lossy(xs, &string_subsystem),
+			Text::new("\u{FFFD}foo\u{FFFD}bar\u{FFFD}baz", &string_subsystem)
 		);
 
 		let xs = b"\xF4foo\xF4\x80bar\xF4\xBFbaz";
 		assert_eq!(
-			Text::from_utf8_lossy(xs),
-			Text::from("\u{FFFD}foo\u{FFFD}bar\u{FFFD}\u{FFFD}baz")
+			Text::from_utf8_lossy(xs, &string_subsystem),
+			Text::new(
+				"\u{FFFD}foo\u{FFFD}bar\u{FFFD}\u{FFFD}baz",
+				&string_subsystem
+			)
 		);
 
 		let xs = b"\xF0\x80\x80\x80foo\xF0\x90\x80\x80bar";
 		assert_eq!(
-			Text::from_utf8_lossy(xs),
-			Text::from("\u{FFFD}\u{FFFD}\u{FFFD}\u{FFFD}foo\u{10000}bar")
+			Text::from_utf8_lossy(xs, &string_subsystem),
+			Text::new(
+				"\u{FFFD}\u{FFFD}\u{FFFD}\u{FFFD}foo\u{10000}bar",
+				&string_subsystem
+			)
 		);
 
 		// surrogates
 		let xs = b"\xED\xA0\x80foo\xED\xBF\xBFbar";
 		assert_eq!(
-			Text::from_utf8_lossy(xs),
-			Text::from("\u{FFFD}\u{FFFD}\u{FFFD}foo\u{FFFD}\u{FFFD}\u{FFFD}bar")
+			Text::from_utf8_lossy(xs, &string_subsystem),
+			Text::new(
+				"\u{FFFD}\u{FFFD}\u{FFFD}foo\u{FFFD}\u{FFFD}\u{FFFD}bar",
+				&string_subsystem
+			)
 		);
 	}
 
 	#[test]
 	fn test_from_utf16() {
-		let pairs: [(Text, Vec<u16>); 5] = [(Text::from("𐍅𐌿𐌻𐍆𐌹𐌻𐌰\n"),
+		let logger = slog::Logger::root(slog::Discard, slog::o!());
+		let engine = astral::Engine::new(&logger);
+		let system = System::new(&engine);
+		let string_subsystem = Subsystem::new(64, &system);
+		let pairs: [(Text<'_>, Vec<u16>); 5] = [(Text::new("𐍅𐌿𐌻𐍆𐌹𐌻𐌰\n", &string_subsystem),
                   vec![0xd800, 0xdf45, 0xd800, 0xdf3f, 0xd800, 0xdf3b, 0xd800, 0xdf46, 0xd800,
                        0xdf39, 0xd800, 0xdf3b, 0xd800, 0xdf30, 0x000a]),
 
-                 (Text::from("𐐒𐑉𐐮𐑀𐐲𐑋 𐐏𐐲𐑍\n"),
+                 (Text::new("𐐒𐑉𐐮𐑀𐐲𐑋 𐐏𐐲𐑍\n", &string_subsystem),
                   vec![0xd801, 0xdc12, 0xd801, 0xdc49, 0xd801, 0xdc2e, 0xd801, 0xdc40, 0xd801,
                        0xdc32, 0xd801, 0xdc4b, 0x0020, 0xd801, 0xdc0f, 0xd801, 0xdc32, 0xd801,
                        0xdc4d, 0x000a]),
 
-                 (Text::from("𐌀𐌖𐌋𐌄𐌑𐌉·𐌌𐌄𐌕𐌄𐌋𐌉𐌑\n"),
+                 (Text::new("𐌀𐌖𐌋𐌄𐌑𐌉·𐌌𐌄𐌕𐌄𐌋𐌉𐌑\n", &string_subsystem),
                   vec![0xd800, 0xdf00, 0xd800, 0xdf16, 0xd800, 0xdf0b, 0xd800, 0xdf04, 0xd800,
                        0xdf11, 0xd800, 0xdf09, 0x00b7, 0xd800, 0xdf0c, 0xd800, 0xdf04, 0xd800,
                        0xdf15, 0xd800, 0xdf04, 0xd800, 0xdf0b, 0xd800, 0xdf09, 0xd800, 0xdf11,
                        0x000a]),
 
-                 (Text::from("𐒋𐒘𐒈𐒑𐒛𐒒 𐒕𐒓 𐒈𐒚𐒍 𐒏𐒜𐒒𐒖𐒆 𐒕𐒆\n"),
+                 (Text::new("𐒋𐒘𐒈𐒑𐒛𐒒 𐒕𐒓 𐒈𐒚𐒍 𐒏𐒜𐒒𐒖𐒆 𐒕𐒆\n", &string_subsystem),
                   vec![0xd801, 0xdc8b, 0xd801, 0xdc98, 0xd801, 0xdc88, 0xd801, 0xdc91, 0xd801,
                        0xdc9b, 0xd801, 0xdc92, 0x0020, 0xd801, 0xdc95, 0xd801, 0xdc93, 0x0020,
                        0xd801, 0xdc88, 0xd801, 0xdc9a, 0xd801, 0xdc8d, 0x0020, 0xd801, 0xdc8f,
                        0xd801, 0xdc9c, 0xd801, 0xdc92, 0xd801, 0xdc96, 0xd801, 0xdc86, 0x0020,
                        0xd801, 0xdc95, 0xd801, 0xdc86, 0x000a]),
-                 (Text::from("\u{20000}"), vec![0xD840, 0xDC00])];
+                 (Text::new("\u{20000}", &string_subsystem), vec![0xD840, 0xDC00])];
 
 		for p in &pairs {
 			let (s, u) = (*p).clone();
 			let s_str = s.as_str();
 			let s_as_utf16 = s_str.encode_utf16().collect::<Vec<u16>>();
-			let u_as_string = Text::from_utf16(&u).unwrap().as_str();
+			let u_as_string = Text::from_utf16(&u, &string_subsystem).unwrap().as_str();
 
 			assert!(std::char::decode_utf16(u.iter().cloned()).all(|r| r.is_ok()));
 			assert_eq!(s_as_utf16, u);
 
 			assert_eq!(u_as_string, s);
-			assert_eq!(Text::from_utf16_lossy(&u), s);
+			assert_eq!(Text::from_utf16_lossy(&u, &string_subsystem), s);
 
-			assert_eq!(Text::from_utf16(&s_as_utf16).unwrap(), s);
+			assert_eq!(Text::from_utf16(&s_as_utf16, &string_subsystem).unwrap(), s);
 			assert_eq!(u_as_string.encode_utf16().collect::<Vec<u16>>(), u);
 		}
 	}
 
 	#[test]
 	fn test_utf16_invalid() {
+		let logger = slog::Logger::root(slog::Discard, slog::o!());
+		let engine = astral::Engine::new(&logger);
+		let system = System::new(&engine);
+		let string_subsystem = Subsystem::new(64, &system);
+
 		// completely positive cases tested above.
 		// lead + eof
-		assert!(Text::from_utf16(&[0xD800]).is_err());
+		assert!(Text::from_utf16(&[0xD800], &string_subsystem).is_err());
 		// lead + lead
-		assert!(Text::from_utf16(&[0xD800, 0xD800]).is_err());
+		assert!(Text::from_utf16(&[0xD800, 0xD800], &string_subsystem).is_err());
 
 		// isolated trail
-		assert!(Text::from_utf16(&[0x0061, 0xDC00]).is_err());
+		assert!(Text::from_utf16(&[0x0061, 0xDC00], &string_subsystem).is_err());
 
 		// general
-		assert!(Text::from_utf16(&[0xD800, 0xd801, 0xdc8b, 0xD800]).is_err());
+		assert!(Text::from_utf16(&[0xD800, 0xd801, 0xdc8b, 0xD800], &string_subsystem).is_err());
 	}
 
 	#[test]
 	fn test_from_utf16_lossy() {
+		let logger = slog::Logger::root(slog::Discard, slog::o!());
+		let engine = astral::Engine::new(&logger);
+		let system = System::new(&engine);
+		let string_subsystem = Subsystem::new(64, &system);
+
 		// completely positive cases tested above.
 		// lead + eof
-		assert_eq!(Text::from_utf16_lossy(&[0xD800]), Text::from("\u{FFFD}"));
+		assert_eq!(
+			Text::from_utf16_lossy(&[0xD800], &string_subsystem),
+			Text::new("\u{FFFD}", &string_subsystem)
+		);
 		// lead + lead
 		assert_eq!(
-			Text::from_utf16_lossy(&[0xD800, 0xD800]),
-			Text::from("\u{FFFD}\u{FFFD}")
+			Text::from_utf16_lossy(&[0xD800, 0xD800], &string_subsystem),
+			Text::new("\u{FFFD}\u{FFFD}", &string_subsystem)
 		);
 
 		// isolated trail
 		assert_eq!(
-			Text::from_utf16_lossy(&[0x0061, 0xDC00]),
-			Text::from("a\u{FFFD}")
+			Text::from_utf16_lossy(&[0x0061, 0xDC00], &string_subsystem),
+			Text::new("a\u{FFFD}", &string_subsystem)
 		);
 
 		// general
 		assert_eq!(
-			Text::from_utf16_lossy(&[0xD800, 0xd801, 0xdc8b, 0xD800]),
-			Text::from("\u{FFFD}𐒋\u{FFFD}")
+			Text::from_utf16_lossy(&[0xD800, 0xd801, 0xdc8b, 0xD800], &string_subsystem),
+			Text::new("\u{FFFD}𐒋\u{FFFD}", &string_subsystem)
 		);
 	}
 
-	// Returning `mut` is allowed because of `UnsafeCell`
 	#[allow(clippy::string_extend_chars)]
+	// Returning `mut` is allowed because of `UnsafeCell`
 	#[test]
 	fn test_from_iterator() {
-		let s = Text::from("ศไทย中华Việt Nam");
+		let logger = slog::Logger::root(slog::Discard, slog::o!());
+		let engine = astral::Engine::new(&logger);
+		let system = System::new(&engine);
+		let string_subsystem = Subsystem::new(64, &system);
+
+		let s = Text::new("ศไทย中华Việt Nam", &string_subsystem);
 		let t = "ศไทย中华";
 		let u = "Việt Nam";
 
-		let a: Text = s.chars().collect();
+		let mut a = t.to_string();
+		a.extend(u.chars());
 		assert_eq!(s, a);
 
-		let mut b = t.to_string();
-		b.extend(u.chars());
+		let b: String = vec![t, u].into_iter().collect();
 		assert_eq!(s, b);
 
-		let c: String = vec![t, u].into_iter().collect();
+		let mut c = t.to_string();
+		c.extend(vec![u]);
 		assert_eq!(s, c);
-
-		let mut d = t.to_string();
-		d.extend(vec![u]);
-		assert_eq!(s, d);
 	}
-
 }

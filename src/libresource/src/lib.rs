@@ -15,7 +15,21 @@
 	html_no_source,
 	html_logo_url = "https://astral-engine.github.io/docs/logo_astral.svg",
 	html_favicon_url = "https://astral-engine.github.io/docs/logo.svg",
-	html_root_url = "https://astral-engine.github.io/docs"
+	html_root_url = "https://astral-engine.github.io/docs",
+	test(attr(deny(
+		future_incompatible,
+		nonstandard_style,
+		rust_2018_compatibility,
+		rust_2018_idioms,
+		unused,
+		macro_use_extern_crate,
+		trivial_casts,
+		trivial_numeric_casts,
+		unused_import_braces,
+		unused_lifetimes,
+		unused_qualifications,
+		variant_size_differences,
+	)))
 )]
 #![warn(
 	future_incompatible,
@@ -48,9 +62,9 @@ mod declaration;
 mod error;
 mod load_data;
 mod load_priority;
-mod registry;
+// mod registry;
 mod resource;
-mod resource_id;
+// mod resource_id;
 mod system;
 
 pub use self::{
@@ -58,8 +72,6 @@ pub use self::{
 	error::{Error, ErrorKind, Result},
 	load_data::LoadData,
 	load_priority::LoadPriority,
-	registry::{Loader, State},
 	resource::Resource,
-	resource_id::ResourceId,
 	system::System,
 };

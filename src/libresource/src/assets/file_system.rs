@@ -6,12 +6,17 @@
 use std::{
 	boxed::Box,
 	fs::{self, OpenOptions},
+	hash::{BuildHasher, BuildHasherDefault},
 	io::{Read, Write},
 	path::{Component, PathBuf},
 	time::SystemTime,
 };
 
-use astral_core::{error::ResultExt, string::Name};
+use astral_core::{
+	error::ResultExt,
+	hash::Murmur3,
+	string::{self, Name},
+};
 use astral_engine::third_party::{
 	slog::{error, o, warn, Logger},
 	walkdir::WalkDir,
@@ -21,36 +26,56 @@ use super::{ErrorKind, Result, Subsystem, VirtualFileSystem};
 
 /// A `FileSystem` is a view into the systems file system.
 #[derive(Debug)]
-pub struct FileSystem {
+pub struct FileSystem<'str, 'ass, H = BuildHasherDefault<Murmur3>> {
 	logger: Logger,
 	root: PathBuf,
 	recursive: bool,
+	string_subsystem: &'str string::Subsystem<H>,
+	asset_subsystem: &'ass Subsystem,
 }
 
-impl FileSystem {
+impl<'str, 'ass, H> FileSystem<'str, 'ass, H> {
 	/// Construct a new `FileSystem` at the specified root path.
 	/// If wished, the file system can search files in a recursive manner.
 	///
 	/// # Example
 	///
 	/// ```no_run
+	/// # use astral::{third_party::slog, Engine, core::{self, string}, resource::{self, assets}};
 	/// # fn main() -> Result<(), astral::resource::assets::Error> {
-	/// use astral::resource::assets::{FileSystem, VirtualFileSystem};
+	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
+	///	# let engine = Engine::new(&logger);
+	///	# let core_system = core::System::new(&engine);
+	///	# let string_subsystem = string::Subsystem::new(64, &core_system);
+	///	# let resource_system = resource::System::new(&engine);
+	///	# let asset_subsystem = assets::Subsystem::new(&resource_system);
+	/// use astral::{
+	/// 	core::string::Name,
+	/// 	resource::assets::{FileSystem, VirtualFileSystem},
+	/// };
 	///
-	/// let file_system = FileSystem::new(".", false)?;
-	/// let file = file_system.open("a.txt".into())?;
+	/// let file_system = FileSystem::new(".", &asset_subsystem, &string_subsystem)?;
+	/// let file_name = Name::new("a.txt", &string_subsystem);
+	/// # #[allow(unused_variables)]
+	/// let file = file_system.open(file_name.into())?;
 	/// # Ok(())
 	/// # }
 	/// ```
 	#[allow(clippy::new_ret_no_self)]
-	pub fn new<P: Into<PathBuf>>(subsystem: &Subsystem, root: P, recursive: bool) -> Result<Self> {
+	pub fn new<P: Into<PathBuf>>(
+		root: P,
+		asset_subsystem: &'ass Subsystem,
+		string_subsystem: &'str string::Subsystem<H>,
+	) -> Result<Self> {
 		let root = root.into();
 		Ok(Self {
-			logger: subsystem
+			logger: asset_subsystem
 				.logger()
-				.new(o!("filesystem" => root.to_string_lossy().to_string())),
+				.new(o!("file system" => root.to_string_lossy().to_string())),
 			root,
-			recursive,
+			recursive: true,
+			string_subsystem,
+			asset_subsystem,
 		})
 	}
 
@@ -59,16 +84,19 @@ impl FileSystem {
 		unimplemented!()
 	}
 
-	fn concat_path(&self, path: Name) -> PathBuf {
+	fn concat_path(&self, path: Name<'str, H>) -> PathBuf {
 		let mut path_buf = self.root.clone();
 		path_buf.push(path.to_string());
 		path_buf
 	}
 }
 
-impl VirtualFileSystem for FileSystem {
-	fn name(&self) -> Name {
-		self.root.to_string_lossy().into()
+impl<'str, H> VirtualFileSystem<'str, H> for FileSystem<'str, '_, H>
+where
+	H: BuildHasher + std::fmt::Debug + Send + Sync,
+{
+	fn name(&self) -> Name<'str, H> {
+		Name::new(self.root.to_string_lossy(), self.string_subsystem)
 	}
 
 	fn readonly(&self) -> bool {
@@ -78,7 +106,7 @@ impl VirtualFileSystem for FileSystem {
 			.unwrap_or(false)
 	}
 
-	fn iter<'a>(&'a self) -> Result<Box<dyn Iterator<Item = Name> + 'a>> {
+	fn iter<'a>(&'a self) -> Result<Box<dyn Iterator<Item = Name<'str, H>> + 'a>> {
 		let mut walk_dir = WalkDir::new(&self.root).min_depth(1);
 		if !self.recursive {
 			walk_dir = walk_dir.max_depth(1);
@@ -136,9 +164,9 @@ impl VirtualFileSystem for FileSystem {
 								}
 							}
 
-							Some(buf.into())
+							Some(Name::new(&buf, self.string_subsystem))
 						}
-						Ok(path) => Some(path.to_string_lossy().into()),
+						Ok(path) => Some(Name::new(path.to_string_lossy(), self.string_subsystem)),
 						Err(err) => {
 							warn!(
 								self.logger,
@@ -152,7 +180,7 @@ impl VirtualFileSystem for FileSystem {
 		))
 	}
 
-	fn create(&mut self, path: Name) -> Result<Box<dyn Write>> {
+	fn create(&mut self, path: Name<'str, H>) -> Result<Box<dyn Write>> {
 		let path = self.concat_path(path);
 		Ok(Box::new(
 			OpenOptions::new()
@@ -165,7 +193,7 @@ impl VirtualFileSystem for FileSystem {
 		))
 	}
 
-	fn create_new(&mut self, path: Name) -> Result<Box<dyn Write>> {
+	fn create_new(&mut self, path: Name<'str, H>) -> Result<Box<dyn Write>> {
 		let path = self.concat_path(path);
 		Ok(Box::new(
 			OpenOptions::new()
@@ -178,11 +206,11 @@ impl VirtualFileSystem for FileSystem {
 		))
 	}
 
-	fn exists(&self, path: Name) -> bool {
+	fn exists(&self, path: Name<'str, H>) -> bool {
 		self.concat_path(path).exists()
 	}
 
-	fn modified(&self, path: Name) -> Result<SystemTime> {
+	fn modified(&self, path: Name<'str, H>) -> Result<SystemTime> {
 		Ok(self
 			.concat_path(path)
 			.metadata()
@@ -191,7 +219,7 @@ impl VirtualFileSystem for FileSystem {
 			.context(ErrorKind::Io)?)
 	}
 
-	fn open(&self, path: Name) -> Result<Box<dyn Read>> {
+	fn open(&self, path: Name<'str, H>) -> Result<Box<dyn Read>> {
 		let path = self.concat_path(path);
 		Ok(Box::new(
 			OpenOptions::new()
@@ -201,7 +229,7 @@ impl VirtualFileSystem for FileSystem {
 		))
 	}
 
-	fn remove(&mut self, path: Name) -> Result<()> {
+	fn remove(&mut self, path: Name<'str, H>) -> Result<()> {
 		let path = self.concat_path(path);
 		fs::remove_file(&path)
 			.chain_with(ErrorKind::Io, || format!("Could not open path {:?}", path))

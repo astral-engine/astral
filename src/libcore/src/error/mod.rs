@@ -219,7 +219,7 @@ impl<Kind> Error<Kind> {
 	/// impl error::Error for MyError {}
 	///
 	/// impl Display for MyError {
-	///     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+	///     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 	///         write!(f, "MyError: {}", &self.v)
 	///     }
 	/// }
@@ -264,7 +264,7 @@ impl<Kind> Error<Kind> {
 	/// # Example
 	///
 	/// ```rust
-	/// # use std::fmt::{self, Debug, Display, Formatter};
+	/// # use std::fmt::{self, Display, Formatter};
 	/// # #[derive(Debug)] enum MyErrorKind { Variant }
 	/// # impl Display for MyErrorKind {
 	/// #     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {

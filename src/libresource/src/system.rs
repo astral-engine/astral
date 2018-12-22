@@ -20,6 +20,7 @@ impl System {
 	///
 	/// # let logger = slog::Logger::root(slog::Discard, slog::o!());
 	///	let engine = Engine::new(&logger);
+	/// # #[allow(unused_variables)]
 	/// let resource_system = resource::System::new(&engine);
 	/// ```
 	pub fn new(engine: &astral_engine::Engine) -> Self {
@@ -41,6 +42,7 @@ impl System {
 	///
 	/// # let logger = slog::Logger::root(slog::Discard, slog::o!());
 	/// # let engine = astral::Engine::new(&logger);
+	/// # #[allow(unused_variables)]
 	/// let resource_system = resource::System::new(&engine);
 	///
 	/// info!(resource_system.logger(), "foo bar"; "additional" => "information");

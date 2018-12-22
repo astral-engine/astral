@@ -5,6 +5,8 @@
 
 use crate::System;
 
+use std::fmt::{self, Debug, Formatter};
+
 use astral_engine::third_party::slog::{info, o, Logger};
 
 pub struct Subsystem {
@@ -28,6 +30,7 @@ impl Subsystem {
 	/// # let logger = slog::Logger::root(slog::Discard, slog::o!());
 	///	let engine = Engine::new(&logger);
 	/// let resource_system = resource::System::new(&engine);
+	/// # #[allow(unused_variables)]
 	/// let asset_subsystem = assets::Subsystem::new(&resource_system);
 	/// ```
 	pub fn new(system: &System) -> Self {
@@ -48,15 +51,21 @@ impl Subsystem {
 	/// };
 	/// # use astral::third_party::slog;
 	///
-	/// # let logger = slog::Logger::root(slog::Discard, slog::o!());
-	/// # let engine = astral::Engine::new(&logger);
-	/// # let resource_system = resource::System::new(&engine);
+	/// let logger = slog::Logger::root(slog::Discard, slog::o!());
+	/// let engine = Engine::new(&logger);
+	/// let resource_system = resource::System::new(&engine);
 	/// let asset_subsystem = assets::Subsystem::new(&resource_system);
 	///
 	/// info!(asset_subsystem.logger(), "foo bar"; "additional" => "information");
 	/// ```
 	pub fn logger(&self) -> &Logger {
 		&self.log
+	}
+}
+
+impl Debug for Subsystem {
+	fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
+		fmt.debug_struct("Subsystem").finish()
 	}
 }
 

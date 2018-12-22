@@ -12,7 +12,12 @@ use std::{
 	time::SystemTime,
 };
 
-use astral_core::{collections::SparseSlotMap, error::OptionExt, hash::NopHasher, string::Name};
+use astral_core::{
+	collections::SparseSlotMap,
+	error::OptionExt,
+	hash::{Murmur3, NopHasher},
+	string::Name,
+};
 
 use super::{Error, ErrorKind, Result, VirtualFileSystem, VirtualFileSystemIndex};
 
@@ -23,13 +28,12 @@ use super::{Error, ErrorKind, Result, VirtualFileSystem, VirtualFileSystemIndex}
 ///
 /// [`VirtualFileSystem`]: trait.VirtualFileSystem.html
 /// [`reload`]: #method.reload
-#[derive(Default)]
-pub struct Namespace<'loc> {
-	virtual_file_systems: SparseSlotMap<Box<dyn VirtualFileSystem + 'loc>>,
-	paths: HashMap<Name, VirtualFileSystemIndex, BuildHasherDefault<NopHasher>>,
+pub struct Namespace<'str, 'vfs, H = BuildHasherDefault<Murmur3>> {
+	virtual_file_systems: SparseSlotMap<Box<dyn VirtualFileSystem<'str, H> + 'vfs>>,
+	paths: HashMap<Name<'str, H>, VirtualFileSystemIndex, BuildHasherDefault<NopHasher>>,
 }
 
-impl<'loc> Namespace<'loc> {
+impl<'str, 'vfs, H> Namespace<'str, 'vfs, H> {
 	/// Construct a new empty `Namespace`.
 	///
 	/// # Example
@@ -37,11 +41,14 @@ impl<'loc> Namespace<'loc> {
 	/// ```
 	/// use astral::resource::assets::Namespace;
 	///
-	/// let namespace = Namespace::new();
+	/// let namespace: Namespace<'_, '_> = Namespace::new();
 	/// assert!(namespace.is_empty());
 	/// ```
 	pub fn new() -> Self {
-		Self::default()
+		Self {
+			virtual_file_systems: SparseSlotMap::default(),
+			paths: HashMap::default(),
+		}
 	}
 
 	/// Construct a new, empty `Namespace` with the specified capacity.
@@ -53,20 +60,29 @@ impl<'loc> Namespace<'loc> {
 	/// # Example
 	///
 	/// ```
+	/// # use astral::{third_party::slog, Engine, core::{self, string}, resource::{self, assets}};
 	/// # fn main() -> Result<(), astral::resource::assets::Error> {
+	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
+	///	# let engine = Engine::new(&logger);
+	///	# let core_system = core::System::new(&engine);
+	///	# let string_subsystem = string::Subsystem::new(64, &core_system);
+	///	# let resource_system = resource::System::new(&engine);
+	///	# let asset_subsystem = assets::Subsystem::new(&resource_system);
 	/// use astral::resource::assets::{Namespace, FileSystem};
 	///
-	/// let mut namespace = Namespace::with_capacity(1, 100);
+	/// let mut namespace: Namespace<'_, '_> = Namespace::with_capacity(1, 100);
 	///
 	/// // The namespace contains no items, even though it has capacity for more
 	/// assert_eq!(namespace.virtual_file_systems(), 0);
 	///
 	/// // This can be done without reallocating,
 	/// // assuming there are no more than 100 files...
-	/// namespace.add_virtual_file_system(FileSystem::new(".", false)?);
+	/// let file_system = FileSystem::new(".", &asset_subsystem, &string_subsystem)?;
+	/// namespace.add_virtual_file_system(file_system)?;
 	///
 	/// // ...but this may make the namespace reallocate
-	/// namespace.add_virtual_file_system(FileSystem::new("..", false)?);
+	/// let file_system = FileSystem::new("..", &asset_subsystem, &string_subsystem)?;
+	/// namespace.add_virtual_file_system(file_system)?;
 	/// # Ok(())
 	/// # }
 	/// ```
@@ -84,13 +100,21 @@ impl<'loc> Namespace<'loc> {
 	/// # Example
 	///
 	/// ```
+	/// # use astral::{third_party::slog, Engine, core::{self, string}, resource::{self, assets}};
 	/// # fn main() -> Result<(), astral::resource::assets::Error> {
+	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
+	///	# let engine = Engine::new(&logger);
+	///	# let core_system = core::System::new(&engine);
+	///	# let string_subsystem = string::Subsystem::new(64, &core_system);
+	///	# let resource_system = resource::System::new(&engine);
+	///	# let asset_subsystem = assets::Subsystem::new(&resource_system);
 	/// use astral::resource::assets::{Namespace, FileSystem};
 	///
-	/// let mut namespace = Namespace::with_capacity(1, 100);
+	/// let mut namespace = Namespace::default();
 	///
 	/// assert_eq!(namespace.virtual_file_systems(), 0);
-	/// namespace.add_virtual_file_system(FileSystem::new(".", false)?);
+	/// let file_system = FileSystem::new(".", &asset_subsystem, &string_subsystem)?;
+	/// namespace.add_virtual_file_system(file_system)?;
 	/// assert_eq!(namespace.virtual_file_systems(), 1);
 	/// # Ok(())
 	/// # }
@@ -104,13 +128,21 @@ impl<'loc> Namespace<'loc> {
 	/// # Example
 	///
 	/// ```
+	/// # use astral::{third_party::slog, Engine, core::{self, string}, resource::{self, assets}};
 	/// # fn main() -> Result<(), astral::resource::assets::Error> {
+	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
+	///	# let engine = Engine::new(&logger);
+	///	# let core_system = core::System::new(&engine);
+	///	# let string_subsystem = string::Subsystem::new(64, &core_system);
+	///	# let resource_system = resource::System::new(&engine);
+	///	# let asset_subsystem = assets::Subsystem::new(&resource_system);
 	/// use astral::resource::assets::{Namespace, FileSystem};
 	///
-	/// let mut namespace = Namespace::new();
+	/// let mut namespace = Namespace::default();
 	///
 	/// assert_eq!(namespace.files(), 0);
-	/// namespace.add_virtual_file_system(FileSystem::new(".", false)?);
+	/// let file_system = FileSystem::new(".", &asset_subsystem, &string_subsystem)?;
+	/// namespace.add_virtual_file_system(file_system)?;
 	/// assert!(namespace.files() > 0);
 	/// # Ok(())
 	/// # }
@@ -126,13 +158,21 @@ impl<'loc> Namespace<'loc> {
 	/// # Example
 	///
 	/// ```
+	/// # use astral::{third_party::slog, Engine, core::{self, string}, resource::{self, assets}};
 	/// # fn main() -> Result<(), astral::resource::assets::Error> {
+	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
+	///	# let engine = Engine::new(&logger);
+	///	# let core_system = core::System::new(&engine);
+	///	# let string_subsystem = string::Subsystem::new(64, &core_system);
+	///	# let resource_system = resource::System::new(&engine);
+	///	# let asset_subsystem = assets::Subsystem::new(&resource_system);
 	/// use astral::resource::assets::{Namespace, FileSystem};
 	///
-	/// let mut namespace = Namespace::new();
+	/// let mut namespace = Namespace::default();
 	///
 	/// assert!(namespace.is_empty());
-	/// namespace.add_virtual_file_system(FileSystem::new(".", false)?);
+	/// let file_system = FileSystem::new(".", &asset_subsystem, &string_subsystem)?;
+	/// namespace.add_virtual_file_system(file_system)?;
 	/// assert!(!namespace.is_empty());
 	/// # Ok(())
 	/// # }
@@ -150,17 +190,25 @@ impl<'loc> Namespace<'loc> {
 	/// # Example
 	///
 	/// ```no_run
+	/// # use astral::{third_party::slog, Engine, core::{self, string}, resource::{self, assets}};
 	/// # fn main() -> Result<(), astral::resource::assets::Error> {
+	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
+	///	# let engine = Engine::new(&logger);
+	///	# let core_system = core::System::new(&engine);
+	///	# let string_subsystem = string::Subsystem::new(64, &core_system);
+	///	# let resource_system = resource::System::new(&engine);
+	///	# let asset_subsystem = assets::Subsystem::new(&resource_system);
 	/// use astral::resource::assets::{Namespace, FileSystem};
 	///
 	/// let mut namespace = Namespace::new();
-	/// let cwd_index = namespace.add_virtual_file_system(FileSystem::new(".", false)?)?;
+	/// let file_system = FileSystem::new(".", &asset_subsystem, &string_subsystem)?;
+	/// namespace.add_virtual_file_system(file_system)?;
 	/// # Ok(())
 	/// # }
 	/// ```
 	pub fn add_virtual_file_system(
 		&mut self,
-		virtual_file_system: impl Into<Box<dyn VirtualFileSystem + 'loc>>,
+		virtual_file_system: impl Into<Box<dyn VirtualFileSystem<'str, H> + 'vfs>>,
 	) -> Result<VirtualFileSystemIndex> {
 		let virtual_file_system = virtual_file_system.into();
 		let index = VirtualFileSystemIndex::new(self.virtual_file_systems.create_key());
@@ -190,12 +238,20 @@ impl<'loc> Namespace<'loc> {
 	/// # Example
 	///
 	/// ```
+	/// # use astral::{third_party::slog, Engine, core::{self, string}, resource::{self, assets}};
 	/// # fn main() -> Result<(), astral::resource::assets::Error> {
+	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
+	///	# let engine = Engine::new(&logger);
+	///	# let core_system = core::System::new(&engine);
+	///	# let string_subsystem = string::Subsystem::new(64, &core_system);
+	///	# let resource_system = resource::System::new(&engine);
+	///	# let asset_subsystem = assets::Subsystem::new(&resource_system);
 	/// use astral::resource::assets::{Namespace, FileSystem};
 	///
 	/// let mut namespace = Namespace::new();
 	/// assert!(namespace.is_empty());
-	/// let cwd_index = namespace.add_virtual_file_system(FileSystem::new(".", false)?)?;
+	/// let file_system = FileSystem::new(".", &asset_subsystem, &string_subsystem)?;
+	/// let cwd_index = namespace.add_virtual_file_system(file_system)?;
 	/// assert!(!namespace.is_empty());
 	/// let vfs = namespace.remove_virtual_file_system(cwd_index);
 	/// assert!(namespace.is_empty());
@@ -206,7 +262,7 @@ impl<'loc> Namespace<'loc> {
 	pub fn remove_virtual_file_system(
 		&mut self,
 		virtual_file_system_index: VirtualFileSystemIndex,
-	) -> Option<Box<dyn VirtualFileSystem + 'loc>> {
+	) -> Option<Box<dyn VirtualFileSystem<'str, H> + 'vfs>> {
 		self.paths
 			.retain(|_, index| *index != virtual_file_system_index);
 		self.virtual_file_systems
@@ -220,13 +276,22 @@ impl<'loc> Namespace<'loc> {
 	/// # Example
 	///
 	/// ```
+	/// # use astral::{third_party::slog, Engine, core::{self, string}, resource::{self, assets}};
 	/// # fn main() -> Result<(), astral::resource::assets::Error> {
+	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
+	///	# let engine = Engine::new(&logger);
+	///	# let core_system = core::System::new(&engine);
+	///	# let string_subsystem = string::Subsystem::new(64, &core_system);
+	///	# let resource_system = resource::System::new(&engine);
+	///	# let asset_subsystem = assets::Subsystem::new(&resource_system);
 	/// use astral::resource::assets::{Namespace, FileSystem};
 	///
 	/// let mut namespace = Namespace::new();
 	///
-	/// namespace.add_virtual_file_system(FileSystem::new(".", false)?);
-	/// namespace.add_virtual_file_system(FileSystem::new("..", false)?);
+	/// let file_system1 = FileSystem::new(".", &asset_subsystem, &string_subsystem)?;
+	/// let file_system2 = FileSystem::new("..", &asset_subsystem, &string_subsystem)?;
+	/// namespace.add_virtual_file_system(file_system1)?;
+	/// namespace.add_virtual_file_system(file_system2)?;
 	/// assert_eq!(namespace.virtual_file_systems(), 2);
 	/// namespace.clear();
 	/// assert!(namespace.is_empty());
@@ -246,13 +311,21 @@ impl<'loc> Namespace<'loc> {
 	/// # Example
 	///
 	/// ```no_run
+	/// # use astral::{third_party::slog, Engine, core::{self, string}, resource::{self, assets}};
 	/// # fn main() -> Result<(), astral::resource::assets::Error> {
+	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
+	///	# let engine = Engine::new(&logger);
+	///	# let core_system = core::System::new(&engine);
+	///	# let string_subsystem = string::Subsystem::new(64, &core_system);
+	///	# let resource_system = resource::System::new(&engine);
+	///	# let asset_subsystem = assets::Subsystem::new(&resource_system);
 	/// use astral::resource::assets::{Namespace, FileSystem};
 	///
 	/// let mut namespace = Namespace::new();
 	///
-	/// let cwd_index = namespace.add_virtual_file_system(FileSystem::new(".", false)?)?;
-	/// namespace.reload(cwd_index);
+	/// let file_system = FileSystem::new(".", &asset_subsystem, &string_subsystem)?;
+	/// let cwd_index = namespace.add_virtual_file_system(file_system)?;
+	/// namespace.reload(cwd_index)?;
 	/// # Ok(())
 	/// # }
 	/// ```
@@ -277,7 +350,10 @@ impl<'loc> Namespace<'loc> {
 		Ok(())
 	}
 
-	fn get_virtual_file_system(&self, name: Name) -> Option<&dyn VirtualFileSystem> {
+	fn get_virtual_file_system(
+		&self,
+		name: Name<'str, H>,
+	) -> Option<&dyn VirtualFileSystem<'str, H>> {
 		let virtual_file_system_id = self.paths.get(&name)?;
 		self.virtual_file_systems
 			.get(virtual_file_system_id.key())
@@ -286,8 +362,8 @@ impl<'loc> Namespace<'loc> {
 
 	fn get_virtual_file_system_mut(
 		&mut self,
-		name: Name,
-	) -> Option<&mut (dyn VirtualFileSystem + 'loc)> {
+		name: Name<'str, H>,
+	) -> Option<&mut (dyn VirtualFileSystem<'str, H> + 'vfs)> {
 		let virtual_file_system_id = self.paths.get(&name)?;
 		self.virtual_file_systems
 			.get_mut(virtual_file_system_id.key())
@@ -302,19 +378,28 @@ impl<'loc> Namespace<'loc> {
 	/// # Example
 	///
 	/// ```
+	/// # use astral::{third_party::slog, Engine, core::{self, string}, resource::{self, assets}};
 	/// # fn main() -> Result<(), astral::resource::assets::Error> {
+	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
+	///	# let engine = Engine::new(&logger);
+	///	# let core_system = core::System::new(&engine);
+	///	# let string_subsystem = string::Subsystem::new(64, &core_system);
+	///	# let resource_system = resource::System::new(&engine);
+	///	# let asset_subsystem = assets::Subsystem::new(&resource_system);
 	/// use astral::resource::assets::{Namespace, FileSystem};
 	///
 	/// let mut namespace = Namespace::new();
 	///
-	/// namespace.add_virtual_file_system(FileSystem::new(".", false)?);
+	/// let file_system = FileSystem::new(".", &asset_subsystem, &string_subsystem)?;
+	/// namespace.add_virtual_file_system(file_system)?;
+	/// # #[allow(unused_variables)]
 	/// for vfs in namespace.iter() {
 	/// 	// do something with the file systems
 	/// }
 	/// # Ok(())
 	/// # }
 	/// ```
-	pub fn iter(&self) -> impl Iterator<Item = (&dyn VirtualFileSystem, Name)> {
+	pub fn iter(&self) -> impl Iterator<Item = (&dyn VirtualFileSystem<'str, H>, Name<'str, H>)> {
 		Iter {
 			virtual_file_systems: &self.virtual_file_systems,
 			paths: self.paths.iter(),
@@ -335,20 +420,29 @@ impl<'loc> Namespace<'loc> {
 	/// # Example
 	///
 	/// ```no_run
+	/// # use astral::{third_party::slog, Engine, core::{self, string}, resource::{self, assets}};
 	/// # fn main() -> Result<(), astral::resource::assets::Error> {
+	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
+	///	# let engine = Engine::new(&logger);
+	///	# let core_system = core::System::new(&engine);
+	///	# let string_subsystem = string::Subsystem::new(64, &core_system);
+	///	# let resource_system = resource::System::new(&engine);
+	///	# let asset_subsystem = assets::Subsystem::new(&resource_system);
 	/// use astral::core::string::Name;
 	/// use astral::resource::assets::{Namespace, FileSystem};
 	///
 	/// let mut namespace = Namespace::new();
 	///
-	/// let cwd_index = namespace.add_virtual_file_system(FileSystem::new(".", false)?)?;
-	/// namespace.create(Name::from("a.txt"), Some(cwd_index));
+	/// let file_system = FileSystem::new(".", &asset_subsystem, &string_subsystem)?;
+	/// let cwd_index = namespace.add_virtual_file_system(file_system)?;
+	/// let file_name = Name::new("a.txt", &string_subsystem);
+	/// namespace.create(file_name, Some(cwd_index));
 	/// # Ok(())
 	/// # }
 	/// ```
 	pub fn create(
 		&mut self,
-		name: Name,
+		name: Name<'str, H>,
 		virtual_file_system_index: Option<VirtualFileSystemIndex>,
 	) -> Option<Result<impl Write>> {
 		let (index, vfs) = if let Some(index) = virtual_file_system_index {
@@ -382,20 +476,29 @@ impl<'loc> Namespace<'loc> {
 	/// # Example
 	///
 	/// ```no_run
+	/// # use astral::{third_party::slog, Engine, core::{self, string}, resource::{self, assets}};
 	/// # fn main() -> Result<(), astral::resource::assets::Error> {
+	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
+	///	# let engine = Engine::new(&logger);
+	///	# let core_system = core::System::new(&engine);
+	///	# let string_subsystem = string::Subsystem::new(64, &core_system);
+	///	# let resource_system = resource::System::new(&engine);
+	///	# let asset_subsystem = assets::Subsystem::new(&resource_system);
 	/// use astral::core::string::Name;
 	/// use astral::resource::assets::{Namespace, FileSystem};
 	///
 	/// let mut namespace = Namespace::new();
 	///
-	/// let cwd_index = namespace.add_virtual_file_system(FileSystem::new(".", false)?)?;
-	/// namespace.create_new(Name::from("a.txt"), Some(cwd_index));
+	/// let file_system = FileSystem::new(".", &asset_subsystem, &string_subsystem)?;
+	/// let cwd_index = namespace.add_virtual_file_system(file_system)?;
+	/// let file_name = Name::new("a.txt", &string_subsystem);
+	/// namespace.create_new(file_name, Some(cwd_index));
 	/// # Ok(())
 	/// # }
 	/// ```
 	pub fn create_new(
 		&mut self,
-		name: Name,
+		name: Name<'str, H>,
 		virtual_file_system_index: Option<VirtualFileSystemIndex>,
 	) -> Option<Result<impl Write>> {
 		let (index, vfs) = if let Some(index) = virtual_file_system_index {
@@ -422,18 +525,27 @@ impl<'loc> Namespace<'loc> {
 	/// # Example
 	///
 	/// ```no_run
+	/// # use astral::{third_party::slog, Engine, core::{self, string}, resource::{self, assets}};
 	/// # fn main() -> Result<(), astral::resource::assets::Error> {
+	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
+	///	# let engine = Engine::new(&logger);
+	///	# let core_system = core::System::new(&engine);
+	///	# let string_subsystem = string::Subsystem::new(64, &core_system);
+	///	# let resource_system = resource::System::new(&engine);
+	///	# let asset_subsystem = assets::Subsystem::new(&resource_system);
 	/// use astral::core::string::Name;
 	/// use astral::resource::assets::{Namespace, FileSystem};
 	///
 	/// let mut namespace = Namespace::new();
 	///
-	/// let cwd_index = namespace.add_virtual_file_system(FileSystem::new(".", false)?)?;
-	/// assert_eq!(namespace.exists(Name::from("does_not_exist.txt")), false);
+	/// let file_system = FileSystem::new(".", &asset_subsystem, &string_subsystem)?;
+	/// namespace.add_virtual_file_system(file_system)?;
+	/// let file_name = Name::new("does_not_exist.txt", &string_subsystem);
+	/// assert_eq!(namespace.exists(file_name), false);
 	/// # Ok(())
 	/// # }
 	/// ```
-	pub fn exists(&self, name: Name) -> bool {
+	pub fn exists(&self, name: Name<'str, H>) -> bool {
 		self.get_virtual_file_system(name)
 			.map_or(false, |virtual_file_system| {
 				virtual_file_system.exists(name)
@@ -446,18 +558,27 @@ impl<'loc> Namespace<'loc> {
 	/// # Example
 	///
 	/// ```no_run
+	/// # use astral::{third_party::slog, Engine, core::{self, string}, resource::{self, assets}};
 	/// # fn main() -> Result<(), astral::resource::assets::Error> {
+	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
+	///	# let engine = Engine::new(&logger);
+	///	# let core_system = core::System::new(&engine);
+	///	# let string_subsystem = string::Subsystem::new(64, &core_system);
+	///	# let resource_system = resource::System::new(&engine);
+	///	# let asset_subsystem = assets::Subsystem::new(&resource_system);
 	/// use astral::core::string::Name;
 	/// use astral::resource::assets::{Namespace, FileSystem};
 	///
 	/// let mut namespace = Namespace::new();
 	///
-	/// let cwd_index = namespace.add_virtual_file_system(FileSystem::new(".", false)?)?;
-	/// println!("{:?}", namespace.modified(Name::from("file.txt")));
+	/// let file_system = FileSystem::new(".", &asset_subsystem, &string_subsystem)?;
+	/// namespace.add_virtual_file_system(file_system)?;
+	/// let file_name = Name::new("file.txt", &string_subsystem);
+	/// println!("{:?}", namespace.modified(Name::from(file_name)));
 	/// # Ok(())
 	/// # }
 	/// ```
-	pub fn modified(&self, name: Name) -> Option<Result<SystemTime>> {
+	pub fn modified(&self, name: Name<'str, H>) -> Option<Result<SystemTime>> {
 		self.get_virtual_file_system(name)
 			.map(|virtual_file_system| Ok(virtual_file_system.modified(name)?))
 	}
@@ -470,20 +591,30 @@ impl<'loc> Namespace<'loc> {
 	/// # Example
 	///
 	/// ```no_run
+	/// # use astral::{third_party::slog, Engine, core::{self, string}, resource::{self, assets}};
 	/// # fn main() -> Result<(), astral::resource::assets::Error> {
+	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
+	///	# let engine = Engine::new(&logger);
+	///	# let core_system = core::System::new(&engine);
+	///	# let string_subsystem = string::Subsystem::new(64, &core_system);
+	///	# let resource_system = resource::System::new(&engine);
+	///	# let asset_subsystem = assets::Subsystem::new(&resource_system);
 	/// use astral::core::string::Name;
 	/// use astral::resource::assets::{Namespace, FileSystem};
 	///
 	/// let mut namespace = Namespace::new();
 	///
-	/// let cwd_index = namespace.add_virtual_file_system(FileSystem::new(".", false)?)?;
-	/// if let Some(read) = namespace.open(Name::from("file.txt")) {
+	/// let file_system = FileSystem::new(".", &asset_subsystem, &string_subsystem)?;
+	/// namespace.add_virtual_file_system(file_system)?;
+	/// let file_name = Name::new("file.txt", &string_subsystem);
+	/// if let Some(read) = namespace.open(file_name) {
+	///     # #[allow(unused_variables)]
 	/// 	let file = read?;
 	/// }
 	/// # Ok(())
 	/// # }
 	/// ```
-	pub fn open(&self, name: Name) -> Option<Result<impl Read>> {
+	pub fn open(&self, name: Name<'str, H>) -> Option<Result<impl Read>> {
 		self.get_virtual_file_system(name)
 			.map(|virtual_file_system| Ok(virtual_file_system.open(name)?))
 	}
@@ -499,20 +630,29 @@ impl<'loc> Namespace<'loc> {
 	/// # Example
 	///
 	/// ```no_run
+	/// # use astral::{third_party::slog, Engine, core::{self, string}, resource::{self, assets}};
 	/// # fn main() -> Result<(), astral::resource::assets::Error> {
+	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
+	///	# let engine = Engine::new(&logger);
+	///	# let core_system = core::System::new(&engine);
+	///	# let string_subsystem = string::Subsystem::new(64, &core_system);
+	///	# let resource_system = resource::System::new(&engine);
+	///	# let asset_subsystem = assets::Subsystem::new(&resource_system);
 	/// use astral::core::string::Name;
 	/// use astral::resource::assets::{Namespace, FileSystem};
 	///
 	/// let mut namespace = Namespace::new();
 	///
-	/// let cwd_index = namespace.add_virtual_file_system(FileSystem::new(".", false)?)?;
-	/// if let Some(result) = namespace.remove(Name::from("file.txt")) {
+	/// let file_system = FileSystem::new(".", &asset_subsystem, &string_subsystem)?;
+	/// namespace.add_virtual_file_system(file_system)?;
+	/// let file_name = Name::new("file.txt", &string_subsystem);
+	/// if let Some(result) = namespace.remove(file_name) {
 	/// 	println!("removing file: {:?}", result);
 	/// }
 	/// # Ok(())
 	/// # }
 	/// ```
-	pub fn remove(&mut self, name: Name) -> Option<Result<()>> {
+	pub fn remove(&mut self, name: Name<'str, H>) -> Option<Result<()>> {
 		{
 			let virtual_file_system = self.get_virtual_file_system_mut(name)?;
 
@@ -527,14 +667,23 @@ impl<'loc> Namespace<'loc> {
 	}
 }
 
-#[derive(Debug)]
-struct Iter<'loc> {
-	virtual_file_systems: &'loc SparseSlotMap<Box<dyn VirtualFileSystem + 'loc>>,
-	paths: hash_map::Iter<'loc, Name, VirtualFileSystemIndex>,
+impl Default for Namespace<'_, '_, BuildHasherDefault<Murmur3>> {
+	fn default() -> Self {
+		Self {
+			virtual_file_systems: SparseSlotMap::default(),
+			paths: HashMap::default(),
+		}
+	}
 }
 
-impl<'loc> Iterator for Iter<'loc> {
-	type Item = (&'loc dyn VirtualFileSystem, Name);
+#[derive(Debug)]
+struct Iter<'str, 'vfs, H> {
+	virtual_file_systems: &'vfs SparseSlotMap<Box<dyn VirtualFileSystem<'str, H> + 'vfs>>,
+	paths: hash_map::Iter<'vfs, Name<'str, H>, VirtualFileSystemIndex>,
+}
+
+impl<'str, 'vfs, H> Iterator for Iter<'str, 'vfs, H> {
+	type Item = (&'vfs dyn VirtualFileSystem<'str, H>, Name<'str, H>);
 
 	fn next(&mut self) -> Option<Self::Item> {
 		let (name, index) = self.paths.next()?;
@@ -543,7 +692,7 @@ impl<'loc> Iterator for Iter<'loc> {
 	}
 }
 
-impl Debug for Namespace<'_> {
+impl<H> Debug for Namespace<'_, '_, H> {
 	fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
 		fmt.debug_map()
 			.entries(self.iter().map(|(location, path)| (location.name(), path)))

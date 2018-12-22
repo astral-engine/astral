@@ -21,9 +21,7 @@ pub trait OptionExt<T> {
 	///
 	/// # Example
 	///
-	/// ```rust
-	/// use std::{error, fmt};
-	///
+	/// ```
 	/// use astral::core::error::OptionExt;
 	///
 	/// #[derive(Debug, PartialEq)]
@@ -53,9 +51,7 @@ pub trait OptionExt<T> {
 	///
 	/// # Example
 	///
-	/// ```rust
-	/// use std::{error, fmt};
-	///
+	/// ```
 	/// use astral::core::error::OptionExt;
 	///
 	/// #[derive(Debug, PartialEq)]

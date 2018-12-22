@@ -3,18 +3,20 @@
 // Proprietary and confidential
 // Written by Tim Diekmann <tim.diekmann@3dvision.de>, November 2018
 
-use astral_core::string::Name;
+use std::hash::BuildHasherDefault;
+
+use astral_core::{hash::Murmur3, string::Name};
 
 use crate::assets::{Location, NamespaceId};
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub struct ResourceId {
+pub struct ResourceId<'string, H = BuildHasherDefault<Murmur3>> {
 	namespace_id: Option<NamespaceId>,
-	name: Name,
+	name: Name<'string, H>,
 }
 
-impl ResourceId {
-	pub(in crate) fn from_name(name: Name) -> Self {
+impl<'string> ResourceId<'string> {
+	pub(in crate) fn from_name(name: Name<'string>) -> Self {
 		Self {
 			namespace_id: None,
 			name,
@@ -33,7 +35,7 @@ impl ResourceId {
 			.map(|namespace_id| Location::new(namespace_id, self.name))
 	}
 
-	pub fn name(self) -> Name {
+	pub fn name(self) -> Name<'string> {
 		self.name
 	}
 }

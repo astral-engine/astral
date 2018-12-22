@@ -5,31 +5,72 @@
 
 //! Structures for holding strings.
 //!
-//! This module contains the [`Name`] and the [`Text`] type. While both can hold
-//! strings, `Name` is optimized for strings with a numeric suffix. `Text`s
-//! implement [`Deref`]`<Target=`[`str`]`>`, which is not the case for `Name`,
-//! because of the optimization.
+//! This module contains [`string::Subsystem`], which manages [`StringId`]s. Since `StringId` is a
+//! dumb POD, two wrapper are provided: [`Text`] and [`Name`]. While both can hold strings, `Name`
+//! is optimized for strings with a numeric suffix. `Text`s implement [`Deref`]`<Target=`[`str`]`>`,
+//! which is not the case for `Name`, because of the optimization.
 //!
 //! # Examples
 //!
-//! There are multiple ways to create a new `Text` or a new `Name` from
-//! a string literal:
+//! The string `Subsystem` can be created from [`core::System`]:
 //!
 //! ```
-//! use astral::core::string::{Name, Text};
+//! # use astral::third_party::slog;
+//!	# let logger = slog::Logger::root(slog::Discard, slog::o!());
+//! use astral::{
+//! 	Engine,
+//! 	core::{self, string},
+//! };
 //!
-//! let t = Text::from("foo");
-//! let n: Name = "foo".into();
-//! assert_eq!(t, n);
+//! let engine = Engine::new(&logger);
+//! let core_system = core::System::new(&engine);
+//! # #[allow(unused_variables)]
+//! let string_subsystem = string::Subsystem::new(64, &core_system);
 //! ```
 //!
-//! A `Text` can be converted into [`&'static str`][`str`]:
+//! You can create a `StringId` with the `Subsystem`:
+//! ```
+//! # use astral::{third_party::slog, Engine, core::{System, string}};
+//!	# let logger = slog::Logger::root(slog::Discard, slog::o!());
+//!	# let engine = Engine::new(&logger);
+//!	# let system = System::new(&engine);
+//!	# let string_subsystem = string::Subsystem::new(64, &system);
+//! use astral::core::string::StringId;
+//!
+//! let id1 = StringId::new("foo", &string_subsystem);
+//! let id2 = StringId::new("bar", &string_subsystem);
+//! let id3 = StringId::new("foo", &string_subsystem);
+//!
+//! assert_ne!(id1, id2);
+//! assert_eq!(id1, id3);
+//! ```
+//!
+//!`Text` or `Name` can be created from a literal string:
 //!
 //! ```
+//! # use astral::{third_party::slog, Engine, core::{System, string}};
+//!	# let logger = slog::Logger::root(slog::Discard, slog::o!());
+//!	# let engine = Engine::new(&logger);
+//!	# let system = System::new(&engine);
+//!	# let string_subsystem = string::Subsystem::new(64, &system);
 //! use astral::core::string::Text;
 //!
-//! let n = Text::from("foo");
-//! let s: &'static str = n.as_str();
+//! let text = Text::new("foo", &string_subsystem);
+//! assert_eq!(text, "foo");
+//! ```
+//!
+//! A `Text` can be converted into [`&str`][`str`]:
+//!
+//! ```
+//! # use astral::{third_party::slog, Engine, core::{System, string}};
+//!	# let logger = slog::Logger::root(slog::Discard, slog::o!());
+//!	# let engine = Engine::new(&logger);
+//!	# let system = System::new(&engine);
+//!	# let string_subsystem = string::Subsystem::new(64, &system);
+//! use astral::core::string::Text;
+//!
+//! let text = Text::new("foo", &string_subsystem);
+//! let s: &str = text.as_str();
 //!
 //! assert_eq!("foo", s)
 //! ```
@@ -38,12 +79,17 @@
 //! out of it.
 //!
 //! ```
+//! # use astral::{third_party::slog, Engine, core::{System, string}};
+//!	# let logger = slog::Logger::root(slog::Discard, slog::o!());
+//!	# let engine = Engine::new(&logger);
+//!	# let system = System::new(&engine);
+//!	# let string_subsystem = string::Subsystem::new(64, &system);
 //! use astral::core::string::Text;
 //!
 //! let sparkle_heart = &[240, 159, 146, 150];
 //!
 //! // We know these bytes are valid, so we'll use `unwrap()`.
-//! let sparkle_heart = Text::from_utf8(sparkle_heart).unwrap();
+//! let sparkle_heart = Text::from_utf8(sparkle_heart, &string_subsystem).unwrap();
 //!
 //! assert_eq!("💖", sparkle_heart);
 //!
@@ -54,6 +100,9 @@
 //!
 //! [`Text`]: struct.Text.html
 //! [`Name`]: struct.Name.html
+//! [`StringId`]: struct.StringId.html
+//! [`core::System`]: ../struct.System.html
+//! [`string::Subsystem`]: struct.Subsystem.html
 //! [`Deref`]: https://doc.rust-lang.org/nightly/std/ops/trait.Deref.html
 //! [`str`]: https://doc.rust-lang.org/nightly/std/primitive.str.html
 // TODO(#1): Use intra doc links
@@ -64,19 +113,9 @@ mod entry_hash_table;
 mod error;
 mod name;
 mod static_ref_vector;
+mod string_id;
 mod subsystem;
 mod text;
-
-use std::{
-	ptr,
-	sync::{
-		atomic::{self, AtomicPtr, AtomicUsize},
-		Once,
-		ONCE_INIT,
-	},
-};
-
-use astral_engine::third_party::lazy_static::lazy_static;
 
 #[doc]
 pub use std::string::String;
@@ -85,6 +124,7 @@ pub use self::{
 	entry::MAX_STRING_LENGTH,
 	error::{Utf16Error, Utf8Error},
 	name::Name,
+	string_id::StringId,
 	subsystem::Subsystem,
 	text::Text,
 };
@@ -96,47 +136,4 @@ use self::{
 	static_ref_vector::StaticRefVector,
 };
 
-/// The maximum number of unique strings like [`Text`] or [`Name`].
-///
-/// [`Text`]: string::Text
-/// [`Name`]: string::Name
-pub const MAX_STRINGS: usize = 1024 * 1024;
-
 const PAGE_SIZE: usize = 64 * 1024;
-
-static ALLOCATED_STRINGS: AtomicUsize = AtomicUsize::new(0);
-static USED_MEMORY: AtomicUsize = AtomicUsize::new(0);
-static USED_MEMORY_CHUNKS: AtomicUsize = AtomicUsize::new(0);
-
-static SUBSYSTEM: AtomicPtr<Subsystem> = AtomicPtr::new(ptr::null_mut());
-static SUBSYSTEM_INIT: Once = ONCE_INIT;
-static SUBSYSTEM_SHUTDOWN: Once = ONCE_INIT;
-
-pub fn init_subsystem(max_strings: usize) {
-	SUBSYSTEM_INIT.call_once(|| {
-		println!("init");
-	})
-}
-
-static mut ALLOCATOR: Allocator = Allocator::new();
-
-/// Returns the number of unique allocated strings.
-pub fn allocated_strings() -> usize {
-	ALLOCATED_STRINGS.load(atomic::Ordering::Acquire)
-}
-
-/// Returns the memory, which is used for the string API.
-pub fn used_memory() -> usize {
-	USED_MEMORY.load(atomic::Ordering::Acquire)
-}
-
-/// Returns the number of chunks used for the string API.
-pub fn used_memory_chunks() -> usize {
-	USED_MEMORY_CHUNKS.load(atomic::Ordering::Acquire)
-}
-
-lazy_static! {
-	static ref ENTRY_REFERENCE_MAP: StaticRefVector<'static, Entry> =
-		StaticRefVector::new(MAX_STRINGS);
-	static ref ENTRY_HASH_TABLE: EntryHashTable = EntryHashTable::new();
-}

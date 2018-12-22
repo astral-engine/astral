@@ -3,7 +3,9 @@
 // Proprietary and confidential
 // Written by Tim Diekmann <tim.diekmann@3dvision.de>, November 2018
 
-use astral_core::string::Name;
+use std::hash::BuildHasherDefault;
+
+use astral_core::{hash::Murmur3, string::Name};
 
 use super::NamespaceId;
 
@@ -14,18 +16,29 @@ use super::NamespaceId;
 /// [`NamespaceId`]: struct.NamespaceId.html
 /// [`Catalog`]: struct.Catalog.html
 /// [`Name`]: ../../core/string/struct.Name.html
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
-pub struct Location {
+#[derive(Debug, PartialEq, Eq, Hash)]
+pub struct Location<'str, H = BuildHasherDefault<Murmur3>> {
 	pub namespace_id: NamespaceId,
-	pub name: Name,
+	pub name: Name<'str, H>,
 }
 
-impl Location {
+impl<'str, H> Clone for Location<'str, H> {
+	fn clone(&self) -> Self {
+		Self {
+			namespace_id: self.namespace_id,
+			name: self.name,
+		}
+	}
+}
+
+impl<'str, H> Copy for Location<'str, H> {}
+
+impl<'str, H> Location<'str, H> {
 	/// Construct a `Location` from a [`NamespaceId`] and a [`Name`].
 	///
 	/// [`NamespaceId`]: struct.NamespaceId.html
 	/// [`Name`]: ../../core/string/struct.Name.html
-	pub fn new(namespace_id: NamespaceId, name: Name) -> Self {
+	pub fn new(namespace_id: NamespaceId, name: Name<'str, H>) -> Self {
 		Self { namespace_id, name }
 	}
 
@@ -36,7 +49,7 @@ impl Location {
 	/// [`Name`]: ../../core/string/struct.Name.html
 	pub fn from_string<S>(namespace_id: NamespaceId, name: S) -> Self
 	where
-		S: Into<Name>,
+		S: Into<Name<'str, H>>,
 	{
 		Self {
 			namespace_id,

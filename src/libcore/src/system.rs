@@ -3,8 +3,15 @@
 // Proprietary and confidential
 // Written by Tim Diekmann <tim.diekmann@3dvision.de>, December 2018
 
+use std::fmt::{self, Debug, Formatter};
+
 use astral_engine::third_party::slog::{info, o, Logger};
 
+/// Core system for the Astral Engine.
+///
+/// See the [module-level documentation] for more.
+///
+/// [module-level documentation]: index.html
 pub struct System {
 	log: Logger,
 }
@@ -20,6 +27,7 @@ impl System {
 	///
 	/// # let logger = slog::Logger::root(slog::Discard, slog::o!());
 	///	let engine = Engine::new(&logger);
+	/// # #[allow(unused_variables)]
 	/// let core_system = core::System::new(&engine);
 	/// ```
 	pub fn new(engine: &astral_engine::Engine) -> Self {
@@ -47,6 +55,12 @@ impl System {
 	/// ```
 	pub fn logger(&self) -> &Logger {
 		&self.log
+	}
+}
+
+impl Debug for System {
+	fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
+		fmt.debug_struct("System").finish()
 	}
 }
 

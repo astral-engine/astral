@@ -22,105 +22,26 @@
 
 use std::error::Error;
 
-use astral::{
-	core::string::Name,
-	resource::{
-		assets::{Catalog, FileSystem, Location, Namespace},
-		Loader,
-		Resource,
-		ResourceId,
-	},
-};
-
-macro_rules! dbg {
-	($val:expr) => {
-		// Use of `match` here is intentional because it affects the lifetimes
-		// of temporaries - https://stackoverflow.com/a/48732525/1063961
-		match $val {
-			tmp => {
-				eprintln!(
-					"[{}:{}] {} = {:#?}",
-					file!(),
-					line!(),
-					stringify!($val),
-					&tmp
-				);
-				tmp
-				}
-			}
-	};
-}
-
-#[derive(Debug)]
-struct TextFile {
-	string: String,
-}
-
-impl Resource for TextFile {
-	type LoadData = String;
-}
-
-impl From<String> for TextFile {
-	fn from(string: String) -> Self {
-		Self { string }
-	}
-}
+use astral::resource::assets::{FileSystem, VirtualFileSystem};
 
 fn app(engine: &astral::Engine) -> Result<(), Box<dyn Error>> {
 	let core_system = astral::core::System::new(engine);
-	let string_subsystem = astral::core::string::Subsystem::new(&core_system);
+	let string_subsystem = astral::core::string::Subsystem::new(10 * 1024 * 1024, &core_system);
 
 	let resource_system = astral::resource::System::new(&engine);
 	let asset_subsystem = astral::resource::assets::Subsystem::new(&resource_system);
 
-	let video_system = astral::video::System::new(&engine);
-	// info!(
-	// 	"strings allocated: {}, memory used: {}",
-	// 	astral::core::string::allocated_strings(),
-	// 	astral::core::string::used_memory(),
-	// );
-	// info!("size of usize: {}", std::mem::size_of::<usize>());
-	// dbg!(Name::default());
-	// info!(
-	// 	"strings allocated: {}, memory used: {}",
-	// 	astral::core::string::allocated_strings(),
-	// 	astral::core::string::used_memory(),
-	// );
-	// dbg!(Name::from("string1"));
-	// dbg!(Name::from("1234"));
-	// dbg!(Name::from("0"));
-	// dbg!(Name::from("1"));
-	// dbg!(Name::from("01"));
-	// dbg!(Name::from("string2300040000000000000000"));
-	// dbg!(Name::from("string40"));
-	// dbg!(Name::from("string60"));
-	// dbg!(Name::from("string80"));
-	// dbg!(Name::from("string0234"));
-	// info!(
-	// 	"strings allocated: {}, memory used: {} KB in {} chunks",
-	// 	astral::core::string::allocated_strings(),
-	// 	astral::core::string::used_memory() as f64 / 1024.0,
-	// 	astral::core::string::used_memory_chunks()
-	// );
+	let files = FileSystem::new("/etc/lib", &asset_subsystem, &string_subsystem)?
+		.iter()?
+		.collect::<Vec<_>>();
 
-	// return Ok(());
-	// unsafe {
-	// 	dbg!(astral::core::string::Entry::allocate(
-	// 		"testtesttesttesttesttesttesttesttesttesttesttesttesttestte",
-	// 		0
-	// 	));
-	// 	dbg!(astral::core::string::Entry::allocate(
-	// 		"testtesttesttesttesttesttesttesttesttesttesttesttesttesttes",
-	// 		0
-	// 	));
-	// 	dbg!(astral::core::string::Entry::allocate("test", 0));
-	// }
+	let mut counter = 0_u32;
+	for file in &files {
+		counter += 1;
+		info!(engine.logger(), "file"; "name" => ?file, "count" => counter);
+	}
 
-	let mut catalog = Catalog::new();
-	let core_namespace = catalog.add_namespace(Namespace::new());
-
-	let filesystem = FileSystem::new(&asset_subsystem, "assets", true)?;
-	catalog[core_namespace].add_virtual_file_system(filesystem)?;
+	// catalog[core_namespace].add_virtual_file_system(filesystem)?;
 
 	// let mut registry = Loader::<TextFile, Option<&str>>::new(
 	// 	|string| Ok(TextFile::from(string.unwrap().to_string())),
@@ -147,24 +68,18 @@ fn app(engine: &astral::Engine) -> Result<(), Box<dyn Error>> {
 	Ok(())
 }
 
-use astral::third_party::slog::{
-	crit as critical,
-	debug,
-	error,
-	info,
-	o,
-	trace,
-	warn,
-	Drain,
-	Logger,
-};
+use astral::third_party::slog::{error, info, o, trace, warn, Drain, Logger};
 
 fn main() {
 	let decorator = slog_term::TermDecorator::new().build();
 	let drain = slog_term::CompactFormat::new(decorator).build().fuse();
-	// let drain = slog_async::Async::new(drain).build().fuse();
+	let drain = slog_async::Async::new(drain)
+		.chan_size(64 * 1024)
+		.overflow_strategy(slog_async::OverflowStrategy::Block)
+		.build()
+		.fuse();
 
-	let log = Logger::root(std::sync::Mutex::new(drain).fuse(), o!());
+	let log = Logger::root(drain, o!());
 	trace!(log, "test");
 
 	let engine = astral::Engine::new(&log);

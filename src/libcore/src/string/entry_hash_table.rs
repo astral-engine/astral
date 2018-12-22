@@ -5,39 +5,33 @@
 
 use std::{
 	mem,
-	num::NonZeroU32,
 	sync::{
 		atomic::{self, AtomicPtr},
 		Mutex,
 	},
+	u16,
 };
 
-use super::{Entry, ENTRY_REFERENCE_MAP, USED_MEMORY, USED_MEMORY_CHUNKS};
+use astral_engine::third_party::slog::{warn, Logger};
 
-const NUM_BUCKETS: usize = 64 * 1024;
+use super::{Allocator, Entry, StaticRefVector, StringId, MAX_STRING_LENGTH};
 
-/// A hash table which stores pointers to `Entry`.
+const NUM_BUCKETS: usize = u16::max_value() as usize + 1;
+
 pub(super) struct EntryHashTable {
 	head: Box<[AtomicPtr<Entry>; NUM_BUCKETS]>,
-	mutex: Mutex<()>,
 }
 
 impl EntryHashTable {
-	/// Constructs a new hash table.
-	pub(super) fn new() -> Self {
-		let _ = USED_MEMORY.fetch_add(
-			mem::size_of::<AtomicPtr<Entry>>() * NUM_BUCKETS,
-			atomic::Ordering::Acquire,
-		);
-		let _ = USED_MEMORY_CHUNKS.fetch_add(1, atomic::Ordering::Acquire);
-		Self {
+	pub(super) fn new() -> (Self, usize, usize) {
+		let table = Self {
 			head: Box::new(unsafe { mem::zeroed() }),
-			mutex: Mutex::default(),
-		}
+		};
+		let used_memory = mem::size_of::<AtomicPtr<Entry>>() * NUM_BUCKETS;
+		let used_chunks = 1;
+		(table, used_memory, used_chunks)
 	}
 
-	/// Searches the table for an entry with the given name and hash.
-	/// Returns [`None`] if no entry was found.
 	#[allow(clippy::cast_possible_truncation)]
 	pub(super) fn find(&self, name: &str, hash: u16) -> Option<&Entry> {
 		debug_assert!((hash as usize) < self.head.len());
@@ -56,42 +50,60 @@ impl EntryHashTable {
 		}
 	}
 
-	/// Searches the table for an entry with the given name and hash or insers
-	/// a new one, if none is found.
 	#[allow(clippy::cast_possible_truncation)]
-	pub(super) fn find_or_insert(&self, name: &str, hash: u64) -> NonZeroU32 {
+	pub(super) fn find_or_insert(
+		&self,
+		string: &str,
+		hash: u64,
+		reference_map: &StaticRefVector<Entry>,
+		allocator: &Mutex<Allocator>,
+		log: &Logger,
+	) -> (StringId, usize, usize, bool) {
 		let hash = hash as u16;
+		if hash == 60224 {}
 
-		if let Some(entry) = self.find(name, hash) {
-			return entry.index();
+		if let Some(entry) = self.find(string, hash) {
+			return (entry.id(), 0, 0, false);
 		}
 
-		let _guard = self.mutex.lock().unwrap();
-		if let Some(entry) = self.find(name, hash) {
-			return entry.index();
+		let mut allocator = allocator.lock().unwrap();
+		if let Some(entry) = self.find(string, hash) {
+			return (entry.id(), 0, 0, false);
 		}
+
+		let (mut entry, alloc_memory, alloc_chunks) = if string.len() > MAX_STRING_LENGTH {
+			warn!(log,
+				"string is too long and will be shorten";
+				"max length" => MAX_STRING_LENGTH,
+				"length" => string.len(),
+			);
+			allocator.allocate(&string[0..MAX_STRING_LENGTH])
+		} else {
+			allocator.allocate(string)
+		};
+		debug_assert!(entry.id.is_none());
 		unsafe {
-			let entry = Entry::allocate(name);
-			(*entry).index = Some(ENTRY_REFERENCE_MAP.push(&*entry));
+			let (id, map_memory, map_chunks) = reference_map.push(entry);
+			(*entry).id = Some(id);
 			let head = self.head[hash as usize].load(atomic::Ordering::Relaxed);
 			if head.is_null() {
 				self.head[hash as usize].store(entry, atomic::Ordering::Release);
 			} else {
-				(*head)
+				let next = (*head)
 					.iter()
 					.last()
 					.expect("unexpeted end of hash bucket")
-					.next()
-					.store(entry, atomic::Ordering::Release)
+					.next();
+				debug_assert!(next.load(atomic::Ordering::SeqCst).is_null());
+				next.store(entry, atomic::Ordering::Release)
 			}
-			(*entry).index()
+			(
+				(*entry).id(),
+				alloc_memory + map_memory,
+				alloc_chunks + map_chunks,
+				true,
+			)
 		}
-	}
-}
-
-impl Default for EntryHashTable {
-	fn default() -> Self {
-		Self::new()
 	}
 }
 
