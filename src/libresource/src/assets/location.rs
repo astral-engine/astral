@@ -22,7 +22,7 @@ pub struct Location<'str, H = BuildHasherDefault<Murmur3>> {
 	pub name: Name<'str, H>,
 }
 
-impl<'str, H> Clone for Location<'str, H> {
+impl<H> Clone for Location<'_, H> {
 	fn clone(&self) -> Self {
 		Self {
 			namespace_id: self.namespace_id,
@@ -31,7 +31,7 @@ impl<'str, H> Clone for Location<'str, H> {
 	}
 }
 
-impl<'str, H> Copy for Location<'str, H> {}
+impl<H> Copy for Location<'_, H> {}
 
 impl<'str, H> Location<'str, H> {
 	/// Construct a `Location` from a [`NamespaceId`] and a [`Name`].
