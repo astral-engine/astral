@@ -748,6 +748,7 @@ mod test {
 
 	use super::*;
 
+	#[cfg(target_arch = "x86_64")]
 	#[test]
 	fn test_size() {
 		assert_eq!(std::mem::size_of::<Name<'_>>(), 16);

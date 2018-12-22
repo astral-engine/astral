@@ -52,3 +52,13 @@ impl StringId {
 		self.0.get() - 1
 	}
 }
+
+#[cfg(test)]
+mod test {
+	use super::*;
+
+	#[test]
+	fn test_size() {
+		assert_eq!(std::mem::size_of::<StringId>(), 4);
+	}
+}
