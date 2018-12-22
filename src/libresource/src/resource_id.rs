@@ -16,10 +16,13 @@ pub struct ResourceId<'string, H = BuildHasherDefault<Murmur3>> {
 }
 
 impl<'string> ResourceId<'string> {
-	pub(in crate) fn from_name(name: Name<'string>) -> Self {
+	pub(in crate) fn from_name<N>(name: N) -> Self
+	where
+		N: Into<Name<'string>>,
+	{
 		Self {
 			namespace_id: None,
-			name,
+			name: name.into(),
 		}
 	}
 
