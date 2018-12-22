@@ -759,7 +759,7 @@ mod test {
 	#[test]
 	fn test_size() {
 		assert_eq!(std::mem::size_of::<Name<'_>>(), 12);
-		assert_eq!(std::mem::size_of::<Option<Name<'_>>>(), 8);
+		assert_eq!(std::mem::size_of::<Option<Name<'_>>>(), 12);
 	}
 
 	#[test]

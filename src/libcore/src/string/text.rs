@@ -690,7 +690,7 @@ mod test {
 	#[cfg(target_pointer_width = "32")]
 	#[test]
 	fn test_size() {
-		assert_eq!(std::mem::size_of::<Text<'_>>(), 12);
+		assert_eq!(std::mem::size_of::<Text<'_>>(), 8);
 		assert_eq!(std::mem::size_of::<Option<Text<'_>>>(), 8);
 	}
 
