@@ -49,7 +49,7 @@
 	variant_size_differences,
 	clippy::pedantic
 )]
-#![allow(clippy::stutter)]
+#![allow(clippy::module_name_repetitions)]
 
 pub mod collections;
 pub mod error;

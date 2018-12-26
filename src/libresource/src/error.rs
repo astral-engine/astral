@@ -18,7 +18,6 @@ pub type Result<T> = error::Result<T, ErrorKind>;
 // ToDo(#5): Use `non_exhaustive`
 #[cfg_attr(unstable, non_exhaustive)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[allow(clippy::stutter)]
 pub enum ErrorKind {
 	/// A resource could not be loaded.
 	Loading,
