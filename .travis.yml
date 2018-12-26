@@ -53,7 +53,6 @@ matrix:
   allow_failures:
     # Windows builds are in early access stage on Travis CI and may timeout.
     - os: windows
-jobs:
   include:
     ############################################################################
     ###                                 Tests                                ###
