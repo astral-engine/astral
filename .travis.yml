@@ -60,7 +60,7 @@ matrix:
     # Linux
     - name: x86_64-unknown-linux-gnu - stable
       env: TARGET=x86_64-unknown-linux-gnu TOOLCHAIN=stable
-      if: type != api OR commit_message =~ stable
+      if: type != api OR commit_message !~ beta AND commit_message !~ nightly
     - name: x86_64-unknown-linux-gnu - beta
       env: TARGET=x86_64-unknown-linux-gnu TOOLCHAIN=beta
       if: type != api OR commit_message =~ beta
@@ -69,7 +69,7 @@ matrix:
       if: type != api OR commit_message =~ nightly
     - name: i686-unknown-linux-gnu - stable
       env: TARGET=i686-unknown-linux-gnu TOOLCHAIN=stable
-      if: type != api OR commit_message =~ stable
+      if: type != api OR commit_message !~ beta AND commit_message !~ nightly
     - name: i686-unknown-linux-gnu - beta
       env: TARGET=i686-unknown-linux-gnu TOOLCHAIN=beta
       if: type != api OR commit_message =~ beta
@@ -82,40 +82,40 @@ matrix:
       os: osx
       language: rust
       rust: stable-x86_64-apple-darwin
-      if: type != api OR commit_message =~ stable
+      if: type != api OR commit_message !~ beta AND commit_message !~ nightly
     - name: i686-apple-darwin - stable
       os: osx
       language: rust
       rust: stable-i686-apple-darwin
-      if: type != api OR commit_message =~ stable
+      if: type != api OR commit_message !~ beta AND commit_message !~ nightly
 
     # Windows
     - name: x86_64-pc-windows - stable
       os: windows
       language: rust
       rust: stable-x86_64-pc-windows-msvc
-      if: type != api OR commit_message =~ stable
+      if: type != api OR commit_message !~ beta AND commit_message !~ nightly
     - name: i686-pc-windows - stable
       os: windows
       language: rust
       rust: stable-i686-pc-windows-msvc
-      if: type != api OR commit_message =~ stable
+      if: type != api OR commit_message !~ beta AND commit_message !~ nightly
     - name: x86_64-pc-windows - stable
       os: windows
       language: rust
       rust: stable-x86_64-pc-windows-gnu
-      if: type != api OR commit_message =~ stable
+      if: type != api OR commit_message !~ beta AND commit_message !~ nightly
 
       # Android
     - name: aarch64-linux-android  - stable
       env: CUSTOM_TARGET=aarch64-linux-android TOOLCHAIN=stable
-      if: type != api OR commit_message =~ stable
+      if: type != api OR commit_message !~ beta AND commit_message !~ nightly
     - name: arm-linux-androideabi - stable
       env: CUSTOM_TARGET=arm-linux-androideabi TOOLCHAIN=stable
-      if: type != api OR commit_message =~ stable
+      if: type != api OR commit_message !~ beta AND commit_message !~ nightly
     - name: x86_64-linux-android - stable
       env: CUSTOM_TARGET=x86_64-linux-android TOOLCHAIN=stable
-      if: type != api OR commit_message =~ stable
+      if: type != api OR commit_message !~ beta AND commit_message !~ nightly
 
     ############################################################################
     ###                                 tools                                ###
