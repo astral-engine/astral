@@ -82,9 +82,9 @@ pub trait ResultExt<T, E> {
 	///
 	/// assert_eq!(x.to_string(), "An error occured");
 	/// ```
-	fn chain<Kind, Context>(self, kind: Kind, context: Context) -> Result<T, Error<Kind>>
+	fn chain<Kind, Source>(self, kind: Kind, source: Source) -> Result<T, Error<Kind>>
 	where
-		Context: Into<Box<dyn error::Error + Send + Sync>>;
+		Source: Into<Box<dyn error::Error + Send + Sync>>;
 
 	/// Creates a new [`Error`], associates it with an error kind and sets the
 	/// old error as source by applying the provided closure
@@ -127,10 +127,10 @@ pub trait ResultExt<T, E> {
 	///
 	/// assert_eq!(x.to_string(), "An error occured");
 	/// ```
-	fn chain_with<Kind, Context, F>(self, kind: Kind, context: F) -> Result<T, Error<Kind>>
+	fn chain_with<Kind, Source, F>(self, kind: Kind, source: F) -> Result<T, Error<Kind>>
 	where
-		Context: Into<Box<dyn error::Error + Send + Sync>>,
-		F: FnOnce() -> Context;
+		Source: Into<Box<dyn error::Error + Send + Sync>>,
+		F: FnOnce() -> Source;
 }
 
 #[allow(clippy::use_self)]
@@ -142,18 +142,18 @@ where
 		self.map_err(|error| Error::new(kind, error))
 	}
 
-	fn chain<Kind, Context>(self, kind: Kind, context: Context) -> Result<T, Error<Kind>>
+	fn chain<Kind, Source>(self, kind: Kind, source: Source) -> Result<T, Error<Kind>>
 	where
-		Context: Into<Box<dyn error::Error + Send + Sync>>,
+		Source: Into<Box<dyn error::Error + Send + Sync>>,
 	{
-		self.map_err(|source| Error::chained(kind, context.into(), source))
+		self.map_err(|s| Error::chained(kind, source.into(), s))
 	}
 
-	fn chain_with<Kind, Context, F>(self, kind: Kind, context: F) -> Result<T, Error<Kind>>
+	fn chain_with<Kind, Source, F>(self, kind: Kind, source: F) -> Result<T, Error<Kind>>
 	where
-		Context: Into<Box<dyn error::Error + Send + Sync>>,
-		F: FnOnce() -> Context,
+		Source: Into<Box<dyn error::Error + Send + Sync>>,
+		F: FnOnce() -> Source,
 	{
-		self.map_err(|source| Error::chained(kind, context(), source.into()))
+		self.map_err(|s| Error::chained(kind, source(), s.into()))
 	}
 }

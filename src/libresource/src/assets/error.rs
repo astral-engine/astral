@@ -31,9 +31,8 @@ pub enum ErrorKind {
 	/// Any assets error not part of this list.
 	Other,
 	#[doc(hidden)]
-	#[allow(non_camel_case_types)]
 	#[cfg(not(unstable))]
-	__NON_EXHAUSTIVE,
+	__Nonexhaustive,
 }
 
 impl Display for ErrorKind {
@@ -43,7 +42,7 @@ impl Display for ErrorKind {
 			ErrorKind::InvalidIndex => write!(fmt, "invalid index error"),
 			ErrorKind::Other => write!(fmt, "other assets error"),
 			#[cfg(not(unstable))]
-			ErrorKind::__NON_EXHAUSTIVE => unreachable!(),
+			ErrorKind::__Nonexhaustive => unreachable!("ErrorKind::__Nonexhaustive must not be used"),
 		}
 	}
 }

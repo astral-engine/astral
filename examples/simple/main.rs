@@ -23,7 +23,7 @@
 use std::error::Error;
 
 use astral::{
-	core::{collections::SparseSlotMap, string::Name},
+	core::string::Name,
 	resource::assets::{FileSystem, VirtualFileSystem},
 };
 
@@ -44,11 +44,6 @@ fn app(engine: &astral::Engine) -> Result<(), Box<dyn Error>> {
 		counter += 1;
 		info!(engine.logger(), "file"; "name" => ?file, "count" => counter);
 	}
-
-	let mut slot_map: SparseSlotMap<u32> = SparseSlotMap::new();
-	slot_map.insert(32);
-	// eprintln!("{:?}", slot_map.drain());
-	eprintln!("{:?}", slot_map.drain_filter(|_, _| false));
 
 	// catalog[core_namespace].add_virtual_file_system(filesystem)?;
 
@@ -93,21 +88,6 @@ fn main() {
 
 	let engine = astral::Engine::new(&log);
 
-	// let decorator = slog_term::PlainDecorator::new(std::io::stdout());
-	// let drain = slog_term::CompactFormat::new(decorator).build().fuse();
-	// let drain = slog_async::Async::new(drain).build().fuse();
-
-	// let log = slog::Logger::root(drain, slog::o!("version" => "0.0.0"));
-
-	// slog::info!(log, "test");
-	// let logger = Box::new(log::TerminalLogger::default());
-	// log::set_max_level(LevelFilter::Trace);
-	// info!("test");
-	// if let Err(err) = log::set_logger(&logger) {
-	// eprintln!("Could not initialize logging: {}", err);
-	// }
-	// let rustc = rustc_version::version().unwrap();
-	// info!("rustc: {}.{}.{}", rustc.major, rustc.minor, rustc.patch);
 	if let Err(err) = app(&engine) {
 		let mut err: &dyn std::error::Error = err.as_ref();
 		error!(log, "{}", err);

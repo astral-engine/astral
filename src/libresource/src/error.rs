@@ -22,9 +22,8 @@ pub enum ErrorKind {
 	/// A resource could not be loaded.
 	Loading,
 	#[doc(hidden)]
-	#[allow(non_camel_case_types)]
 	#[cfg(not(unstable))]
-	__NON_EXHAUSTIVE,
+	__Nonexhaustive,
 }
 
 impl Display for ErrorKind {
@@ -32,7 +31,7 @@ impl Display for ErrorKind {
 		match self {
 			ErrorKind::Loading => write!(fmt, "loading error"),
 			#[cfg(not(unstable))]
-			ErrorKind::__NON_EXHAUSTIVE => unreachable!(),
+			ErrorKind::__Nonexhaustive => unreachable!("ErrorKind::__Nonexhaustive must not be used!"),
 		}
 	}
 }

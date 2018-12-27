@@ -339,6 +339,7 @@ where
 }
 
 impl<Kind> From<Kind> for Error<Kind> {
+	#[inline]
 	fn from(kind: Kind) -> Self {
 		Self {
 			repr: Repr::Simple(kind),
