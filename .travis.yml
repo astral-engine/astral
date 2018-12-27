@@ -14,7 +14,7 @@ cache:
 
 stages:
   - name: tools
-    if: tag IS NOT present
+    if: tag IS NOT present AND type != api
   - test
   - documentation
   - name: release
@@ -60,48 +60,62 @@ matrix:
     # Linux
     - name: x86_64-unknown-linux-gnu - stable
       env: TARGET=x86_64-unknown-linux-gnu TOOLCHAIN=stable
+      if: type != api OR env(BUILD_STABLE) IS present
     - name: x86_64-unknown-linux-gnu - beta
       env: TARGET=x86_64-unknown-linux-gnu TOOLCHAIN=beta
+      if: type != api OR env(BUILD_BETA) IS present
     - name: x86_64-unknown-linux-gnu - nightly
       env: TARGET=x86_64-unknown-linux-gnu TOOLCHAIN=nightly
+      if: type != api OR env(BUILD_NIGHTLY) IS present
     - name: i686-unknown-linux-gnu - stable
       env: TARGET=i686-unknown-linux-gnu TOOLCHAIN=stable
+      if: type != api OR env(BUILD_STABLE) IS present
     - name: i686-unknown-linux-gnu - beta
       env: TARGET=i686-unknown-linux-gnu TOOLCHAIN=beta
+      if: type != api OR env(BUILD_BETA) IS present
     - name: i686-unknown-linux-gnu - nightly
       env: TARGET=i686-unknown-linux-gnu TOOLCHAIN=nightly
+      if: type != api OR env(BUILD_NIGHTLY) IS present
 
     # MacOS
     - name: x86_64-apple-darwin - stable
       os: osx
       language: rust
       rust: stable-x86_64-apple-darwin
+      if: type != api OR env(BUILD_STABLE) IS present
     - name: i686-apple-darwin - stable
       os: osx
       language: rust
       rust: stable-i686-apple-darwin
+      if: type != api OR env(BUILD_STABLE) IS present
 
     # Windows
     - name: x86_64-pc-windows - stable
       os: windows
       language: rust
       rust: stable-x86_64-pc-windows-msvc
+      if: type != api OR env(BUILD_STABLE) IS present
     - name: i686-pc-windows - stable
       os: windows
       language: rust
       rust: stable-i686-pc-windows-msvc
+      if: type != api OR env(BUILD_STABLE) IS present
     - name: x86_64-pc-windows - stable
       os: windows
       language: rust
       rust: stable-x86_64-pc-windows-gnu
+      if: type != api OR env(BUILD_STABLE) IS present
 
       # Android
     - name: aarch64-linux-android  - stable
       env: CUSTOM_TARGET=aarch64-linux-android TOOLCHAIN=stable
+      if: type != api OR env(BUILD_STABLE) IS present
     - name: arm-linux-androideabi - stable
       env: CUSTOM_TARGET=arm-linux-androideabi TOOLCHAIN=stable
+      if: type != api OR env(BUILD_STABLE) IS present
     - name: x86_64-linux-android - stable
       env: CUSTOM_TARGET=x86_64-linux-android TOOLCHAIN=stable
+      if: type != api OR env(BUILD_STABLE) IS present
 
     ############################################################################
     ###                                 tools                                ###
@@ -124,6 +138,7 @@ matrix:
       name: x86_64-unknown-linux-gnu - nightly
       stage: documentation
       env: TARGET=x86_64-unknown-linux-gnu TOOLCHAIN=nightly
+      if: type != api OR env(BUILD_NIGHTLY) IS present
       script: |
         run cargo doc --features "$FEATURES" --no-deps
         echo '<meta http-equiv="refresh" content="0; url=astral">' > target/doc/index.html
