@@ -14,7 +14,7 @@ cache:
 
 stages:
   - name: tools
-    if: tag IS NOT present AND type != api
+    if: tag IS NOT present
   - test
   - documentation
   - name: release
@@ -123,11 +123,13 @@ matrix:
     - stage: tools
       name: rustfmt - nightly
       env: TARGET=x86_64-unknown-linux-gnu TOOLCHAIN=nightly
+      if: type != api OR commit_message =~ nightly
       script:
         - run cargo fmt --all -- --check
     - stage: tools
       name: clippy - nightly
       env: TARGET=x86_64-unknown-linux-gnu TOOLCHAIN=nightly
+      if: type != api OR commit_message =~ nightly
       script:
         - run cargo clippy --all --examples
 
