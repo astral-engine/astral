@@ -8,4 +8,4 @@
 //! Licenses for third party libraries can be found in the root folder.
 
 #[doc(inline)]
-pub use {lazy_static, num_traits, serde, slog, walkdir};
+pub use {lazy_static, num_traits, rayon, serde, slog, walkdir};

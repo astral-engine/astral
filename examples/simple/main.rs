@@ -25,6 +25,10 @@ use std::error::Error;
 use astral::{
 	core::string::Name,
 	resource::assets::{FileSystem, VirtualFileSystem},
+	third_party::{
+		rayon,
+		slog::{error, info, o, trace, warn, Drain, Logger},
+	},
 };
 
 fn app(engine: &astral::Engine) -> Result<(), Box<dyn Error>> {
@@ -44,6 +48,22 @@ fn app(engine: &astral::Engine) -> Result<(), Box<dyn Error>> {
 		counter += 1;
 		info!(engine.logger(), "file"; "name" => ?file, "count" => counter);
 	}
+
+	let pool = rayon::ThreadPoolBuilder::new()
+		.num_threads(2)
+		.build()
+		.unwrap();
+
+	let ok: Vec<i32> = vec![1, 2, 3];
+	pool.scope(|s| {
+		let bad: Vec<i32> = vec![4, 5, 6];
+		s.spawn(|_| {
+			let bad = bad;
+			info!(engine.logger(), "ok: {:?}", ok);
+			info!(engine.logger(), "bad: {:?}", bad);
+		});
+		info!(engine.logger(), "borrowed {:?}", ok);
+	});
 
 	// catalog[core_namespace].add_virtual_file_system(filesystem)?;
 
@@ -72,16 +92,15 @@ fn app(engine: &astral::Engine) -> Result<(), Box<dyn Error>> {
 	Ok(())
 }
 
-use astral::third_party::slog::{error, info, o, trace, warn, Drain, Logger};
-
 fn main() {
 	let decorator = slog_term::TermDecorator::new().build();
 	let drain = slog_term::CompactFormat::new(decorator).build().fuse();
-	let drain = slog_async::Async::new(drain)
-		.chan_size(64 * 1024)
-		.overflow_strategy(slog_async::OverflowStrategy::Block)
-		.build()
-		.fuse();
+	// let drain = slog_async::Async::new(drain)
+	// 	.chan_size(64 * 1024)
+	// 	.overflow_strategy(slog_async::OverflowStrategy::Block)
+	// 	.build()
+	// 	.fuse();
+	let drain = std::sync::Mutex::new(drain).fuse();
 
 	let log = Logger::root(drain, o!());
 	trace!(log, "test");

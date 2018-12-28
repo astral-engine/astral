@@ -58,4 +58,12 @@ pub mod math;
 pub mod string;
 mod system;
 
+pub use astral_engine::third_party::rayon::{
+	current_num_threads,
+	join,
+	join_context,
+	scope,
+	spawn,
+};
+
 pub use self::system::System;

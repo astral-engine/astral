@@ -16,3 +16,7 @@ pub use {
 	astral_resource as resource,
 	astral_video as video,
 };
+
+pub mod prelude {
+	pub use astral_engine::third_party::rayon::prelude::*;
+}
