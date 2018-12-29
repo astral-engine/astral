@@ -1,9 +1,10 @@
 [package]
 name = "astral-util"
 edition = "2018"
-version = "0.0.3"
+version = "0.0.4"
 authors = [ "Tim Diekmann <tim.diekmann@3dvision.de>" ]
 repository = "https://github.com/astral-engine/astral"
+documentation = "https://docs.rs/astral-engine/"
 license = "Apache-2.0"
 keywords = ["game", "astral"]
 categories = ["game-engines"]
@@ -14,4 +15,4 @@ travis-ci = { repository = "astral-engine/astral", branch = "master" }
 maintenance = { status = "actively-developed" }
 
 [dev-dependencies]
-astral = { path = "../../", package = "astral-engine", version = "0.0.1", default-features = false }
+astral = { path = "../../", package = "astral-engine", version = "0.0.2", default-features = false }

@@ -36,6 +36,7 @@ use super::{StringId, Subsystem, Text, Utf16Error, Utf8Error};
 /// `Name` can be created from a literal string:
 ///
 /// ```
+/// # use astral_thirdparty::slog;
 ///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
 ///	# let string_subsystem = astral::string::Subsystem::new(64, &logger);
 /// use astral::string::Name;
@@ -72,6 +73,7 @@ where
 	/// # Example
 	///
 	/// ```
+	/// # use astral_thirdparty::slog;
 	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
 	///	# let string_subsystem = astral::string::Subsystem::new(64, &logger);
 	/// use astral::string::Name;
@@ -115,6 +117,7 @@ where
 	/// Basic usage:
 	///
 	/// ```
+	/// # use astral_thirdparty::slog;
 	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
 	///	# let string_subsystem = astral::string::Subsystem::new(64, &logger);
 	/// use astral::string::Name;
@@ -131,6 +134,7 @@ where
 	/// Incorrect bytes:
 	///
 	/// ```
+	/// # use astral_thirdparty::slog;
 	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
 	///	# let string_subsystem = astral::string::Subsystem::new(64, &logger);
 	/// use astral::string::Name;
@@ -168,6 +172,7 @@ where
 	/// Basic usage:
 	///
 	/// ```
+	/// # use astral_thirdparty::slog;
 	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
 	///	# let string_subsystem = astral::string::Subsystem::new(64, &logger);
 	/// use astral::string::Name;
@@ -183,6 +188,7 @@ where
 	/// Incorrect bytes:
 	///
 	/// ```
+	/// # use astral_thirdparty::slog;
 	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
 	///	# let string_subsystem = astral::string::Subsystem::new(64, &logger);
 	/// use astral::string::Name;
@@ -214,6 +220,7 @@ where
 	/// # Example
 	///
 	/// ```
+	/// # use astral_thirdparty::slog;
 	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
 	///	# let string_subsystem = astral::string::Subsystem::new(64, &logger);
 	/// use astral::string::Name;
@@ -237,6 +244,7 @@ where
 	/// # Example
 	///
 	/// ```
+	/// # use astral_thirdparty::slog;
 	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
 	///	# let string_subsystem = astral::string::Subsystem::new(64, &logger);
 	/// use astral::string::Name;
@@ -267,6 +275,7 @@ where
 	/// # Example
 	///
 	/// ```
+	/// # use astral_thirdparty::slog;
 	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
 	///	# let string_subsystem = astral::string::Subsystem::new(64, &logger);
 	/// use astral::string::Name;
@@ -312,6 +321,7 @@ impl<'system, H> Name<'system, H> {
 	/// # Example
 	///
 	/// ```
+	/// # use astral_thirdparty::slog;
 	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
 	///	# let string_subsystem = astral::string::Subsystem::new(64, &logger);
 	/// use std::num::NonZeroU32;
@@ -326,6 +336,7 @@ impl<'system, H> Name<'system, H> {
 	/// ```
 	///
 	/// [`Subsystem`]: struct.Subsystem.html
+	/// [`StringId`]: struct.StringId.html
 	pub unsafe fn from_raw_parts(
 		id: StringId,
 		number: Option<NonZeroU32>,
@@ -342,6 +353,7 @@ impl<'system, H> Name<'system, H> {
 	/// # Example
 	///
 	/// ```
+	/// # use astral_thirdparty::slog;
 	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
 	///	# let string_subsystem = astral::string::Subsystem::new(64, &logger);
 	/// use astral::string::Name;
@@ -363,6 +375,7 @@ impl<'system, H> Name<'system, H> {
 	/// # Example
 	///
 	/// ```
+	/// # use astral_thirdparty::slog;
 	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
 	///	# let string_subsystem = astral::string::Subsystem::new(64, &logger);
 	/// use astral::string::Name;
@@ -382,6 +395,7 @@ impl<'system, H> Name<'system, H> {
 	/// Basic usage:
 	///
 	/// ```
+	/// # use astral_thirdparty::slog;
 	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
 	///	# let string_subsystem = astral::string::Subsystem::new(64, &logger);
 	/// use astral::string::Name;
@@ -406,6 +420,7 @@ impl<'system, H> Name<'system, H> {
 	/// # Example
 	///
 	/// ```
+	/// # use astral_thirdparty::slog;
 	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
 	///	# let string_subsystem = astral::string::Subsystem::new(64, &logger);
 	/// use std::borrow::Cow;
@@ -423,6 +438,7 @@ impl<'system, H> Name<'system, H> {
 	/// Remember, than a digital suffix with leading zeros cannot be optimized:
 	///
 	/// ```
+	/// # use astral_thirdparty::slog;
 	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
 	///	# let string_subsystem = astral::string::Subsystem::new(64, &logger);
 	/// use std::borrow::Cow;
@@ -449,6 +465,7 @@ impl<'system, H> Name<'system, H> {
 	/// Basic usage:
 	///
 	/// ```
+	/// # use astral_thirdparty::slog;
 	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
 	///	# let string_subsystem = astral::string::Subsystem::new(64, &logger);
 	/// use astral::string::Name;
@@ -473,6 +490,7 @@ impl<'system, H> Name<'system, H> {
 	/// Basic usage:
 	///
 	/// ```
+	/// # use astral_thirdparty::slog;
 	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
 	///	# let string_subsystem = astral::string::Subsystem::new(64, &logger);
 	/// use astral::string::Name;
@@ -699,6 +717,8 @@ impl_cmp! { Text<'_, H> }
 #[cfg(test)]
 mod test {
 	#![allow(clippy::non_ascii_literal, clippy::shadow_unrelated)]
+
+	use astral_thirdparty::slog;
 
 	use super::*;
 

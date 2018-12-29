@@ -1,9 +1,10 @@
 [package]
 name = "astral-math"
 edition = "2018"
-version = "0.0.2"
+version = "0.0.3"
 authors = [ "Tim Diekmann <tim.diekmann@3dvision.de>" ]
 repository = "https://github.com/astral-engine/astral"
+documentation = "https://docs.rs/astral-engine/"
 license = "Apache-2.0"
 keywords = ["game", "math", "astral"]
 categories = ["game-engines"]

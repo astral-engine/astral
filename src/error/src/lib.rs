@@ -94,7 +94,7 @@ use self::{chained::Chained, custom::Custom, repr::Repr};
 /// use std::fmt::{self, Debug, Display, Formatter};
 /// use std::error::Error as StdError;
 ///
-/// [`Error`]: struct.Error.html
+/// use astral::error::Error;
 ///
 /// #[derive(Debug, PartialEq)]
 /// enum MyErrorKind {
@@ -128,7 +128,7 @@ impl<Kind> Error<Kind> {
 	///
 	/// # Example
 	///
-	/// ```rust
+	/// ```
 	/// # use std::fmt::{self, Debug, Display, Formatter};
 	/// # #[derive(Debug, PartialEq)] enum MyErrorKind { Variant }
 	/// # impl Display for MyErrorKind {

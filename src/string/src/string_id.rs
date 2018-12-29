@@ -24,6 +24,7 @@ use super::Subsystem;
 /// # Example
 ///
 /// ```
+/// # use astral_thirdparty::slog;
 ///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
 ///	# let string_subsystem = astral::string::Subsystem::new(64, &logger);
 /// use astral::string::StringId;
@@ -46,6 +47,8 @@ impl StringId {
 	/// Construcs a new `StringId` from the given string in the specified [`Subsystem`].
 	///
 	/// If the string was used before, the `StringId` will be equal.
+	///
+	/// [`Subsystem`]: struct.Subsystem.html
 	///
 	/// # Example
 	pub fn new<S>(string: S, subsystem: &Subsystem) -> Self

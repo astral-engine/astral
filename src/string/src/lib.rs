@@ -25,6 +25,7 @@
 //! The string `Subsystem` can be created from a parent [`Logger`]:
 //!
 //! ```
+//! # use astral_thirdparty::slog;
 //! use astral::string;
 //!
 //!	# let logger = slog::Logger::root(slog::Discard, slog::o!());
@@ -34,6 +35,7 @@
 //!
 //! You can create a `StringId` with the `Subsystem`:
 //! ```
+//! # use astral_thirdparty::slog;
 //!	# let logger = slog::Logger::root(slog::Discard, slog::o!());
 //!	# let string_subsystem = astral::string::Subsystem::new(64, &logger);
 //! use astral::string::StringId;
@@ -49,6 +51,7 @@
 //!`Text` or `Name` can be created from a literal string:
 //!
 //! ```
+//! # use astral_thirdparty::slog;
 //!	# let logger = slog::Logger::root(slog::Discard, slog::o!());
 //!	# let string_subsystem = astral::string::Subsystem::new(64, &logger);
 //! use astral::string::Text;
@@ -60,6 +63,7 @@
 //! A `Text` can be converted into [`&str`][`str`]:
 //!
 //! ```
+//! # use astral_thirdparty::slog;
 //!	# let logger = slog::Logger::root(slog::Discard, slog::o!());
 //!	# let string_subsystem = astral::string::Subsystem::new(64, &logger);
 //! # use astral::string::Text;
@@ -73,6 +77,7 @@
 //! out of it.
 //!
 //! ```
+//! # use astral_thirdparty::slog;
 //!	# let logger = slog::Logger::root(slog::Discard, slog::o!());
 //!	# let string_subsystem = astral::string::Subsystem::new(64, &logger);
 //! # use astral::string::Text;

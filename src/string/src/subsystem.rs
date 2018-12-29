@@ -17,10 +17,13 @@ use std::{
 	fmt::{self, Debug, Formatter},
 	hash::{BuildHasher, BuildHasherDefault, Hash, Hasher},
 	str,
-	sync::Mutex,
+	sync::{
+		atomic::{self, AtomicUsize, Ordering},
+		Mutex,
+	},
 };
 
-use slog::{info, o, Logger};
+use astral_thirdparty::slog::{info, o, Logger};
 
 use astral_util::hash::Murmur3;
 
@@ -136,6 +139,7 @@ impl Subsystem<BuildHasherDefault<Murmur3>> {
 	/// # Example
 	///
 	/// ```
+	/// # use astral_thirdparty::slog;
 	/// use astral::string;
 	///
 	/// # let logger = slog::Logger::root(slog::Discard, slog::o!());
@@ -157,6 +161,7 @@ where
 	/// # Example
 	///
 	/// ```
+	/// # use astral_thirdparty::slog;
 	/// use std::hash::BuildHasherDefault;
 	///
 	/// use astral::{
@@ -256,7 +261,8 @@ impl<H> Subsystem<H> {
 	/// # Example
 	///
 	/// ```
-	/// use slog::info;
+	/// # use astral_thirdparty::slog;
+	/// use astral_thirdparty::slog::info;
 	///
 	/// use astral::string;
 	///

@@ -33,5 +33,5 @@ use super::Error;
 /// prelude's import of `std::result::Result`.
 ///
 /// [`astral`]: ../../index.html
-/// [`astral::Error`]: crate::Error
+/// [`astral::Error`]: struct.Error.html
 pub type Result<T, Kind> = result::Result<T, Error<Kind>>;

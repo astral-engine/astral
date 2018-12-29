@@ -24,7 +24,7 @@ use std::{
 	u16,
 };
 
-use slog::{warn, Logger};
+use astral_thirdparty::slog::{warn, Logger};
 
 use super::{Allocator, Entry, StaticRefVector, StringId, MAX_STRING_LENGTH};
 
