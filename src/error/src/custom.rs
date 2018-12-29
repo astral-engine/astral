@@ -11,5 +11,12 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// Written by {[[:alpha:]]+}{[[[:alpha:]] ]*} <{[[[:alnum:]]_\-\.]+}@{[[[:alnum:]]_\-\.]+}.{[[:alpha:]]{2,5}}>, {[[:alpha:]]+} 20{\d{2}}
+// Written by Tim Diekmann <tim.diekmann@3dvision.de>, November 2018
 
+use std::error;
+
+#[derive(Debug)]
+pub(super) struct Custom<Kind> {
+	pub(super) kind: Kind,
+	pub(super) error: Box<dyn error::Error + Send + Sync>,
+}

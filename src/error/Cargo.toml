@@ -1,13 +1,10 @@
 [package]
 name = "astral-error"
 edition = "2018"
-version = "0.0.0"
+version = "0.0.1"
 authors = [ "Tim Diekmann <tim.diekmann@3dvision.de>" ]
 repository = "https://github.com/astral-engine/astral"
 license = "Apache-2.0"
 keywords = ["game", "error", "astral"]
 categories = ["game-engines"]
 description = "Error handling library for the Astral Engine (WIP)"
-
-[build-dependencies]
-rustc_version = "0.2"

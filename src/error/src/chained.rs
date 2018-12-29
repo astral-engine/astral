@@ -1,4 +1,4 @@
-// Copyright 2018 Astral Developers
+// Copyright (c) Astral Developers
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,15 +11,13 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+// Written by Tim Diekmann <tim.diekmann@3dvision.de>, November 2018
 
-use rustc_version::Channel;
+use std::error;
 
-fn main() {
-	println!("cargo:rerun-if-changed=build.rs");
-
-	if let Ok(meta) = rustc_version::version_meta() {
-		if let Channel::Nightly = meta.channel {
-			println!("cargo:rustc-cfg=unstable");
-		}
-	}
+#[derive(Debug)]
+pub(super) struct Chained<Kind> {
+	pub(super) kind: Kind,
+	pub(super) error: Box<dyn error::Error + Send + Sync>,
+	pub(super) source: Box<dyn error::Error + Send + Sync>,
 }
