@@ -32,7 +32,7 @@ pub trait OptionExt<T> {
 	/// # Example
 	///
 	/// ```
-	/// use astral_error::OptionExt;
+	/// use astral::error::OptionExt;
 	///
 	/// #[derive(Debug, PartialEq)]
 	/// enum MyErrorKind {
@@ -62,7 +62,7 @@ pub trait OptionExt<T> {
 	/// # Example
 	///
 	/// ```
-	/// use astral_error::OptionExt;
+	/// use astral::error::OptionExt;
 	///
 	/// #[derive(Debug, PartialEq)]
 	/// enum MyErrorKind {

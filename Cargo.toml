@@ -1,27 +1,36 @@
 [package]
-name = "astral"
-version = "0.0.0"
+name = "astral-engine"
 edition = "2018"
+version = "0.0.1"
 authors = [ "Tim Diekmann <tim.diekmann@3dvision.de>" ]
 repository = "https://github.com/astral-engine/astral"
-documentation = "https://astral-engine.github.io/docs"
-readme = "README.md"
-publish = false
+license = "Apache-2.0"
+keywords = ["game", "astral"]
+categories = ["game-engines"]
+description = "Astral Engine (WIP)"
+
+[badges]
+travis-ci = { repository = "astral-engine/astral", branch = "master" }
+maintenance = { status = "actively-developed" }
+
 
 [workspace]
 members = [
-    "src/libcore",
-    "src/libresource",
-    "src/libvideo",
-    "src/error"
+    "src/error",
+    "src/math",
+    "src/util",
+    "src/string",
 ]
 
 [dependencies]
-astral-engine = { path = "src/libengine", version = "0.0.0", default-features = false }
-astral-core = { path = "src/libcore", version = "0.0.0", default-features = false }
-astral-resource = { path = "src/libresource", version = "0.0.0", default-features = false }
-astral-video = { path = "src/libvideo", version = "0.0.0", default-features = false }
-astral-error = { path = "src/error" }
+astral-error = { path = "src/error", version = "0.0.3" }
+astral-math = { path = "src/math", version = "0.0.2" }
+astral-string = { path = "src/string", version = "0.0.2" }
+astral-util = { path = "src/util", version = "0.0.3" }
+# astral-core = { path = "src/core", version = "0.0.0", default-features = false }
+# astral-thirdparty = { path = "src/libengine", version = "0.0.0", default-features = false }
+# astral-resource = { path = "src/libresource", version = "0.0.0", default-features = false }
+# astral-video = { path = "src/libvideo", version = "0.0.0", default-features = false }
 
 [dev-dependencies]
 slog-term = "2.4"
@@ -29,17 +38,17 @@ slog-async = "2.3"
 rustc_version = "0.2"
 
 [features]
-default = ["max_level_trace", "track-strings"]
-track-strings = ["astral-core/track-strings"]
-max_level_off = ["astral-engine/max_level_off"]
-max_level_error = ["astral-engine/max_level_error"]
-max_level_warn = ["astral-engine/max_level_warn"]
-max_level_info = ["astral-engine/max_level_info"]
-max_level_debug = ["astral-engine/max_level_debug"]
-max_level_trace = ["astral-engine/max_level_trace"]
-release_max_level_off = ["astral-engine/release_max_level_off"]
-release_max_level_error = ["astral-engine/release_max_level_error"]
-release_max_level_warn = ["astral-engine/release_max_level_warn"]
-release_max_level_info = ["astral-engine/release_max_level_info"]
-release_max_level_debug = ["astral-engine/release_max_level_debug"]
-release_max_level_trace = ["astral-engine/release_max_level_trace"]
+# default = ["track-strings"]
+# track-strings = ["astral-core/track-strings"]
+# max_level_off = ["astral-thirdparty/max_level_off"]
+# max_level_error = ["astral-thirdparty/max_level_error"]
+# max_level_warn = ["astral-thirdparty/max_level_warn"]
+# max_level_info = ["astral-thirdparty/max_level_info"]
+# max_level_debug = ["astral-thirdparty/max_level_debug"]
+# max_level_trace = ["astral-thirdparty/max_level_trace"]
+# release_max_level_off = ["astral-thirdparty/release_max_level_off"]
+# release_max_level_error = ["astral-thirdparty/release_max_level_error"]
+# release_max_level_warn = ["astral-thirdparty/release_max_level_warn"]
+# release_max_level_info = ["astral-thirdparty/release_max_level_info"]
+# release_max_level_debug = ["astral-thirdparty/release_max_level_debug"]
+# release_max_level_trace = ["astral-thirdparty/release_max_level_trace"]

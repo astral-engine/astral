@@ -1,6 +1,16 @@
-// Copyright (C) Astral Developers - All Rights Reserved
-// Unauthorized copying of this file, via any medium is strictly prohibited
-// Proprietary and confidential
+// Copyright (c) Astral Developers
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 // Written by Tim Diekmann <tim.diekmann@3dvision.de>, November 2018
 
 #![doc(
@@ -11,12 +21,8 @@
 
 #[doc(inline)]
 pub use {
-	astral_core as core,
-	astral_engine::*,
-	astral_resource as resource,
-	astral_video as video,
+	astral_error as error,
+	astral_math as math,
+	astral_string as string,
+	astral_util as util,
 };
-
-pub mod prelude {
-	pub use astral_engine::third_party::rayon::prelude::*;
-}

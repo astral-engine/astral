@@ -94,7 +94,7 @@ use self::{chained::Chained, custom::Custom, repr::Repr};
 /// use std::fmt::{self, Debug, Display, Formatter};
 /// use std::error::Error as StdError;
 ///
-/// use astral_error::Error;
+/// [`Error`]: struct.Error.html
 ///
 /// #[derive(Debug, PartialEq)]
 /// enum MyErrorKind {
@@ -138,7 +138,7 @@ impl<Kind> Error<Kind> {
 	/// # }
 	/// use std::error::Error as StdError;
 	///
-	/// use astral_error::Error;
+	/// use astral::error::Error;
 	///
 	/// let my_error = Error::new(MyErrorKind::Variant, "oh no!");
 	///
@@ -181,7 +181,7 @@ impl<Kind> Error<Kind> {
 	/// # fn test() -> Option<()> {
 	/// use std::error::Error as StdError;
 	///
-	/// use astral_error::Error;
+	/// use astral::error::Error;
 	///
 	/// let my_error = Error::new(MyErrorKind::Variant, "oh no!");
 	///
@@ -210,13 +210,13 @@ impl<Kind> Error<Kind> {
 	/// If this `Error` was constructed via [`new`] or [`chained`] then this
 	/// function will return [`Some`], otherwise it will return [`None`].
 	///
-	/// [`new`]: crate::Error::new
-	/// [`chained`]: crate::Error::chained
+	/// [`new`]: struct.Error.html#method.new
+	/// [`chained`]: struct.Error.html#method.chained
 	///
 	/// # Examples
 	///
 	/// ```
-	/// use astral_error::Error;
+	/// use astral::error::Error;
 	///
 	/// #[derive(Debug)]
 	/// enum MyErrorKind {
@@ -246,8 +246,8 @@ impl<Kind> Error<Kind> {
 	/// If this `Error` was constructed via [`new`] or [`chained`] then this
 	/// function will return [`Some`], otherwise it will return [`None`].
 	///
-	/// [`new`]: crate::Error::new
-	/// [`chained`]: crate::Error::chained
+	/// [`new`]: struct.Error.html#method.new
+	/// [`chained`]: struct.Error.html#method.chained
 	///
 	/// # Examples
 	///
@@ -255,7 +255,7 @@ impl<Kind> Error<Kind> {
 	/// use std::{error, fmt};
 	/// use std::fmt::Display;
 	///
-	/// use astral_error::Error;
+	/// use astral::error::Error;
 	///
 	/// #[derive(Debug)]
 	/// struct MyError {
@@ -316,8 +316,8 @@ impl<Kind> Error<Kind> {
 	/// If this `Error` was constructed via [`new`] or [`chained`] then this
 	/// function will return [`Some`], otherwise it will return [`None`].
 	///
-	/// [`new`]: crate::Error::new
-	/// [`chained`]: crate::Error::chained
+	/// [`new`]: struct.Error.html#method.new
+	/// [`chained`]: struct.Error.html#method.chained
 	///
 	/// # Example
 	///
@@ -331,7 +331,7 @@ impl<Kind> Error<Kind> {
 	/// # }
 	/// # fn main() { test().unwrap() }
 	/// # fn test() -> Option<()> {
-	/// use astral_error::Error;
+	/// use astral::error::Error;
 	///
 	/// let my_error = Error::new(MyErrorKind::Variant, "oh no!");
 	///
@@ -351,7 +351,7 @@ impl<Kind> Error<Kind> {
 	/// # Example
 	///
 	/// ```
-	/// use astral_error::Error;
+	/// use astral::error::Error;
 	///
 	/// #[derive(Debug, PartialEq)]
 	/// enum MyErrorKind {

@@ -1,18 +1,25 @@
 [package]
-name = "astral-error"
+name = "astral-string"
+version = "0.0.2"
 edition = "2018"
-version = "0.0.3"
 authors = [ "Tim Diekmann <tim.diekmann@3dvision.de>" ]
 repository = "https://github.com/astral-engine/astral"
 license = "Apache-2.0"
-keywords = ["game", "error", "astral"]
+keywords = ["game", "string", "astral"]
 categories = ["game-engines"]
-description = "Error handling library for the Astral Engine (WIP)"
-exclude = ["rustfmt.toml"]
+description = "String library for the Astral Engine (WIP)"
 
 [badges]
 travis-ci = { repository = "astral-engine/astral", branch = "master" }
 maintenance = { status = "actively-developed" }
+
+[dependencies]
+slog = "2.4"
+
+astral-util = { path = "../util", version = "0.0.3", default-features = false }
+
+[build-dependencies]
+rustc_version = "0.2"
 
 [dev-dependencies]
 astral = { path = "../../", package = "astral-engine", version = "0.0.1", default-features = false }

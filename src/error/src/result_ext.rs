@@ -26,7 +26,7 @@ pub trait ResultExt<T, E> {
 	/// ```
 	/// use std::{error, fmt};
 	///
-	/// use astral_error::ResultExt;
+	/// use astral::error::ResultExt;
 	///
 	/// #[derive(Debug)]
 	/// struct CustomError;
@@ -55,14 +55,14 @@ pub trait ResultExt<T, E> {
 	/// Creates a new [`Error`], associates it with an error kind and sets the
 	/// old error as source.
 	///
-	/// [`Error`]: crate::Error
+	/// [`Error`]: struct.Error.html
 	///
 	/// # Example
 	///
 	/// ```
 	/// use std::{error, fmt};
 	///
-	/// use astral_error::ResultExt;
+	/// use astral::error::ResultExt;
 	///
 	/// #[derive(Debug)]
 	/// struct CustomError;
@@ -100,14 +100,14 @@ pub trait ResultExt<T, E> {
 	/// old error as source by applying the provided closure
 	/// `FnOnce() -> impl Into<Box<dyn error::Error + Send + Sync>>`.
 	///
-	/// [`Error`]: crate::Error
+	/// [`Error`]: struct.Error.html
 	///
 	/// # Example
 	///
 	/// ```
 	/// use std::{error, fmt};
 	///
-	/// use astral_error::ResultExt;
+	/// use astral::error::ResultExt;
 	///
 	/// #[derive(Debug)]
 	/// struct CustomError;

@@ -11,5 +11,11 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// Written by {[[:alpha:]]+}{[[[:alpha:]] ]*} <{[[[:alnum:]]_\-\.]+}@{[[[:alnum:]]_\-\.]+}.{[[:alpha:]]{2,5}}>, {[[:alpha:]]+} 20{\d{2}}
+// Written by Tim Diekmann <tim.diekmann@3dvision.de>, November 2018
 
+//! Hashing utilities and hashers.
+
+mod murmur3;
+mod nop_hasher;
+
+pub use self::{murmur3::Murmur3, nop_hasher::NopHasher};
