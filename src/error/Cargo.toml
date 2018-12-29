@@ -8,3 +8,7 @@ license = "Apache-2.0"
 keywords = ["game", "error", "astral"]
 categories = ["game-engines"]
 description = "Error handling library for the Astral Engine (WIP)"
+
+[badges]
+travis-ci = { repository = "astral-engine/astral", branch = "master" }
+maintenance = { status = "actively-developed" }
