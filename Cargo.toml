@@ -1,7 +1,7 @@
 [package]
 name = "astral-engine"
 edition = "2018"
-version = "0.0.1"
+version = "0.0.2"
 authors = [ "Tim Diekmann <tim.diekmann@3dvision.de>" ]
 repository = "https://github.com/astral-engine/astral"
 documentation = "https://docs.rs/astral-engine/"
@@ -9,6 +9,7 @@ license = "Apache-2.0"
 keywords = ["game", "astral"]
 categories = ["game-engines"]
 description = "Astral Engine (WIP)"
+exclude = ["assets/**"]
 
 [badges]
 travis-ci = { repository = "astral-engine/astral", branch = "master" }
