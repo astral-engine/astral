@@ -6,12 +6,14 @@ authors = [ "Tim Diekmann <tim.diekmann@3dvision.de>" ]
 repository = "https://github.com/astral-engine/astral"
 documentation = "https://astral-engine.github.io/docs"
 readme = "README.md"
+publish = false
 
 [workspace]
 members = [
     "src/libcore",
     "src/libresource",
     "src/libvideo",
+    "src/error"
 ]
 
 [dependencies]
