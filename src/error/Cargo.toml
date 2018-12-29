@@ -5,8 +5,8 @@ version = "0.0.0"
 authors = [ "Tim Diekmann <tim.diekmann@3dvision.de>" ]
 repository = "https://github.com/astral-engine/astral"
 license = "Apache-2.0"
-keywords = ["game"]
-categories = ["game-engines", "error", "astral"]
+keywords = ["game", "error", "astral"]
+categories = ["game-engines"]
 description = "Error handling library for the Astral Engine (WIP)"
 
 [build-dependencies]
