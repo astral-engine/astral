@@ -46,7 +46,7 @@ impl Utf8Error {
 	/// # Example
 	///
 	/// ```
-	/// # use astral_thirdparty::slog;
+	/// # use astral::thirdparty::slog;
 	///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
 	///	# let string_subsystem = astral::string::Subsystem::new(64, &logger);
 	/// use astral::string::Name;
@@ -108,7 +108,7 @@ impl error::Error for Utf8Error {}
 /// # Example
 ///
 /// ```
-/// # use astral_thirdparty::slog;
+/// # use astral::thirdparty::slog;
 ///	# let logger = slog::Logger::root(slog::Discard, slog::o!());
 ///	# let string_subsystem = astral::string::Subsystem::new(64, &logger);
 /// use astral::string::Name;

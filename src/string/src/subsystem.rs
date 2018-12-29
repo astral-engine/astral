@@ -139,7 +139,7 @@ impl Subsystem<BuildHasherDefault<Murmur3>> {
 	/// # Example
 	///
 	/// ```
-	/// # use astral_thirdparty::slog;
+	/// # use astral::thirdparty::slog;
 	/// use astral::string;
 	///
 	/// # let logger = slog::Logger::root(slog::Discard, slog::o!());
@@ -161,7 +161,7 @@ where
 	/// # Example
 	///
 	/// ```
-	/// # use astral_thirdparty::slog;
+	/// # use astral::thirdparty::slog;
 	/// use std::hash::BuildHasherDefault;
 	///
 	/// use astral::{
@@ -261,8 +261,8 @@ impl<H> Subsystem<H> {
 	/// # Example
 	///
 	/// ```
-	/// # use astral_thirdparty::slog;
-	/// use astral_thirdparty::slog::info;
+	/// # use astral::thirdparty::slog;
+	/// use astral::thirdparty::slog::info;
 	///
 	/// use astral::string;
 	///

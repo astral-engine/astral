@@ -24,5 +24,6 @@ pub use {
 	astral_error as error,
 	astral_math as math,
 	astral_string as string,
+	astral_thirdparty as thirdparty,
 	astral_util as util,
 };
