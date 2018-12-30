@@ -5,6 +5,7 @@ version = "0.0.2"
 authors = [ "Tim Diekmann <tim.diekmann@3dvision.de>" ]
 repository = "https://github.com/astral-engine/astral"
 documentation = "https://docs.rs/astral-engine/"
+readme = "README.md"
 license = "Apache-2.0"
 keywords = ["game", "astral"]
 categories = ["game-engines"]
