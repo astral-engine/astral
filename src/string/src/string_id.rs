@@ -41,7 +41,7 @@ pub struct StringId(NonZeroU32);
 
 impl StringId {
 	pub(super) fn from_raw_parts(id: u32) -> Self {
-		StringId(NonZeroU32::new(id + 1).expect("string id overflow"))
+		Self(NonZeroU32::new(id + 1).expect("string id overflow"))
 	}
 
 	/// Construcs a new `StringId` from the given string in the specified [`Subsystem`].

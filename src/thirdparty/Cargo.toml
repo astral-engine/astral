@@ -1,6 +1,6 @@
 [package]
 name = "astral-thirdparty"
-version = "0.0.1"
+version = "0.0.2"
 edition = "2018"
 authors = [ "Tim Diekmann <tim.diekmann@3dvision.de>" ]
 repository = "https://github.com/astral-engine/astral"
@@ -23,7 +23,7 @@ slog = { version = "2.4"}
 walkdir = "2.2"
 
 [dev-dependencies]
-astral = { path = "../../", package = "astral-engine", version = "0.0.2", default-features = false }
+astral-engine = { path = "../../", version = "0.0.3", default-features = false }
 
 [features]
 max_level_off = ["slog/max_level_off"]

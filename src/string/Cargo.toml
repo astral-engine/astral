@@ -1,6 +1,6 @@
 [package]
 name = "astral-string"
-version = "0.0.4"
+version = "0.0.5"
 edition = "2018"
 authors = [ "Tim Diekmann <tim.diekmann@3dvision.de>" ]
 repository = "https://github.com/astral-engine/astral"
@@ -15,14 +15,14 @@ travis-ci = { repository = "astral-engine/astral", branch = "master" }
 maintenance = { status = "actively-developed" }
 
 [dependencies]
-astral-thirdparty = { path = "../thirdparty", version = "0.0.1", default-features = false }
-astral-util = { path = "../util", version = "0.0.4", default-features = false }
+astral-thirdparty = { path = "../thirdparty", version = "0.0.2", default-features = false }
+astral-util = { path = "../util", version = "0.0.5", default-features = false }
 
 [build-dependencies]
 rustc_version = "0.2"
 
 [dev-dependencies]
-astral = { path = "../../", package = "astral-engine", version = "0.0.2", default-features = false }
+astral-engine = { path = "../../", version = "0.0.3", default-features = false }
 
 [features]
 track-strings = []
