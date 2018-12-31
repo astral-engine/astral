@@ -13,7 +13,7 @@
 // limitations under the License.
 // Written by Tim Diekmann <tim.diekmann@3dvision.de>, November 2018
 
-//! Traits and structures for working with Errors in the Astral Engine.
+//! Utility traits, structures and functions used in the Astral Engine.
 
 #![doc(
 	html_no_source,
@@ -59,7 +59,5 @@
 	variant_size_differences,
 	clippy::pedantic
 )]
-
-//! Utility traits, structures and functions used in the Astral Engine.
 
 pub mod hash;
